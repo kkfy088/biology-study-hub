@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IV产品 舆情×销量 比例矩阵</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:#f5f5f2; color:#2c2c2a; padding:24px; }
+  .wrap { max-width:1080px; margin:0 auto; }
+  h1 { font-size:18px; font-weight:600; margin:0 0 4px; }
+  .sub { font-size:13px; color:#5f5e5a; margin:0 0 18px; line-height:1.6; }
+  .colhead { display:flex; gap:6px; margin-bottom:6px; }
+  .colhead .ch { text-align:center; font-size:12px; color:#444441; }
+  .colhead .ch b { display:block; font-size:13px; font-weight:600; color:#2c2c2a; }
+  .mekko { display:flex; gap:6px; height:560px; }
+  .col { display:flex; flex-direction:column; gap:6px; }
+  .cell { position:relative; border-radius:6px; overflow:hidden; cursor:default; min-height:3px;
+          display:flex; flex-direction:column; justify-content:center; align-items:center; }
+  .cell .body { position:relative; z-index:2; text-align:center; padding:2px 6px; pointer-events:none; }
+  .cell .dir { font-size:13px; font-weight:600; }
+  .cell .amt { font-size:12px; margin-top:2px; }
+  .cell .sub2 { font-size:11px; opacity:.75; margin-top:1px; }
+  .change-block { position:absolute; left:0; right:0; top:0; z-index:1; }
+  .badge { position:absolute; top:5px; left:5px; z-index:5; background:rgba(255,255,255,.92);
+           border:0.5px solid rgba(0,0,0,.18); border-radius:10px; padding:1px 7px; font-size:11px;
+           font-weight:600; color:#2c2c2a; cursor:help; line-height:1.5; }
+  .badge:hover { background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.18); }
+  .legend { display:flex; flex-wrap:wrap; gap:14px; margin-top:16px; font-size:12px; color:#5f5e5a; }
+  .legend span { display:flex; align-items:center; gap:5px; }
+  .sw { width:14px; height:14px; border-radius:3px; display:inline-block; }
+  .note { font-size:12px; color:#5f5e5a; margin-top:14px; line-height:1.7; padding:12px 14px;
+          background:#fff; border:0.5px solid rgba(0,0,0,.1); border-radius:8px; }
+  #tip { position:fixed; z-index:99; display:none; background:#fff; border:0.5px solid rgba(0,0,0,.2);
+         border-radius:8px; box-shadow:0 4px 18px rgba(0,0,0,.16); padding:10px 12px; max-width:340px; font-size:12px; }
+  #tip h4 { margin:0 0 6px; font-size:13px; font-weight:600; }
+  #tip table { border-collapse:collapse; width:100%; }
+  #tip td { padding:2px 6px; border-bottom:0.5px solid rgba(0,0,0,.07); white-space:nowrap; }
+  #tip td.n { color:#5f5e5a; max-width:170px; overflow:hidden; text-overflow:ellipsis; }
+  #tip td.v { text-align:right; font-variant-numeric:tabular-nums; }
+  #tip .up { color:#15803d; } #tip .dn { color:#b91c1c; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>IV产品 舆情 × 销量 比例矩阵（408家医院）</h1>
+  <p class="sub">列宽 ∝ 该舆情列业务体量 · 格高 ∝ 该格业务体量 → <b>格子面积 = 业务规模</b>。绿色=销量增长，红色=销量下降；色块越饱和=变动幅度越大。每格内高饱和色块 = 净增长/净流失额，浅色 = 留存基线。左上角数字=医院家数（悬浮看 Top10）。</p>
+
+  <div class="colhead" id="colhead"></div>
+  <div class="mekko" id="mekko"></div>
+
+  <div class="legend">
+    <span><i class="sw" style="background:#16a34a"></i>净增长额（高饱和绿）</span>
+    <span><i class="sw" style="background:rgba(22,163,74,.22)"></i>增长格·留存基线</span>
+    <span><i class="sw" style="background:#dc2626"></i>净流失额（高饱和红）</span>
+    <span><i class="sw" style="background:rgba(220,38,38,.22)"></i>下降格·留存销量</span>
+    <span><i class="sw" style="background:#7f1d1d"></i>业务完全丢失</span>
+    <span><i class="sw" style="background:rgba(120,118,110,.3)"></i>平稳</span>
+  </div>
+
+  <div class="note" id="note"></div>
+</div>
+
+<div id="tip"></div>
+
+<script>
+const GRID = {"sales_order": ["上升", "平稳", "下降", "业务丢失"], "sent_order": ["改善", "稳定", "恶化"], "cells": {"上升|改善": {"sales_trend": "上升", "sent_trend": "改善", "count": 22, "s25": 484.7, "s26": 797.7, "growth": 312.9, "loss": 0.0, "rate": 0.646, "metric": "增额", "magnitude": 797.7, "top10": [{"name": "浙江大学医学院附属邵逸夫医院大运河院区", "prov": "浙江", "s25": 59.4, "s26": 134.3, "chg": 74.9}, {"name": "中国医科大学附属第一医院", "prov": "辽宁", "s25": 48.3, "s26": 100.3, "chg": 52.0}, {"name": "台州市中心医院", "prov": "浙江", "s25": 25.8, "s26": 52.7, "chg": 26.9}, {"name": "大连医科大学附属第二医院", "prov": "辽宁", "s25": 66.8, "s26": 92.8, "chg": 26.0}, {"name": "滨州市人民医院", "prov": "山东", "s25": 13.6, "s26": 36.6, "chg": 23.0}, {"name": "江门市中心医院", "prov": "广东", "s25": 12.7, "s26": 32.6, "chg": 20.0}, {"name": "四川大学华西第二医院", "prov": "四川", "s25": 15.1, "s26": 33.4, "chg": 18.3}, {"name": "南方医科大学深圳医院", "prov": "广东", "s25": 25.0, "s26": 36.8, "chg": 11.8}, {"name": "中国人民解放军联勤保障部队第九〇三医院机场路院区", "prov": "浙江", "s25": 12.4, "s26": 23.9, "chg": 11.6}, {"name": "浙江省医疗健康集团衢州医院", "prov": "浙江", "s25": 0.0, "s26": 7.4, "chg": 7.4}]}, "上升|稳定": {"sales_trend": "上升", "sent_trend": "稳定", "count": 63, "s25": 1326.6, "s26": 2467.6, "growth": 1141.0, "loss": 0.0, "rate": 0.86, "metric": "增额", "magnitude": 2467.6, "top10": [{"name": "中国人民解放军联勤保障部队第九六〇医院", "prov": "山东", "s25": 0.0, "s26": 193.1, "chg": 193.1}, {"name": "河北燕达陆道培医院有限公司", "prov": "河北", "s25": 230.2, "s26": 419.6, "chg": 189.4}, {"name": "复旦大学附属中山医院青浦分院", "prov": "上海", "s25": 0.0, "s26": 148.5, "chg": 148.5}, {"name": "首都医科大学附属北京同仁医院", "prov": "北京", "s25": 23.8, "s26": 92.8, "chg": 69.1}, {"name": "北京高博博仁医院有限公司", "prov": "北京", "s25": 25.1, "s26": 71.7, "chg": 46.6}, {"name": "广州医科大学附属第一医院", "prov": "广东", "s25": 10.8, "s26": 50.7, "chg": 39.9}, {"name": "中南大学湘雅三医院", "prov": "湖南", "s25": 49.5, "s26": 88.7, "chg": 39.1}, {"name": "广州皇家丽肿瘤医院有限公司", "prov": "广东", "s25": 22.3, "s26": 48.4, "chg": 26.1}, {"name": "四川大学华西医院", "prov": "四川", "s25": 18.8, "s26": 43.0, "chg": 24.1}, {"name": "首都医科大学附属北京同仁医院(南区)", "prov": "北京", "s25": 140.0, "s26": 164.1, "chg": 24.1}]}, "上升|恶化": {"sales_trend": "上升", "sent_trend": "恶化", "count": 43, "s25": 1064.2, "s26": 1879.6, "growth": 815.5, "loss": 0.0, "rate": 0.766, "metric": "增额", "magnitude": 1879.6, "top10": [{"name": "南通大学附属医院", "prov": "江苏", "s25": 14.6, "s26": 194.6, "chg": 180.0}, {"name": "苍南县人民医院", "prov": "浙江", "s25": 46.4, "s26": 156.1, "chg": 109.6}, {"name": "广西医科大学第二附属医院", "prov": "广西", "s25": 60.1, "s26": 122.5, "chg": 62.4}, {"name": "山东第一医科大学附属省立医院", "prov": "山东", "s25": 125.1, "s26": 178.2, "chg": 53.2}, {"name": "中国人民解放军空军特色医学中心", "prov": "北京", "s25": 33.7, "s26": 71.1, "chg": 37.3}, {"name": "苏州市第九人民医院", "prov": "江苏", "s25": 59.7, "s26": 96.9, "chg": 37.2}, {"name": "上海交通大学医学院附属瑞金医院", "prov": "上海", "s25": 44.1, "s26": 79.2, "chg": 35.1}, {"name": "中国人民解放军联勤保障部队第九〇九医院", "prov": "福建", "s25": 1.5, "s26": 29.7, "chg": 28.2}, {"name": "东南大学附属中大医院", "prov": "江苏", "s25": 20.5, "s26": 41.4, "chg": 20.9}, {"name": "中国人民解放军总医院第一医学中心", "prov": "北京", "s25": 22.3, "s26": 40.8, "chg": 18.6}]}, "平稳|改善": {"sales_trend": "平稳", "sent_trend": "改善", "count": 2, "s25": 163.2, "s26": 161.2, "growth": 0.0, "loss": 2.0, "rate": -0.012, "metric": "流失额", "magnitude": 163.2, "top10": [{"name": "六安市人民医院", "prov": "安徽", "s25": 102.9, "s26": 98.8, "chg": -4.1}, {"name": "首都医科大学附属北京世纪坛医院", "prov": "北京", "s25": 60.3, "s26": 62.5, "chg": 2.1}]}, "平稳|稳定": {"sales_trend": "平稳", "sent_trend": "稳定", "count": 4, "s25": 95.3, "s26": 92.9, "growth": 0.0, "loss": 2.3, "rate": -0.024, "metric": "流失额", "magnitude": 95.3, "top10": [{"name": "江苏省苏北人民医院", "prov": "江苏", "s25": 37.2, "s26": 35.7, "chg": -1.5}, {"name": "四川省人民医院", "prov": "四川", "s25": 36.0, "s26": 34.9, "chg": -1.1}, {"name": "苏州大学附属第四医院", "prov": "江苏", "s25": 9.9, "s26": 9.7, "chg": -0.2}, {"name": "阜外华中心血管病医院", "prov": "河南", "s25": 12.2, "s26": 12.7, "chg": 0.5}]}, "平稳|恶化": {"sales_trend": "平稳", "sent_trend": "恶化", "count": 6, "s25": 173.2, "s26": 169.9, "growth": 0.0, "loss": 3.3, "rate": -0.019, "metric": "流失额", "magnitude": 173.2, "top10": [{"name": "浙江大学医学院附属第一医院", "prov": "浙江", "s25": 69.2, "s26": 66.9, "chg": -2.3}, {"name": "南京市第一医院", "prov": "江苏", "s25": 27.2, "s26": 26.8, "chg": -0.4}, {"name": "河南省人民医院", "prov": "河南", "s25": 32.2, "s26": 31.8, "chg": -0.4}, {"name": "青岛市妇女儿童医院", "prov": "山东", "s25": 18.6, "s26": 18.4, "chg": -0.2}, {"name": "福建医科大学附属第二医院东海院区", "prov": "福建", "s25": 18.6, "s26": 18.6, "chg": 0.0}, {"name": "安徽省立医院南区", "prov": "安徽", "s25": 7.4, "s26": 7.4, "chg": 0.0}]}, "下降|改善": {"sales_trend": "下降", "sent_trend": "改善", "count": 48, "s25": 1984.2, "s26": 1137.6, "growth": 0.0, "loss": 846.7, "rate": -0.427, "metric": "流失额", "magnitude": 1984.2, "top10": [{"name": "中山大学附属第三医院岭南医院", "prov": "广东", "s25": 223.0, "s26": 152.2, "chg": -70.8}, {"name": "上海交通大学医学院附属上海儿童医学中心", "prov": "上海", "s25": 78.9, "s26": 13.7, "chg": -65.2}, {"name": "徐州医科大学附属医院", "prov": "江苏", "s25": 91.8, "s26": 51.2, "chg": -40.6}, {"name": "浙江省人民医院", "prov": "浙江", "s25": 77.2, "s26": 36.9, "chg": -40.3}, {"name": "苏州大学附属第一医院十梓街院区", "prov": "江苏", "s25": 42.2, "s26": 2.1, "chg": -40.1}, {"name": "杭州市第一人民医院吴山院区", "prov": "浙江", "s25": 40.0, "s26": 3.7, "chg": -36.3}, {"name": "山东第一医科大学附属肿瘤医院", "prov": "山东", "s25": 47.7, "s26": 12.2, "chg": -35.5}, {"name": "浙江省中医院(钱塘院区)", "prov": "浙江", "s25": 119.8, "s26": 84.8, "chg": -35.0}, {"name": "北京大学国际医院", "prov": "北京", "s25": 87.1, "s26": 53.5, "chg": -33.5}, {"name": "杭州市钱塘医院", "prov": "浙江", "s25": 99.2, "s26": 68.5, "chg": -30.7}]}, "下降|稳定": {"sales_trend": "下降", "sent_trend": "稳定", "count": 98, "s25": 3662.7, "s26": 1821.6, "growth": 0.0, "loss": 1841.1, "rate": -0.503, "metric": "流失额", "magnitude": 3662.7, "top10": [{"name": "浙江大学医学院附属第一医院城站院区", "prov": "浙江", "s25": 389.7, "s26": 179.4, "chg": -210.3}, {"name": "空军军医大学第一附属医院", "prov": "陕西", "s25": 100.3, "s26": 12.7, "chg": -87.6}, {"name": "中国人民解放军陆军军医大学第二附属医院", "prov": "重庆", "s25": 157.2, "s26": 70.6, "chg": -86.7}, {"name": "陆军军医大学第一附属医院", "prov": "重庆", "s25": 193.1, "s26": 107.7, "chg": -85.4}, {"name": "中国人民解放军火箭军特色医学中心", "prov": "北京", "s25": 204.1, "s26": 130.9, "chg": -73.2}, {"name": "东莞台心医院", "prov": "广东", "s25": 76.7, "s26": 12.6, "chg": -64.2}, {"name": "中山大学附属第一(南沙)医院", "prov": "广东", "s25": 144.3, "s26": 81.7, "chg": -62.6}, {"name": "北京陆道培医院有限公司", "prov": "北京", "s25": 153.4, "s26": 97.4, "chg": -56.0}, {"name": "重庆医科大学附属第一医院", "prov": "重庆", "s25": 101.3, "s26": 55.7, "chg": -45.6}, {"name": "北京高博医院有限公司", "prov": "北京", "s25": 46.2, "s26": 4.6, "chg": -41.5}]}, "下降|恶化": {"sales_trend": "下降", "sent_trend": "恶化", "count": 73, "s25": 3097.2, "s26": 1771.2, "growth": 0.0, "loss": 1325.9, "rate": -0.428, "metric": "流失额", "magnitude": 3097.2, "top10": [{"name": "温州市中心医院", "prov": "浙江", "s25": 141.0, "s26": 24.6, "chg": -116.4}, {"name": "成都上锦南府医院", "prov": "四川", "s25": 93.7, "s26": 14.9, "chg": -78.8}, {"name": "宁波市医疗中心李惠利医院", "prov": "浙江", "s25": 67.8, "s26": 7.4, "chg": -60.3}, {"name": "厦门大学附属第一医院", "prov": "福建", "s25": 184.6, "s26": 127.7, "chg": -56.9}, {"name": "河南省儿童医院", "prov": "河南", "s25": 507.8, "s26": 453.5, "chg": -54.4}, {"name": "川北医学院附属医院", "prov": "四川", "s25": 107.7, "s26": 55.7, "chg": -52.0}, {"name": "合肥市第一人民医院滨湖院区", "prov": "安徽", "s25": 102.1, "s26": 55.7, "chg": -46.4}, {"name": "西安国际医学中心有限公司", "prov": "陕西", "s25": 93.7, "s26": 50.1, "chg": -43.5}, {"name": "成都市第二人民医院", "prov": "四川", "s25": 59.3, "s26": 18.6, "chg": -40.7}, {"name": "天津医科大学总医院空港医院", "prov": "天津", "s25": 56.1, "s26": 18.6, "chg": -37.5}]}, "业务丢失|改善": {"sales_trend": "业务丢失", "sent_trend": "改善", "count": 10, "s25": 107.3, "s26": 0.0, "growth": 0.0, "loss": 107.3, "rate": -1.0, "metric": "流失额", "magnitude": 107.3, "top10": [{"name": "郑州市中心医院", "prov": "河南", "s25": 18.5, "s26": 0.0, "chg": -18.5}, {"name": "浙江中医药大学附属第三医院", "prov": "浙江", "s25": 18.1, "s26": 0.0, "chg": -18.1}, {"name": "中国医学科学院血液病医院", "prov": "天津", "s25": 16.5, "s26": 0.0, "chg": -16.5}, {"name": "漯河市中心医院", "prov": "河南", "s25": 16.0, "s26": 0.0, "chg": -16.0}, {"name": "广东省第二人民医院", "prov": "广东", "s25": 14.4, "s26": 0.0, "chg": -14.4}, {"name": "安徽省立医院", "prov": "安徽", "s25": 9.6, "s26": 0.0, "chg": -9.6}, {"name": "首都医科大学附属北京地坛医院", "prov": "北京", "s25": 4.1, "s26": 0.0, "chg": -4.1}, {"name": "泉州市第一医院", "prov": "福建", "s25": 4.1, "s26": 0.0, "chg": -4.1}, {"name": "南阳市中心医院", "prov": "河南", "s25": 3.9, "s26": 0.0, "chg": -3.9}, {"name": "浙江大学医学院附属第四医院", "prov": "浙江", "s25": 2.1, "s26": 0.0, "chg": -2.1}]}, "业务丢失|稳定": {"sales_trend": "业务丢失", "sent_trend": "稳定", "count": 22, "s25": 111.2, "s26": 0.0, "growth": 0.0, "loss": 111.2, "rate": -1.0, "metric": "流失额", "magnitude": 111.2, "top10": [{"name": "重庆医科大学附属第三医院", "prov": "重庆", "s25": 17.0, "s26": 0.0, "chg": -17.0}, {"name": "天津市第三中心医院", "prov": "天津", "s25": 12.1, "s26": 0.0, "chg": -12.1}, {"name": "北京医院", "prov": "北京", "s25": 10.8, "s26": 0.0, "chg": -10.8}, {"name": "重庆市急救医疗中心", "prov": "重庆", "s25": 8.9, "s26": 0.0, "chg": -8.9}, {"name": "重庆大学附属肿瘤医院", "prov": "重庆", "s25": 8.6, "s26": 0.0, "chg": -8.6}, {"name": "内蒙古医科大学附属医院", "prov": "内蒙古", "s25": 7.7, "s26": 0.0, "chg": -7.7}, {"name": "福建医科大学孟超肝胆医院", "prov": "福建", "s25": 6.2, "s26": 0.0, "chg": -6.2}, {"name": "昆明医科大学第二附属医院", "prov": "云南", "s25": 5.5, "s26": 0.0, "chg": -5.5}, {"name": "郑州大学第一附属医院南院区", "prov": "河南", "s25": 4.6, "s26": 0.0, "chg": -4.6}, {"name": "浙江大学医学院附属儿童医院莫干山院区", "prov": "浙江", "s25": 4.5, "s26": 0.0, "chg": -4.5}]}, "业务丢失|恶化": {"sales_trend": "业务丢失", "sent_trend": "恶化", "count": 17, "s25": 259.3, "s26": 0.0, "growth": 0.0, "loss": 259.3, "rate": -1.0, "metric": "流失额", "magnitude": 259.3, "top10": [{"name": "郑州市第七人民医院", "prov": "河南", "s25": 43.5, "s26": 0.0, "chg": -43.5}, {"name": "许昌市中心医院", "prov": "河南", "s25": 38.2, "s26": 0.0, "chg": -38.2}, {"name": "南方医科大学顺德医院", "prov": "广东", "s25": 29.7, "s26": 0.0, "chg": -29.7}, {"name": "中国人民解放军总医院第四医学中心", "prov": "北京", "s25": 22.3, "s26": 0.0, "chg": -22.3}, {"name": "中国人民解放军总医院第七医学中心", "prov": "北京", "s25": 21.5, "s26": 0.0, "chg": -21.5}, {"name": "中山市人民医院", "prov": "广东", "s25": 20.6, "s26": 0.0, "chg": -20.6}, {"name": "中山大学附属第五医院", "prov": "广东", "s25": 20.4, "s26": 0.0, "chg": -20.4}, {"name": "温州市人民医院", "prov": "浙江", "s25": 14.9, "s26": 0.0, "chg": -14.9}, {"name": "成都医学院第一附属医院", "prov": "四川", "s25": 14.2, "s26": 0.0, "chg": -14.2}, {"name": "西安高新医院有限公司", "prov": "陕西", "s25": 11.1, "s26": 0.0, "chg": -11.1}]}}};
+const PLOT_H = 560;
+const SENT = GRID.sent_order;   // 改善 稳定 恶化
+const SALES = GRID.sales_order; // 上升 平稳 下降 业务丢失
+const C = GRID.cells;
+
+const colTotals = {};
+SENT.forEach(se => colTotals[se] = SALES.reduce((s,st)=>s+C[`${st}|${se}`].magnitude,0));
+const grandTotal = Object.values(colTotals).reduce((a,b)=>a+b,0);
+
+const dirMap = {'上升':'↑ 增长','平稳':'→ 平稳','下降':'↓ 下降','业务丢失':'✕ 丢失'};
+
+function baseFill(st, rate){
+  const t = Math.min(Math.abs(rate),1);
+  if(st==='上升') return `rgba(22,163,74,${(0.14+0.34*t).toFixed(3)})`;
+  if(st==='下降') return `rgba(220,38,38,${(0.14+0.34*t).toFixed(3)})`;
+  if(st==='业务丢失') return '#7f1d1d';
+  return 'rgba(120,118,110,0.30)';
+}
+
+// 列头
+const ch = document.getElementById('colhead');
+SENT.forEach(se=>{
+  const w = colTotals[se]/grandTotal*100;
+  const d = document.createElement('div');
+  d.className='ch'; d.style.flexBasis=w+'%';
+  d.innerHTML = `<b>舆情${se}</b>体量 ${Math.round(colTotals[se])}万 · 占${w.toFixed(0)}%`;
+  ch.appendChild(d);
+});
+
+// 矩阵
+const mekko = document.getElementById('mekko');
+SENT.forEach(se=>{
+  const colW = colTotals[se]/grandTotal*100;
+  const col = document.createElement('div');
+  col.className='col'; col.style.flexBasis=colW+'%'; col.style.maxWidth=colW+'%';
+  SALES.forEach(st=>{
+    const d = C[`${st}|${se}`];
+    const hPct = colTotals[se]>0 ? d.magnitude/colTotals[se]*100 : 0;
+    const cellPx = PLOT_H*hPct/100;
+    const cell = document.createElement('div');
+    cell.className='cell';
+    cell.style.flexBasis = hPct+'%';
+    cell.style.background = baseFill(st, d.rate);
+
+    // 变动色块（净增长 or 净流失），高度 = 变动额 / 体量
+    let changeFrac = 0, changeColor = '';
+    if(st==='上升'){ changeFrac = d.magnitude>0 ? d.growth/d.magnitude : 0; changeColor='#16a34a'; }
+    else if(st==='下降'){ changeFrac = d.magnitude>0 ? d.loss/d.magnitude : 0; changeColor='#dc2626'; }
+    if(changeFrac>0){
+      const cb = document.createElement('div');
+      cb.className='change-block';
+      cb.style.height=(changeFrac*100).toFixed(1)+'%';
+      cb.style.background=changeColor;
+      cb.style.opacity='0.92';
+      cell.appendChild(cb);
+    }
+
+    // 文字（够高才显示）
+    if(cellPx > 34){
+      const isLost = st==='业务丢失';
+      const txtColor = (st==='业务丢失') ? '#fff' : '#1c1c1a';
+      const amtTxt = st==='上升' ? `+${d.growth}万`
+                   : (st==='下降' ? `−${d.loss}万`
+                   : (st==='业务丢失' ? `丢失 ${d.loss}万` : `${d.s26}万`));
+      const body = document.createElement('div');
+      body.className='body';
+      body.style.color=txtColor;
+      let sub2 = '';
+      if(cellPx>56 && st!=='业务丢失') sub2 = `<div class="sub2">26销量 ${d.s26}万</div>`;
+      body.innerHTML = `<div class="dir">${dirMap[st]}</div><div class="amt">${amtTxt}</div>${sub2}`;
+      cell.appendChild(body);
+    }
+
+    // 家数徽标 + hover
+    const badge = document.createElement('div');
+    badge.className='badge';
+    badge.textContent = d.count + '家';
+    badge.addEventListener('mouseenter', e=>showTip(e, d, st, se));
+    badge.addEventListener('mousemove', moveTip);
+    badge.addEventListener('mouseleave', hideTip);
+    cell.appendChild(badge);
+
+    col.appendChild(cell);
+  });
+  mekko.appendChild(col);
+});
+
+// Tooltip
+const tip = document.getElementById('tip');
+function showTip(e, d, st, se){
+  const rows = d.top10.map(h=>{
+    const cls = h.chg>=0?'up':'dn';
+    const sign = h.chg>=0?'+':'−';
+    return `<tr><td class="n">${h.name}<span style="color:#999"> · ${h.prov}</span></td>
+            <td class="v">${h.s25}→${h.s26}</td>
+            <td class="v ${cls}">${sign}${Math.abs(h.chg)}</td></tr>`;
+  }).join('');
+  const title = `销量${st} × 舆情${se} · ${d.count}家`;
+  const summ = st==='上升' ? `净增 +${d.growth}万 (26销量${d.s26}万)`
+             : (st==='下降' ? `净流失 ${d.loss}万 (26销量${d.s26}万)`
+             : (st==='业务丢失' ? `完全丢失 ${d.loss}万` : `平稳 (26销量${d.s26}万)`));
+  tip.innerHTML = `<h4>${title}</h4><div style="color:#5f5e5a;margin-bottom:6px;">${summ} · Top10（万元）</div>
+    <table>${rows}</table>`;
+  tip.style.display='block';
+  moveTip(e);
+}
+function moveTip(e){
+  const pad=14, w=tip.offsetWidth, h=tip.offsetHeight;
+  let x=e.clientX+pad, y=e.clientY+pad;
+  if(x+w>window.innerWidth) x=e.clientX-w-pad;
+  if(y+h>window.innerHeight) y=window.innerHeight-h-8;
+  tip.style.left=x+'px'; tip.style.top=Math.max(8,y)+'px';
+}
+function hideTip(){ tip.style.display='none'; }
+
+// 底注
+const errA = C['上升|恶化'].count+C['平稳|恶化'].count;
+const errB = C['下降|改善'].count+C['下降|稳定'].count+C['业务丢失|改善'].count+C['业务丢失|稳定'].count;
+document.getElementById('note').innerHTML =
+  `<b>读图：</b>最大的两块红色——「下降×稳定」(98家流失1841万) 与「下降×恶化」(73家流失1326万)——是损失主体；`+
+  `舆情恶化但仍增长的「上升×恶化」(43家净增816万) 是逆境韧性样板。`+
+  `<b>错配合计</b>：舆情未恶化却下滑/丢失 ${errB}家、舆情恶化却增长/平稳 ${errA}家，`+
+  `印证舆情与销量相关系数仅 0.085 —— 销量主因在舆情之外。`;
+</script>
+</body>
+</html>

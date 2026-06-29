@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DashboardCat — 舆情×Rev 交互看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+.header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 24px 32px; }
+.header h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+.header .sub { font-size: 13px; opacity: 0.7; margin-top: 4px; }
+.header .interp { font-size: 11px; opacity: 0.5; margin-top: 2px; }
+
+.filter-bar { background: #fff; padding: 16px 32px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 100; }
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-group label { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.filter-group select { padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: #fff; cursor: pointer; min-width: 100px; outline: none; transition: border-color 0.2s; }
+.filter-group select:focus { border-color: #0f3460; }
+.btn-reset { padding: 6px 16px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; color: #666; transition: all 0.2s; }
+.btn-reset:hover { background: #f5f5f5; border-color: #bbb; }
+
+.multi-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.mbtn { padding: 4px 10px; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; font-size: 12px; color: #888; transition: all 0.15s; }
+.mbtn:hover { border-color: #aaa; }
+.mbtn.active { background: #0f3460; color: #fff; border-color: #0f3460; }
+
+.cards-row { display: flex; gap: 16px; padding: 20px 32px; flex-wrap: wrap; }
+.card { flex: 1; min-width: 140px; background: #fff; border-radius: 10px; padding: 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.card .label { font-size: 12px; color: #888; font-weight: 600; }
+.card .value { font-size: 26px; font-weight: 700; margin-top: 4px; color: #1a1a2e; }
+.card.highlight .value { color: #0f3460; }
+.card.red .value { color: #e74c3c; }
+.card.green .value { color: #27ae60; }
+.card.blue .value { color: #3498db; }
+
+.charts-container { padding: 0 32px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.chart-box { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.chart-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #1a1a2e; display: flex; align-items: center; gap: 8px; }
+.chart-box h3 .dot { width: 8px; height: 8px; border-radius: 50%; }
+.chart-canvas-wrap { position: relative; height: 320px; }
+
+.charts-full { padding: 0 32px 20px; }
+.chart-box-full { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.chart-box-full h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #1a1a2e; display: flex; align-items: center; gap: 8px; }
+.chart-box-full h3 .dot { width: 8px; height: 8px; border-radius: 50%; }
+.chart-canvas-wrap-full { position: relative; height: 300px; }
+
+.table-section { padding: 0 32px 32px; }
+.table-box { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.table-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+.table-search { padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; width: 240px; margin-bottom: 12px; outline: none; }
+.table-search:focus { border-color: #0f3460; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { background: #f8f9fa; padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #e0e0e0; position: sticky; top: 0; cursor: pointer; user-select: none; white-space: nowrap; }
+thead th:hover { background: #eef0f3; }
+tbody td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; }
+tbody tr:hover { background: #f8f9ff; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.tag-up { background: #e8f5e9; color: #2e7d32; }
+.tag-down { background: #fbe9e7; color: #c62828; }
+.tag-flat { background: #f5f5f5; color: #666; }
+.tag-improve { background: #e3f2fd; color: #1565c0; }
+.tag-worsen { background: #fff3e0; color: #e65100; }
+.tag-stable { background: #f5f5f5; color: #666; }
+.tag-insufficient { background: #fafafa; color: #aaa; }
+.tag-lost { background: #ffebee; color: #b71c1c; border: 1px solid #ef9a9a; }
+.tag-missing { background: #fafafa; color: #999; border: 1px dashed #ccc; }
+.cross-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.cross-table th { background: #f0f7f5; color: #16a085; padding: 9px 12px; text-align: left; border-bottom: 2px solid #d4eae5; white-space: nowrap; }
+.cross-table td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.cross-table tr:hover td { background: #f9fdfc; }
+.cross-table .pct-up { color: #c62828; font-weight: 600; }
+.cross-table .pct-down { color: #2e7d32; font-weight: 600; }
+.cross-table .top5 { font-size: 12px; color: #555; line-height: 1.6; }
+.spark-cell { padding: 4px 2px !important; }
+.spark-cell svg { display: block; }
+
+.legend-row { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #666; }
+.legend-swatch { width: 14px; height: 14px; border-radius: 3px; }
+
+.footer { text-align: center; padding: 20px; color: #aaa; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Review Assistance — 舆情 × Rev 交互看板</h1>
+  <div class="sub">408家HP · 35个月 · 舆情缺失已插值（前一半前值/后一半后值，奇数中间归后值）· Rev趋势/舆情趋势支持多选筛选</div>
+  <div class="interp" id="interp-info"></div>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-group">
+    <label>区域</label>
+    <select id="f-region" onchange="applyFilters()">
+      <option value="">全部区域</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>省份</label>
+    <select id="f-province" onchange="applyFilters()">
+      <option value="">全部省份</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Rev趋势（可多选）</label>
+    <div class="multi-btns" id="f-sales-trend">
+      <button class="mbtn" data-val="上升" onclick="toggleMulti(this)">上升</button>
+      <button class="mbtn" data-val="下降" onclick="toggleMulti(this)">下降</button>
+      <button class="mbtn" data-val="平稳" onclick="toggleMulti(this)">平稳</button>
+      <button class="mbtn" data-val="业务丢失" onclick="toggleMulti(this)">业务丢失</button>
+      <button class="mbtn" data-val="数据缺失" onclick="toggleMulti(this)">数据缺失</button>
+    </div>
+  </div>
+  <div class="filter-group">
+    <label>舆情趋势（可多选）</label>
+    <div class="multi-btns" id="f-sent-trend">
+      <button class="mbtn" data-val="改善" onclick="toggleMulti(this)">改善</button>
+      <button class="mbtn" data-val="恶化" onclick="toggleMulti(this)">恶化</button>
+      <button class="mbtn" data-val="稳定" onclick="toggleMulti(this)">稳定</button>
+    </div>
+  </div>
+  <div class="filter-group">
+    <label>Rev显示</label>
+    <select id="f-sales-mode" onchange="applyFilters()">
+      <option value="sum">月度求和</option>
+      <option value="avg">月度均值</option>
+      <option value="median">月中位数</option>
+    </select>
+  </div>
+  <button class="btn-reset" onclick="resetFilters()">重置筛选</button>
+</div>
+
+<div class="cards-row">
+  <div class="card highlight">
+    <div class="label">筛选后HP数</div>
+    <div class="value" id="s-count">0</div>
+  </div>
+  <div class="card blue">
+    <div class="label">总Rev（元）</div>
+    <div class="value" id="s-total">0</div>
+  </div>
+  <div class="card green">
+    <div class="label">月均Rev</div>
+    <div class="value" id="s-monthly">0</div>
+  </div>
+  <div class="card red">
+    <div class="label">严重舆情月数</div>
+    <div class="value" id="s-sent1">0</div>
+  </div>
+  <div class="card">
+    <div class="label">正常舆情月数</div>
+    <div class="value" id="s-sent3">0</div>
+  </div>
+</div>
+
+<div class="charts-container">
+  <div class="chart-box">
+    <h3><span class="dot" style="background:#0f3460"></span> 月度Rev曲线</h3>
+    <div class="chart-canvas-wrap">
+      <canvas id="chart-sales"></canvas>
+    </div>
+  </div>
+  <div class="chart-box">
+    <h3><span class="dot" style="background:#e74c3c"></span> 月度舆情分布</h3>
+    <div class="chart-canvas-wrap">
+      <canvas id="chart-sentiment"></canvas>
+    </div>
+    <div class="legend-row">
+      <div class="legend-item"><div class="legend-swatch" style="background:#e74c3c"></div> 类型1（最严重·一刀切）</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#f39c12"></div> 类型2（部分限制）</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#27ae60"></div> 类型3（正常/科学管控）</div>
+    </div>
+  </div>
+</div>
+
+<div class="charts-full">
+  <div class="chart-box-full">
+    <h3><span class="dot" style="background:#8e44ad"></span> Rev vs 舆情 对比趋势（双Y轴）</h3>
+    <div class="chart-canvas-wrap-full">
+      <canvas id="chart-combo"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- 单HP明细 -->
+<div class="charts-full">
+  <div class="chart-box-full">
+    <h3>
+      <span class="dot" style="background:#0f3460"></span>
+      单HP明细走势
+      <span style="margin-left:16px; display:flex; align-items:center; gap:8px;">
+        <input type="text" id="hosp-code-input" placeholder="输入HP编码 (如 HO00002002)" 
+          style="padding:5px 10px; border:1px solid #ddd; border-radius:6px; font-size:13px; width:220px; outline:none;"
+          onkeydown="if(event.key==='Enter') searchHospital()">
+        <button onclick="searchHospital()" style="padding:5px 14px; border:1px solid #0f3460; border-radius:6px; background:#0f3460; color:#fff; font-size:13px; cursor:pointer;">查询</button>
+        <span id="hosp-name-display" style="font-size:13px; color:#888; font-weight:400;"></span>
+      </span>
+    </h3>
+    <div id="hosp-detail-empty" style="text-align:center; padding:40px; color:#aaa; font-size:14px;">
+      在上方输入HP编码，查看该HP35个月的Rev与舆情明细走势
+    </div>
+    <div id="hosp-detail-wrap" style="display:none;">
+      <div style="display:flex; gap:12px; margin-bottom:8px; flex-wrap:wrap;">
+        <span class="tag" style="background:#e3f2fd; color:#1565c0; padding:4px 10px;">Rev：<span id="hd-sales-range"></span></span>
+        <span class="tag" style="background:#fff3e0; color:#e65100; padding:4px 10px;">舆情：<span id="hd-sent-summary"></span></span>
+        <span class="tag" style="background:#f5f5f5; color:#666; padding:4px 10px;"><span id="hd-region-prov"></span></span>
+        <span class="tag" style="background:#f5f5f5; color:#666; padding:4px 10px;">Rev趋势：<span id="hd-sales-trend"></span></span>
+        <span class="tag" style="background:#f5f5f5; color:#666; padding:4px 10px;">舆情趋势：<span id="hd-sent-trend"></span></span>
+      </div>
+      <div class="chart-canvas-wrap-full">
+        <canvas id="chart-hospital-detail"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rev趋势 × 舆情 交叉汇总表 -->
+<div class="table-section">
+  <div class="table-box">
+    <h3><span class="dot" style="background:#16a085"></span> Rev趋势 × 舆情 交叉汇总</h3>
+    <div style="font-size:12px; color:#888; margin:4px 0 10px;">
+      按当前筛选的HP范围统计。金额单位：万元。增长率 = (26年同期 − 25年同期) / 25年同期。
+    </div>
+    <div style="overflow-x:auto;">
+      <table id="cross-table" class="cross-table">
+        <thead>
+          <tr>
+            <th>Rev趋势</th>
+            <th style="text-align:right;">25年Rev(万元)</th>
+            <th style="text-align:right;">26年Rev(万元)</th>
+            <th style="text-align:right;">增长率</th>
+            <th style="text-align:right;">HP数</th>
+            <th>主导舆情</th>
+            <th>TOP5HP（26年Rev·万元）</th>
+          </tr>
+        </thead>
+        <tbody id="cross-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 舆情×Rev 比例矩阵 + 切片对比 -->
+<style>
+  .matrix-section { margin-top: 18px; }
+  .matrix-box { background:#fff; border-radius:10px; padding:18px 20px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+  .matrix-box h3 { margin:0 0 4px; font-size:15px; }
+  .matrix-hint { font-size:12px; color:#888; margin:0 0 14px; line-height:1.6; }
+  .mx-wrap { display:flex; align-items:stretch; }
+  .mx-ytitle { writing-mode:vertical-rl; transform:rotate(180deg); text-align:center; font-size:12px; color:#5f5e5a; padding:0 6px; display:flex; align-items:center; }
+  .mx-right { flex:1; }
+  .mx-grid { display:grid; grid-template-columns:64px 1fr 1fr 1fr; gap:6px; }
+  .mx-corner {}
+  .mx-colhead { text-align:center; font-size:12px; color:#444441; padding:4px 0; }
+  .mx-colhead b { display:block; font-size:13px; font-weight:600; }
+  .mx-rowlabel { display:flex; align-items:center; justify-content:flex-end; padding-right:6px; font-size:12px; color:#444441; text-align:right; line-height:1.3; }
+  .mx-rowlabel b { font-weight:600; }
+  .mcell { position:relative; background:#fafaf8; border:0.5px solid rgba(0,0,0,.08); border-radius:6px; height:132px; overflow:hidden; }
+  .mblock { position:absolute; top:0; left:0; border-bottom-right-radius:5px; overflow:hidden; }
+  .mchange { position:absolute; top:0; left:0; right:0; }
+  .mtext { position:absolute; left:6px; bottom:4px; z-index:3; pointer-events:none; }
+  .mtext .dir { font-size:12px; font-weight:600; }
+  .mtext .amt { font-size:12px; }
+  .mbadge { position:absolute; top:5px; left:5px; z-index:5; background:rgba(255,255,255,.94); border:0.5px solid rgba(0,0,0,.18);
+            border-radius:10px; padding:1px 7px; font-size:11px; font-weight:600; color:#2c2c2a; cursor:help; }
+  .mbadge:hover { background:#fff; box-shadow:0 1px 5px rgba(0,0,0,.2); }
+  .mx-xtitle { text-align:center; font-size:12px; color:#5f5e5a; margin-top:8px; }
+  .mx-legend { display:flex; flex-wrap:wrap; gap:14px; margin-top:14px; font-size:12px; color:#5f5e5a; }
+  .mx-legend span { display:flex; align-items:center; gap:5px; }
+  .mx-sw { width:14px; height:14px; border-radius:3px; display:inline-block; }
+  #mx-tip { position:fixed; z-index:9999; display:none; background:#fff; border:0.5px solid rgba(0,0,0,.2); border-radius:8px;
+            box-shadow:0 4px 18px rgba(0,0,0,.16); padding:10px 12px; max-width:360px; font-size:12px; }
+  #mx-tip h4 { margin:0 0 6px; font-size:13px; }
+  #mx-tip table { border-collapse:collapse; width:100%; }
+  #mx-tip td { padding:2px 6px; border-bottom:0.5px solid rgba(0,0,0,.07); white-space:nowrap; }
+  #mx-tip td.n { color:#5f5e5a; max-width:190px; overflow:hidden; text-overflow:ellipsis; }
+  #mx-tip td.v { text-align:right; font-variant-numeric:tabular-nums; }
+  #mx-tip .up { color:#c62828; } #mx-tip .dn { color:#2e7d32; }
+  .cmp-intro { margin-top:18px; font-size:12px; color:#5f5e5a; line-height:1.6; }
+  .cmp-panels { margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:900px){ .cmp-panels { grid-template-columns:1fr; } }
+  .cmp-panel { border:0.5px solid rgba(0,0,0,.1); border-radius:8px; padding:14px 16px; background:#fcfcfb; }
+  .cmp-head { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:12px; }
+  .cmp-head .lbl { font-size:13px; font-weight:600; color:#2c2c2a; }
+  .cmp-head select { font-size:13px; padding:4px 8px; border:1px solid #ddd; border-radius:6px; background:#fff; }
+  .cmp-meta { font-size:11px; color:#888; margin-left:auto; }
+  .cmp-grid .mcell { height:96px; }
+  .cmp-grid .mx-colhead { font-size:11px; }
+  .cmp-grid { grid-template-columns:54px 1fr 1fr 1fr; }
+</style>
+
+<div class="matrix-section">
+  <div class="matrix-box">
+    <h3><span class="dot" style="background:#c0392b"></span> 舆情趋势 × Rev趋势 比例矩阵</h3>
+    <p class="matrix-hint">每个象限盒等大；盒内色块<b>面积 ∝ 该象限业务体量</b>（25/26较大值，相对全局最大格），靠左上对齐。绿=Rev增长，红=下降，颜色越深幅度越大；盒内顶部<b>高饱和色块=净增长/净流失额</b>，其下为留存基线；深红实心=业务完全丢失。左上角徽标=HP家数，悬浮查看该象限 Top10。随上方筛选器联动。</p>
+    <div class="mx-wrap">
+      <div class="mx-ytitle">Rev趋势</div>
+      <div class="mx-right">
+        <div class="mx-grid" id="mx-grid"></div>
+        <div class="mx-xtitle">舆情趋势（改善 → 稳定 → 恶化）</div>
+      </div>
+    </div>
+    <div class="mx-legend">
+      <span><i class="mx-sw" style="background:#15803d"></i>净增长额（满绿）</span>
+      <span><i class="mx-sw" style="background:rgba(22,163,74,.20)"></i>增长·留存</span>
+      <span><i class="mx-sw" style="background:#b91c1c"></i>净流失额（满红）</span>
+      <span><i class="mx-sw" style="background:rgba(220,38,38,.20)"></i>下降·留存</span>
+      <span><i class="mx-sw" style="background:#7f1d1d"></i>业务丢失</span>
+      <span><i class="mx-sw" style="background:rgba(120,118,110,.3)"></i>平稳</span>
+    </div>
+
+    <div class="cmp-intro">下面两个对比矩阵与<b>上方主矩阵结构相同</b>，各自选择一个切片（区域 / 省份 / 季度），盒内色块与主矩阵<b>共用同一面积刻度</b>，可直接横向比较体量与涨跌格局。</div>
+    <div class="cmp-panels" id="cmp-panels">
+      <div class="cmp-panel">
+        <div class="cmp-head">
+          <span class="lbl">对比矩阵 A</span>
+          <select id="cmp-dim-0" onchange="onCmpDimChange(0)">
+            <option value="region">按区域</option>
+            <option value="province">按省份</option>
+            <option value="quarter">按季度</option>
+          </select>
+          <select id="cmp-slice-0" onchange="onCmpSliceChange(0)"></select>
+          <span class="cmp-meta" id="cmp-meta-0"></span>
+        </div>
+        <div class="mx-wrap">
+          <div class="mx-ytitle">Rev趋势</div>
+          <div class="mx-right">
+            <div class="mx-grid cmp-grid" id="cmp-grid-0"></div>
+            <div class="mx-xtitle">舆情趋势（改善 → 稳定 → 恶化）</div>
+          </div>
+        </div>
+      </div>
+      <div class="cmp-panel">
+        <div class="cmp-head">
+          <span class="lbl">对比矩阵 B</span>
+          <select id="cmp-dim-1" onchange="onCmpDimChange(1)">
+            <option value="quarter">按季度</option>
+            <option value="region">按区域</option>
+            <option value="province">按省份</option>
+          </select>
+          <select id="cmp-slice-1" onchange="onCmpSliceChange(1)"></select>
+          <span class="cmp-meta" id="cmp-meta-1"></span>
+        </div>
+        <div class="mx-wrap">
+          <div class="mx-ytitle">Rev趋势</div>
+          <div class="mx-right">
+            <div class="mx-grid cmp-grid" id="cmp-grid-1"></div>
+            <div class="mx-xtitle">舆情趋势（改善 → 稳定 → 恶化）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="mx-tip"></div>
+
+<div class="table-section">
+  <div class="table-box">
+    <h3>HP明细列表</h3>
+    <input type="text" class="table-search" id="table-search" placeholder="搜索HP名称或编码..." oninput="renderTable()">
+    <div style="max-height: 400px; overflow-y: auto;">
+      <table id="hospital-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('code')">编码</th>
+            <th onclick="sortTable('name')">HP名称</th>
+            <th onclick="sortTable('vf')" style="text-align:right;">VF在分子式中的占比</th>
+            <th onclick="sortTable('province')">省份</th>
+            <th onclick="sortTable('region')">区域</th>
+            <th onclick="sortTable('sales_trend')">Rev趋势</th>
+            <th onclick="sortTable('sentiment_trend')">舆情趋势</th>
+            <th>Rev走势</th>
+            <th>舆情走势</th>
+            <th onclick="sortTable('total_sales')" style="text-align:right;">总Rev(元)</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="footer">Review Assistance · 舆情×Rev交互看板 · Rev趋势口径：26年AP1-6 vs 25年AP1-6同期对比（两年都有Rev→±5%判涨跌；25无26有→上升新进院；25有26无→业务丢失；两年都无→数据缺失）· 舆情同期均值差>0.1为改善/恶化</div>
+
+<script>
+const RAW = 

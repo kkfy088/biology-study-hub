@@ -1,0 +1,827 @@
+;
+const MONTHS = RAW.months;
+const HOSPITALS = RAW.hospitals;
+const INTERP = RAW.interpolation_info;
+
+// 显示插值信息
+document.getElementById('interp-info').textContent =
+  `插值详情：原始缺失 ${INTERP.before_missing} 条 → 填充 ${INTERP.filled} 条 → 剩余 ${INTERP.after_missing} 条（进院前/退出后空白） · 方法：${INTERP.method}`;
+
+let filteredHospitals = HOSPITALS;
+let sortKey = 'total_sales';
+let sortDir = -1;
+
+function initDropdowns() {
+  const regions = [...new Set(HOSPITALS.map(h => h.region))].sort();
+  const regSel = document.getElementById('f-region');
+  regions.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r; opt.textContent = r;
+    regSel.appendChild(opt);
+  });
+  updateProvinceDropdown();
+}
+
+function updateProvinceDropdown() {
+  const region = document.getElementById('f-region').value;
+  const provSel = document.getElementById('f-province');
+  const savedVal = provSel.value; // 保存当前选中省份
+  provSel.innerHTML = '<option value="">全部省份</option>';
+  let provs;
+  if (region) {
+    provs = [...new Set(HOSPITALS.filter(h => h.region === region).map(h => h.province))].sort();
+  } else {
+    provs = [...new Set(HOSPITALS.map(h => h.province))].sort();
+  }
+  provs.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p; opt.textContent = p;
+    provSel.appendChild(opt);
+  });
+  // 若原选中值在新列表中仍存在则恢复，否则清空（区域切换时省份自动重置）
+  if (savedVal && provs.includes(savedVal)) {
+    provSel.value = savedVal;
+  }
+}
+
+function getMultiSelected(groupId) {
+  const btns = document.querySelectorAll('#' + groupId + ' .mbtn.active');
+  return Array.from(btns).map(b => b.dataset.val);
+}
+
+function toggleMulti(btn) {
+  btn.classList.toggle('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  updateProvinceDropdown();
+  const region = document.getElementById('f-region').value;
+  const province = document.getElementById('f-province').value;
+  const salesTrends = getMultiSelected('f-sales-trend');
+  const sentTrends = getMultiSelected('f-sent-trend');
+
+  filteredHospitals = HOSPITALS.filter(h => {
+    if (region && h.region !== region) return false;
+    if (province && h.province !== province) return false;
+    if (salesTrends.length > 0 && !salesTrends.includes(h.sales_trend)) return false;
+    if (sentTrends.length > 0 && !sentTrends.includes(h.sentiment_trend)) return false;
+    return true;
+  });
+
+  updateSummary();
+  updateCharts();
+  renderTable();
+  renderCrossTable();
+  renderMatrix();
+  renderCompare(0);
+  renderCompare(1);
+}
+
+// Rev趋势 × 舆情 交叉汇总
+const SALES_TREND_ORDER = ['上升','下降','平稳','业务丢失','数据缺失'];
+function renderCrossTable() {
+  const groups = {};
+  SALES_TREND_ORDER.forEach(t => groups[t] = []);
+  filteredHospitals.forEach(h => {
+    if (!groups[h.sales_trend]) groups[h.sales_trend] = [];
+    groups[h.sales_trend].push(h);
+  });
+
+  const rows = SALES_TREND_ORDER.filter(t => groups[t] && groups[t].length > 0).map(t => {
+    const list = groups[t];
+    const sum25 = list.reduce((s,h) => s + (h.sales_25||0), 0);
+    const sum26 = list.reduce((s,h) => s + (h.sales_26||0), 0);
+    const pct = sum25 > 0 ? (sum26 - sum25) / sum25 : null;
+    // 主导舆情：该组HP sentiment_trend 众数
+    const sentCnt = {};
+    list.forEach(h => sentCnt[h.sentiment_trend] = (sentCnt[h.sentiment_trend]||0)+1);
+    const domSent = Object.entries(sentCnt).sort((a,b)=>b[1]-a[1])
+      .map(([k,v]) => `${k}${v}`).slice(0,3).join(' / ');
+    // TOP5（按26年Rev）
+    const top5 = [...list].sort((a,b)=>(b.sales_26||0)-(a.sales_26||0)).slice(0,5)
+      .map(h => `${h.name}（${(h.sales_26/1e4).toFixed(1)}）`).join('；');
+
+    let pctHtml = '—';
+    if (pct !== null) {
+      const cls = pct >= 0 ? 'pct-up' : 'pct-down';
+      pctHtml = `<span class="${cls}">${pct>=0?'+':''}${(pct*100).toFixed(1)}%</span>`;
+    }
+    const tagCls = t==='上升'?'tag-up':t==='下降'?'tag-down':t==='平稳'?'tag-flat':t==='业务丢失'?'tag-lost':'tag-missing';
+    return `<tr>
+      <td><span class="tag ${tagCls}">${t}</span></td>
+      <td style="text-align:right;">${(sum25/1e4).toFixed(1)}</td>
+      <td style="text-align:right;">${(sum26/1e4).toFixed(1)}</td>
+      <td style="text-align:right;">${pctHtml}</td>
+      <td style="text-align:right;">${list.length}</td>
+      <td>${domSent||'—'}</td>
+      <td class="top5">${top5||'—'}</td>
+    </tr>`;
+  });
+
+  // 合计行
+  const all = filteredHospitals;
+  const t25 = all.reduce((s,h)=>s+(h.sales_25||0),0);
+  const t26 = all.reduce((s,h)=>s+(h.sales_26||0),0);
+  const tpct = t25>0 ? (t26-t25)/t25 : null;
+  let tpctHtml = '—';
+  if (tpct !== null) {
+    const cls = tpct>=0?'pct-up':'pct-down';
+    tpctHtml = `<span class="${cls}">${tpct>=0?'+':''}${(tpct*100).toFixed(1)}%</span>`;
+  }
+  rows.push(`<tr style="background:#f0f7f5; font-weight:600;">
+    <td>合计</td>
+    <td style="text-align:right;">${(t25/1e4).toFixed(1)}</td>
+    <td style="text-align:right;">${(t26/1e4).toFixed(1)}</td>
+    <td style="text-align:right;">${tpctHtml}</td>
+    <td style="text-align:right;">${all.length}</td>
+    <td>—</td><td>—</td>
+  </tr>`);
+
+  document.getElementById('cross-table-body').innerHTML = rows.join('');
+}
+
+function resetFilters() {
+  document.getElementById('f-region').value = '';
+  document.getElementById('f-province').value = '';
+  document.querySelectorAll('.mbtn.active').forEach(b => b.classList.remove('active'));
+  document.getElementById('f-sales-mode').value = 'sum';
+  applyFilters();
+}
+
+function fmtNum(n) {
+  if (Math.abs(n) >= 1e8) return (n / 1e8).toFixed(2) + '亿';
+  if (Math.abs(n) >= 1e4) return (n / 1e4).toFixed(1) + '万';
+  return Math.round(n).toLocaleString();
+}
+
+function updateSummary() {
+  const n = filteredHospitals.length;
+  document.getElementById('s-count').textContent = n;
+
+  let totalSales = 0;
+  let monthlySums = new Array(MONTHS.length).fill(0);
+  let monthlyCounts = new Array(MONTHS.length).fill(0);
+  let sent1Count = 0, sent3Count = 0;
+
+  filteredHospitals.forEach(h => {
+    h.sales.forEach((v, i) => {
+      if (v !== null) {
+        totalSales += v;
+        monthlySums[i] += v;
+        monthlyCounts[i]++;
+      }
+    });
+    h.sentiment.forEach(v => {
+      if (v === 1) sent1Count++;
+      if (v === 3) sent3Count++;
+    });
+  });
+
+  document.getElementById('s-total').innerHTML = fmtNum(totalSales);
+  const activeMonths = monthlyCounts.filter(c => c > 0).length || 1;
+  document.getElementById('s-monthly').innerHTML = fmtNum(totalSales / activeMonths);
+  document.getElementById('s-sent1').textContent = sent1Count;
+  document.getElementById('s-sent3').textContent = sent3Count;
+}
+
+let chartSales, chartSent, chartCombo, chartHospDetail;
+
+function initCharts() {
+  const ctx1 = document.getElementById('chart-sales').getContext('2d');
+  chartSales = new Chart(ctx1, {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [{
+        label: '月度Rev',
+        data: [],
+        borderColor: '#0f3460',
+        backgroundColor: 'rgba(15, 52, 96, 0.08)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx) => 'Rev: ' + fmtNum(ctx.parsed.y) + ' 元' } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: (v) => fmtNum(v) } },
+        x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } } }
+      }
+    }
+  });
+
+  const ctx2 = document.getElementById('chart-sentiment').getContext('2d');
+  chartSent = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: '类型1（最严重）', data: [], backgroundColor: '#e74c3c', stack: 's' },
+        { label: '类型2（部分限制）', data: [], backgroundColor: '#f39c12', stack: 's' },
+        { label: '类型3（正常）', data: [], backgroundColor: '#27ae60', stack: 's' },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: 'index' }
+      },
+      scales: {
+        x: { stacked: true, ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } } },
+        y: { stacked: true, beginAtZero: true, title: { display: true, text: 'HP数' } }
+      }
+    }
+  });
+
+  const ctx3 = document.getElementById('chart-combo').getContext('2d');
+  chartCombo = new Chart(ctx3, {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        {
+          type: 'line',
+          label: '月度总Rev',
+          data: [],
+          borderColor: '#0f3460',
+          backgroundColor: 'rgba(15, 52, 96, 0.1)',
+          fill: true,
+          tension: 0.3,
+          yAxisID: 'y-sales',
+          borderWidth: 2,
+          pointRadius: 3,
+        },
+        {
+          type: 'line',
+          label: '月度平均舆情类型',
+          data: [],
+          borderColor: '#e74c3c',
+          backgroundColor: 'rgba(231, 76, 60, 0.1)',
+          fill: false,
+          tension: 0.3,
+          yAxisID: 'y-sent',
+          borderWidth: 2,
+          pointRadius: 3,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 12 } } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              if (ctx.dataset.yAxisID === 'y-sales') return 'Rev: ' + fmtNum(ctx.parsed.y) + ' 元';
+              return '平均舆情类型: ' + ctx.parsed.y.toFixed(2) + ' (1=最严重, 3=正常)';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } } },
+        'y-sales': {
+          type: 'linear', position: 'left', beginAtZero: true,
+          title: { display: true, text: 'Rev（元）' },
+          ticks: { callback: (v) => fmtNum(v) },
+          grid: { drawOnChartArea: true }
+        },
+        'y-sent': {
+          type: 'linear', position: 'right', min: 0.8, max: 3.2,
+          title: { display: true, text: '平均舆情类型' },
+          grid: { drawOnChartArea: false },
+          ticks: { stepSize: 0.5 }
+        }
+      }
+    }
+  });
+}
+
+function updateCharts() {
+  const mode = document.getElementById('f-sales-mode').value;
+
+  let monthlySales = new Array(MONTHS.length).fill(0);
+  let monthlyCounts = new Array(MONTHS.length).fill(0);
+  let monthlySent = [new Array(MONTHS.length).fill(0), new Array(MONTHS.length).fill(0), new Array(MONTHS.length).fill(0)];
+  let monthlySentSum = new Array(MONTHS.length).fill(0);
+  let monthlySentCount = new Array(MONTHS.length).fill(0);
+
+  filteredHospitals.forEach(h => {
+    h.sales.forEach((v, i) => {
+      if (v !== null && v !== 0) {
+        monthlySales[i] += v;
+        monthlyCounts[i]++;
+      }
+    });
+    h.sentiment.forEach((v, i) => {
+      if (v !== null) {
+        monthlySent[v - 1][i]++;
+        monthlySentSum[i] += v;
+        monthlySentCount[i]++;
+      }
+    });
+  });
+
+  if (mode === 'avg') {
+    for (let i = 0; i < MONTHS.length; i++) {
+      monthlySales[i] = monthlyCounts[i] > 0 ? monthlySales[i] / monthlyCounts[i] : 0;
+    }
+  } else if (mode === 'median') {
+    monthlySales = new Array(MONTHS.length).fill(0);
+    for (let i = 0; i < MONTHS.length; i++) {
+      let vals = filteredHospitals.map(h => h.sales[i]).filter(v => v !== null && v !== 0);
+      if (vals.length > 0) {
+        vals.sort((a, b) => a - b);
+        monthlySales[i] = vals.length % 2 === 0
+          ? (vals[vals.length / 2 - 1] + vals[vals.length / 2]) / 2
+          : vals[Math.floor(vals.length / 2)];
+      }
+    }
+  }
+
+  chartSales.data.datasets[0].data = monthlySales;
+  chartSales.data.datasets[0].label = mode === 'sum' ? '月度Rev求和' : (mode === 'avg' ? '月度Rev均值' : '月度Rev中位数');
+  chartSales.update();
+
+  chartSent.data.datasets[0].data = monthlySent[0];
+  chartSent.data.datasets[1].data = monthlySent[1];
+  chartSent.data.datasets[2].data = monthlySent[2];
+  chartSent.update();
+
+  chartCombo.data.datasets[0].data = monthlySales;
+  let avgSent = monthlySentSum.map((s, i) => monthlySentCount[i] > 0 ? s / monthlySentCount[i] : null);
+  chartCombo.data.datasets[1].data = avgSent;
+  chartCombo.update();
+}
+
+function sparklineSales(arr) {
+  // arr: array of numbers or null, 35 points → 90x28 SVG
+  const w = 90, h = 28, pad = 3;
+  const vals = arr.filter(v => v !== null && v !== undefined);
+  if (vals.length < 2) return '<svg width="' + w + '" height="' + h + '"></svg>';
+  let mn = Math.min(...vals), mx = Math.max(...vals);
+  if (mn === mx) { mn -= 1; mx += 1; }
+  const range = mx - mn;
+  const stepX = (w - pad * 2) / (arr.length - 1);
+  let path = '', fillPath = '', started = false, lastX = 0;
+  for (let i = 0; i < arr.length; i++) {
+    const v = arr[i];
+    if (v === null || v === undefined) continue;
+    const x = pad + i * stepX;
+    const y = pad + (1 - (v - mn) / range) * (h - pad * 2);
+    if (!started) { path += 'M' + x.toFixed(1) + ',' + y.toFixed(1); started = true; }
+    else { path += ' L' + x.toFixed(1) + ',' + y.toFixed(1); }
+    lastX = x;
+  }
+  fillPath = path + ' L' + lastX.toFixed(1) + ',' + (h - pad) + ' L' + pad + ',' + (h - pad) + ' Z';
+  return '<svg width="' + w + '" height="' + h + '" style="display:block">'
+    + '<path d="' + fillPath + '" fill="rgba(15,52,96,0.12)" stroke="none"/>'
+    + '<path d="' + path + '" fill="none" stroke="#0f3460" stroke-width="1.5" stroke-linejoin="round"/>'
+    + '</svg>';
+}
+
+function sparklineSent(arr) {
+  // arr: array of 1/2/3 or null → colored bars
+  const w = 90, h = 28, pad = 3;
+  const colors = { 1: '#e74c3c', 2: '#f39c12', 3: '#27ae60' };
+  const barW = (w - pad * 2) / arr.length;
+  let bars = '';
+  for (let i = 0; i < arr.length; i++) {
+    const v = arr[i];
+    if (v === null || v === undefined) continue;
+    const x = pad + i * barW;
+    const barH = (v / 3) * (h - pad * 2);
+    const y = h - pad - barH;
+    bars += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + (barW * 0.8).toFixed(1) + '" height="' + barH.toFixed(1) + '" fill="' + colors[v] + '" rx="0.5"/>';
+  }
+  return '<svg width="' + w + '" height="' + h + '" style="display:block">' + bars + '</svg>';
+}
+
+function renderTable() {
+  const search = document.getElementById('table-search').value.toLowerCase();
+  let list = filteredHospitals.filter(h =>
+    !search || h.name.toLowerCase().includes(search) || h.code.toLowerCase().includes(search)
+  );
+  list.sort((a, b) => {
+    let va = a[sortKey], vb = b[sortKey];
+    if (sortKey === 'vf') { va = va==null?-1:va; vb = vb==null?-1:vb; }
+    if (typeof va === 'string') return sortDir * va.localeCompare(vb);
+    return sortDir * (va - vb);
+  });
+
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = list.map(h => {
+    const st = h.sales_trend;
+    const sent = h.sentiment_trend;
+    return `<tr>
+      <td>${h.code}</td>
+      <td>${h.name}</td>
+      <td style="text-align:right;">${h.vf!=null?(h.vf*100).toFixed(0)+'%':'—'}</td>
+      <td>${h.province}</td>
+      <td>${h.region}</td>
+      <td><span class="tag ${st==='上升'?'tag-up':st==='下降'?'tag-down':st==='平稳'?'tag-flat':st==='业务丢失'?'tag-lost':st==='数据缺失'?'tag-missing':'tag-insufficient'}">${st}</span></td>
+      <td><span class="tag ${sent==='改善'?'tag-improve':sent==='恶化'?'tag-worsen':sent==='稳定'?'tag-stable':'tag-insufficient'}">${sent}</span></td>
+      <td class="spark-cell">${sparklineSales(h.sales)}</td>
+      <td class="spark-cell">${sparklineSent(h.sentiment)}</td>
+      <td style="text-align:right;">${fmtNum(h.total_sales)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function sortTable(key) {
+  if (sortKey === key) sortDir *= -1;
+  else { sortKey = key; sortDir = 1; }
+  renderTable();
+}
+
+// ===== 舆情×Rev 比例矩阵 =====
+const MX_SALES = ['上升','平稳','下降','业务丢失'];   // 行（上到下）
+const MX_SENT  = ['改善','稳定','恶化'];               // 列（左到右）
+const MX_DIRMAP = {'上升':'↑ 增长','平稳':'→ 平稳','下降':'↓ 下降','业务丢失':'✕ 丢失'};
+
+function sumHalf(h, yr) {
+  // 25/26 年 AP1-6 同期Rev求和
+  let s = 0;
+  for (let i = 0; i < MONTHS.length; i++) {
+    const m = MONTHS[i];
+    if (m.slice(0,2) === yr) {
+      const ap = parseInt(m.slice(4));
+      if (ap >= 1 && ap <= 6) { const v = h.sales[i]; if (v && v > 0) s += v; }
+    }
+  }
+  return s;
+}
+function qlabOf(m) { return m.slice(0,2) + '·Q' + Math.ceil(parseInt(m.slice(4))/3); }
+function sumQuarter(h, qlab) {
+  let s = 0;
+  for (let i = 0; i < MONTHS.length; i++) {
+    if (qlabOf(MONTHS[i]) === qlab) { const v = h.sales[i]; if (v && v > 0) s += v; }
+  }
+  return s;
+}
+function prevYearQuarter(qlab) {
+  const yr = parseInt(qlab.slice(0,2)), q = qlab.slice(3);
+  return String(yr-1).padStart(2,'0') + '·' + q;
+}
+
+// 通用：把HP池按 Rev趋势×舆情趋势 分桶，体量由 fnA(基线)/fnB(当前) 求和决定
+function buildCellsGeneric(pool, fnA, fnB) {
+  const cells = {};
+  MX_SALES.forEach(st => MX_SENT.forEach(se => cells[st+'|'+se] = []));
+  pool.forEach(h => {
+    if (h.sales_trend === '数据缺失') return;
+    const key = h.sales_trend + '|' + h.sentiment_trend;
+    if (cells[key]) cells[key].push(h);
+  });
+  const out = {};
+  let gmax = 0;
+  MX_SALES.forEach(st => MX_SENT.forEach(se => {
+    const g = cells[st+'|'+se];
+    let sA = 0, sB = 0;
+    g.forEach(h => { sA += fnA(h); sB += fnB(h); });
+    const mag = Math.max(sA, sB);
+    if (mag > gmax) gmax = mag;
+    const growth = Math.max(sB - sA, 0), loss = Math.max(sA - sB, 0);
+    const rate = sA > 0 ? (sB - sA)/sA : (sB > 0 ? 1 : 0);
+    const withChg = g.map(h => ({ h, chg: fnB(h)-fnA(h), a: fnA(h), b: fnB(h) }));
+    withChg.sort((x,y) => (loss > growth) ? x.chg - y.chg : y.chg - x.chg);
+    out[st+'|'+se] = { st, se, count:g.length, sA, sB, mag, growth, loss, rate, top10: withChg.slice(0,10) };
+  }));
+  out.__max = gmax || 1;
+  return out;
+}
+
+function mxBaseFill(st, rate) {
+  const t = Math.min(Math.abs(rate), 1);
+  if (st === '上升') return 'rgba(22,163,74,' + (0.14 + 0.34*t).toFixed(3) + ')';
+  if (st === '下降') return 'rgba(220,38,38,' + (0.14 + 0.34*t).toFixed(3) + ')';
+  if (st === '业务丢失') return '#7f1d1d';
+  return 'rgba(120,118,110,0.30)';
+}
+
+// 通用矩阵渲染：gridId 目标网格，cells 数据，gmax 共享面积刻度，cacheKey 供 tooltip 取数
+function renderMatrixGrid(gridId, cells, gmax, cacheKey) {
+  const colTot = {};
+  MX_SENT.forEach(se => colTot[se] = MX_SALES.reduce((s,st)=>s+cells[st+'|'+se].mag,0));
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  let html = '<div class="mx-corner"></div>';
+  MX_SENT.forEach(se => {
+    html += '<div class="mx-colhead"><b>舆情' + se + '</b>体量 ' + Math.round(colTot[se]/1e4) + '万</div>';
+  });
+  MX_SALES.forEach(st => {
+    html += '<div class="mx-rowlabel"><div><b>Rev' + st.replace('业务丢失','丢失') + '</b></div></div>';
+    MX_SENT.forEach(se => {
+      const d = cells[st+'|'+se];
+      const side = Math.min(Math.sqrt(d.mag / gmax), 1);   // 面积∝体量 → 边长开方，封顶1
+      const blockW = (side * 100).toFixed(1);
+      const blockH = (side * 100).toFixed(1);
+      const baseColor = mxBaseFill(st, d.rate);
+      let chFrac = 0, chColor = '';
+      if (st === '上升') { chFrac = d.mag>0 ? d.growth/d.mag : 0; chColor = '#15803d'; }
+      else if (st === '下降') { chFrac = d.mag>0 ? d.loss/d.mag : 0; chColor = '#b91c1c'; }
+      let blockInner = '';
+      if (chFrac > 0) {
+        blockInner = '<div class="mchange" style="height:' + (chFrac*100).toFixed(1) + '%;background:' + chColor + ';opacity:.92;"></div>';
+      }
+      const amtTxt = st==='上升' ? '+' + Math.round(d.growth/1e4) + '万'
+                   : (st==='下降' ? '−' + Math.round(d.loss/1e4) + '万'
+                   : (st==='业务丢失' ? '丢失' + Math.round(d.loss/1e4) + '万' : Math.round(d.sB/1e4) + '万'));
+      const textColor = st==='业务丢失' ? '#fff' : '#1c1c1a';
+      const showText = side > 0.30 && d.count > 0;
+      const block = d.count>0
+        ? '<div class="mblock" style="width:' + blockW + '%;height:' + blockH + '%;background:' + baseColor + ';">' + blockInner + '</div>'
+        : '';
+      const textEl = showText
+        ? '<div class="mtext" style="color:' + textColor + ';"><div class="dir">' + MX_DIRMAP[st] + '</div><div class="amt">' + amtTxt + '</div></div>'
+        : '';
+      html += '<div class="mcell">' + block + textEl
+        + '<div class="mbadge" data-cache="' + cacheKey + '" data-key="' + st+'|'+se + '">' + d.count + '家</div></div>';
+    });
+  });
+  grid.innerHTML = html;
+  window.__mxCache = window.__mxCache || {};
+  window.__mxCache[cacheKey] = cells;
+  grid.querySelectorAll('.mbadge').forEach(b => {
+    b.addEventListener('mouseenter', mxShowTip);
+    b.addEventListener('mousemove', mxMoveTip);
+    b.addEventListener('mouseleave', mxHideTip);
+  });
+}
+
+function renderMatrix() {
+  const cells = buildCellsGeneric(filteredHospitals, h=>sumHalf(h,'25'), h=>sumHalf(h,'26'));
+  window.__mainGmax = cells.__max;   // 主矩阵刻度，供对比矩阵共享
+  renderMatrixGrid('mx-grid', cells, cells.__max, 'main');
+}
+
+const mxTip = () => document.getElementById('mx-tip');
+function mxShowTip(e) {
+  const cells = (window.__mxCache || {})[e.target.dataset.cache];
+  if (!cells) return;
+  const d = cells[e.target.dataset.key];
+  if (!d || d.count === 0) return;
+  const rows = d.top10.map(o => {
+    const cls = o.chg >= 0 ? 'up' : 'dn';
+    const sign = o.chg >= 0 ? '+' : '−';
+    return '<tr><td class="n">' + o.h.name + '<span style="color:#aaa"> · ' + o.h.province + '</span></td>'
+      + '<td class="v">' + Math.round(o.a/1e4) + '→' + Math.round(o.b/1e4) + '</td>'
+      + '<td class="v ' + cls + '">' + sign + Math.abs(Math.round(o.chg/1e4)) + '</td></tr>';
+  }).join('');
+  const summ = d.st==='上升' ? '净增 +' + Math.round(d.growth/1e4) + '万'
+             : (d.st==='下降' ? '净流失 ' + Math.round(d.loss/1e4) + '万'
+             : (d.st==='业务丢失' ? '完全丢失 ' + Math.round(d.loss/1e4) + '万' : '平稳'));
+  mxTip().innerHTML = '<h4>Rev' + d.st + ' × 舆情' + d.se + ' · ' + d.count + '家</h4>'
+    + '<div style="color:#5f5e5a;margin-bottom:6px;">' + summ + ' · 当前体量' + Math.round(d.sB/1e4) + '万 · Top10（基线→当前·万元）</div>'
+    + '<table>' + rows + '</table>';
+  mxTip().style.display = 'block';
+  mxMoveTip(e);
+}
+function mxMoveTip(e) {
+  const t = mxTip(), pad = 14, w = t.offsetWidth, h = t.offsetHeight;
+  let x = e.clientX + pad, y = e.clientY + pad;
+  if (x + w > window.innerWidth) x = e.clientX - w - pad;
+  if (y + h > window.innerHeight) y = window.innerHeight - h - 8;
+  t.style.left = x + 'px'; t.style.top = Math.max(8, y) + 'px';
+}
+function mxHideTip() { mxTip().style.display = 'none'; }
+
+// ===== 对比矩阵：同结构，按切片(区域/省份/季度)生成 =====
+const CMP_STATE = [
+  { dim: 'region', val: null },
+  { dim: 'quarter', val: null }
+];
+const QUARTERS = (() => {
+  const set = [];
+  MONTHS.forEach(m => { const lab = qlabOf(m); if (!set.includes(lab)) set.push(lab); });
+  return set;
+})();
+
+function cmpSliceOptions(dim) {
+  if (dim === 'region') return [...new Set(HOSPITALS.map(h => h.region))].sort();
+  if (dim === 'province') return [...new Set(HOSPITALS.map(h => h.province))].sort();
+  if (dim === 'quarter') return QUARTERS;
+  return [];
+}
+
+function buildSliceCells(dim, val) {
+  if (dim === 'quarter') {
+    const prev = prevYearQuarter(val);
+    const hasPrev = QUARTERS.includes(prev);
+    return buildCellsGeneric(filteredHospitals,
+      h => hasPrev ? sumQuarter(h, prev) : 0,
+      h => sumQuarter(h, val));
+  }
+  const pool = filteredHospitals.filter(h => h[dim] === val);
+  return buildCellsGeneric(pool, h => sumHalf(h,'25'), h => sumHalf(h,'26'));
+}
+
+function populateSliceDropdown(idx) {
+  const dim = CMP_STATE[idx].dim;
+  const opts = cmpSliceOptions(dim);
+  const sel = document.getElementById('cmp-slice-' + idx);
+  sel.innerHTML = opts.map(o => '<option value="' + o + '">' + o + '</option>').join('');
+  if (dim === 'quarter') CMP_STATE[idx].val = opts.includes('26·Q2') ? '26·Q2' : opts[opts.length-1];
+  else CMP_STATE[idx].val = opts[0];
+  sel.value = CMP_STATE[idx].val;
+}
+
+function onCmpDimChange(idx) {
+  CMP_STATE[idx].dim = document.getElementById('cmp-dim-' + idx).value;
+  populateSliceDropdown(idx);
+  renderCompare(idx);
+}
+function onCmpSliceChange(idx) {
+  CMP_STATE[idx].val = document.getElementById('cmp-slice-' + idx).value;
+  renderCompare(idx);
+}
+
+function renderCompare(idx) {
+  const dim = CMP_STATE[idx].dim, val = CMP_STATE[idx].val;
+  const gridId = 'cmp-grid-' + idx;
+  const meta = document.getElementById('cmp-meta-' + idx);
+  if (!val) { const g = document.getElementById(gridId); if (g) g.innerHTML = ''; return; }
+  const cells = buildSliceCells(dim, val);
+  const gmax = window.__mainGmax || cells.__max;
+  renderMatrixGrid(gridId, cells, gmax, 'cmp' + idx);
+  // meta：家数 + 体量 + 同比
+  let n = 0, sA = 0, sB = 0;
+  MX_SALES.forEach(st => MX_SENT.forEach(se => { const d = cells[st+'|'+se]; n += d.count; sA += d.sA; sB += d.sB; }));
+  let txt;
+  if (dim === 'quarter') {
+    const prev = prevYearQuarter(val);
+    const base = QUARTERS.includes(prev) ? (' vs ' + prev) : ' (无同比基线)';
+    const chg = sA > 0 ? Math.round((sB-sA)/sA*100) : (sB>0?100:0);
+    txt = n + '家 · ' + val + '体量' + Math.round(sB/1e4) + '万' + base + (sA>0?('，同比' + (chg>=0?'+':'') + chg + '%'):'');
+  } else {
+    const chg = sA > 0 ? Math.round((sB-sA)/sA*100) : (sB>0?100:0);
+    txt = n + '家 · 26体量' + Math.round(sB/1e4) + '万 · 同比' + (chg>=0?'+':'') + chg + '%';
+  }
+  if (meta) meta.textContent = txt;
+}
+
+function initCompare() {
+  populateSliceDropdown(0);
+  populateSliceDropdown(1);
+}
+
+initDropdowns();
+initCharts();
+initCompare();
+applyFilters();
+function searchHospital() {
+  const code = document.getElementById('hosp-code-input').value.trim().toUpperCase();
+  if (!code) return;
+  const h = HOSPITALS.find(x => x.code.toUpperCase() === code);
+  if (!h) {
+    // Try partial match
+    const matches = HOSPITALS.filter(x => x.code.toUpperCase().includes(code) || x.name.includes(code));
+    if (matches.length === 1) {
+      showHospitalDetail(matches[0]);
+      return;
+    } else if (matches.length > 1) {
+      document.getElementById('hosp-name-display').textContent = '匹配到' + matches.length + '家，请输入完整编码';
+      document.getElementById('hosp-name-display').style.color = '#e74c3c';
+      return;
+    }
+    document.getElementById('hosp-name-display').textContent = '未找到编码 ' + code;
+    document.getElementById('hosp-name-display').style.color = '#e74c3c';
+    return;
+  }
+  showHospitalDetail(h);
+}
+
+function showHospitalDetail(h) {
+  document.getElementById('hosp-code-input').value = h.code;
+  document.getElementById('hosp-name-display').textContent = h.name;
+  document.getElementById('hosp-name-display').style.color = '#0f3460';
+  document.getElementById('hosp-detail-empty').style.display = 'none';
+  document.getElementById('hosp-detail-wrap').style.display = 'block';
+
+  // Summary tags
+  const salesVals = h.sales.filter(v => v !== null);
+  const salesNonZero = salesVals.filter(v => v > 0);
+  document.getElementById('hd-sales-range').textContent = 
+    '总' + fmtNum(h.total_sales) + ' · 月均' + fmtNum(salesNonZero.length > 0 ? h.total_sales / salesNonZero.length : 0);
+  
+  const sentVals = h.sentiment.filter(v => v !== null);
+  const sent1 = sentVals.filter(v => v === 1).length;
+  const sent2 = sentVals.filter(v => v === 2).length;
+  const sent3 = sentVals.filter(v => v === 3).length;
+  document.getElementById('hd-sent-summary').textContent = 
+    '严重' + sent1 + '月 / 限制' + sent2 + '月 / 正常' + sent3 + '月';
+  
+  document.getElementById('hd-region-prov').textContent = h.region + ' · ' + h.province;
+  document.getElementById('hd-sales-trend').textContent = h.sales_trend;
+  document.getElementById('hd-sent-trend').textContent = h.sentiment_trend;
+
+  // Build chart data
+  // Sales: fill null with 0 for display but keep transparency
+  const salesData = h.sales.map(v => v === null ? null : v);
+  
+  // Sentiment as stepped line on right Y axis
+  const sentData = h.sentiment.map(v => v === null ? null : v);
+
+  // Destroy old chart if exists
+  if (chartHospDetail) chartHospDetail.destroy();
+
+  const ctx = document.getElementById('chart-hospital-detail').getContext('2d');
+  chartHospDetail = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        {
+          type: 'bar',
+          label: '月度Rev',
+          data: salesData,
+          backgroundColor: h.sales.map(v => v === null ? 'rgba(200,200,200,0.15)' : (v < 0 ? 'rgba(231,76,60,0.4)' : 'rgba(15,52,96,0.35)')),
+          borderColor: h.sales.map(v => v === null ? 'rgba(200,200,200,0.15)' : (v < 0 ? 'rgba(231,76,60,0.6)' : 'rgba(15,52,96,0.5)')),
+          borderWidth: 1,
+          yAxisID: 'y-sales',
+          order: 2,
+        },
+        {
+          type: 'line',
+          label: '舆情类型',
+          data: sentData,
+          borderColor: '#e74c3c',
+          backgroundColor: 'transparent',
+          stepped: 'before',
+          tension: 0,
+          yAxisID: 'y-sent',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: h.sentiment.map(v => v === 1 ? '#e74c3c' : v === 2 ? '#f39c12' : v === 3 ? '#27ae60' : '#ccc'),
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1.5,
+          fill: false,
+          order: 1,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { font: { size: 12 }, usePointStyle: true }
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              if (ctx.dataset.yAxisID === 'y-sales') {
+                const v = ctx.parsed.y;
+                return v === null ? 'Rev: 无数据' : 'Rev: ' + fmtNum(v) + ' 元';
+              }
+              const v = ctx.parsed.y;
+              const labels = { 1: '最严重（一刀切）', 2: '部分限制', 3: '正常（科学管控）' };
+              return '舆情: ' + (labels[v] || '无数据');
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } } },
+        'y-sales': {
+          type: 'linear', position: 'left',
+          beginAtZero: true,
+          title: { display: true, text: 'Rev（元）' },
+          ticks: { callback: (v) => fmtNum(v) },
+          grid: { drawOnChartArea: true }
+        },
+        'y-sent': {
+          type: 'linear', position: 'right',
+          min: 0.5, max: 3.5,
+          title: { display: true, text: '舆情类型' },
+          grid: { drawOnChartArea: false },
+          ticks: {
+            stepSize: 1,
+            callback: (v) => {
+              const m = { 1: '1·严重', 2: '2·限制', 3: '3·正常' };
+              return m[v] || '';
+            }
+          }
+        }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
