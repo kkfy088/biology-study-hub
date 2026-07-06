@@ -1,9 +1,9 @@
 # ICMYP Biology Study Hub — Content Generation SOP
 
-> **Version: v1.3**
+> **Version: v1.2**
 > **Created: 2026-06-28**
-> **Updated: 2026-06-29** (TTS instant playback + GitHub Pages deployment)
-> **Status: ACTIVE** (replaces v1.2)
+> **Updated: 2026-06-28** (TTS lock + Show Answer button)
+> **Status: ACTIVE** (replaces v1.1)
 > **Scope: All units of ICMYP Biology Study Hub**
 
 ---

@@ -45,12 +45,17 @@ def classify_sales_trend(hospital, months):
 
 
 def classify_sentiment_trend(hospital, months):
-    """舆情趋势 3 类：25/26 年同期均值差 > 0.1"""
+    """舆情趋势 3 类：25/26 年同期均值差 > 0.1
+    只统计有销量的月份（销量为空=未来月份，不参与趋势判断）"""
     s25, c25 = 0, 0
     s26, c26 = 0, 0
     for i, m in enumerate(months):
         v = hospital['sentiment'][i]
         if v is None or (isinstance(v, float) and np.isnan(v)):
+            continue
+        # 只统计有销量的月份（销量为空=未来月份，不参与趋势判断）
+        sv = hospital['sales'][i]
+        if sv is None or (isinstance(sv, float) and np.isnan(sv)):
             continue
         if m.startswith('25'):
             s25 += v; c25 += 1
@@ -59,10 +64,11 @@ def classify_sentiment_trend(hospital, months):
     if c25 == 0 or c26 == 0:
         return '数据不足'
     diff = (s26 / c26) - (s25 / c25)
+    # 舆情值：1=最严重, 2=部分限制, 3=正常 → 数值变大=转好
     if diff > 0.1:
-        return '恶化'
-    if diff < -0.1:
         return '改善'
+    if diff < -0.1:
+        return '恶化'
     return '稳定'
 
 

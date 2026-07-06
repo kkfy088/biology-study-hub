@@ -1,12 +1,22 @@
 """看板渲染：将处理后的数据注入 HTML 模板"""
 import json
 import os
+import sys
 import webbrowser
 import csv
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates')
-BEFORE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'template_before.html')
-AFTER_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'template_after.html')
+
+def _resource_base():
+    """资源根目录：PyInstaller 打包后用 sys._MEIPASS，否则用项目目录"""
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        return sys._MEIPASS
+    return os.path.dirname(os.path.dirname(__file__))
+
+
+_BASE = _resource_base()
+TEMPLATE_DIR = os.path.join(_BASE, 'templates')
+BEFORE_PATH = os.path.join(_BASE, 'template_before.html')
+AFTER_PATH = os.path.join(_BASE, 'template_after.html')
 
 
 def build_raw_json(hospitals, months, interp_info, n_hospitals):
@@ -89,5 +99,10 @@ def export_csv(hospitals, months, output_path, anonymize=False):
 
 
 def open_in_browser(path):
-    """在默认浏览器中打开文件"""
-    webbrowser.open('file://' + os.path.abspath(path))
+    """在默认浏览器中打开文件（跨平台）"""
+    from pathlib import Path
+    try:
+        uri = Path(os.path.abspath(path)).as_uri()
+    except Exception:
+        uri = 'file://' + os.path.abspath(path)
+    webbrowser.open(uri)
