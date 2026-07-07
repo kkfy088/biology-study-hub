@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICMYP Biology — Cell Biology (Unit TS2) | Study Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #fafbfc;
+    --card-bg: #ffffff;
+    --primary: #059669;        /* Unit 2 green theme */
+    --primary-light: #d1fae5;
+    --primary-dark: #047857;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --accent-dark: #1e40af;
+    --warning: #f59e0b;
+    --warning-light: #fef3c7;
+    --danger: #ef4444;
+    --danger-light: #fee2e2;
+    --purple: #7c3aed;
+    --purple-light: #ede9fe;
+    --teal: #0d9488;
+    --teal-light: #ccfbf1;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --text-light: #94a3b8;
+    --border: #e2e8f0;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.06);
+    --radius: 14px;
+    --radius-sm: 8px;
+    --radius-xs: 5px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 15.5px;
+  }
+
+  /* ── Top Nav ── */
+  .topnav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .topnav-brand {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: var(--text); font-weight: 800; font-size: 16px;
+  }
+  .topnav-brand .logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary), var(--teal));
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900;
+  }
+  .topnav-links { display: flex; gap: 6px; align-items: center; }
+  .topnav-link {
+    padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 600;
+    text-decoration: none; color: var(--text-secondary); transition: all .2s;
+  }
+  .topnav-link:hover { background: var(--primary-light); color: var(--primary); }
+  .topnav-link.active { background: var(--primary); color: white; }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #0d9488 100%);
+    color: white;
+    padding: 56px 24px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content:''; position:absolute; top:-50%; left:-20%; width:80%; height:200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .header-badge {
+    display:inline-block; background:rgba(255,255,255,0.15); backdrop-filter:blur(10px);
+    padding: 6px 18px; border-radius: 100px; font-size:13px; font-weight:600;
+    letter-spacing:.5px; text-transform:uppercase; margin-bottom:18px; border:1px solid rgba(255,255,255,0.2);
+  }
+  .header h1 { font-size: clamp(28px, 5vw, 44px); font-weight:900; letter-spacing:-0.5px; line-height:1.15; margin-bottom:10px; }
+  .header .subtitle { font-size:17px; opacity:0.85; font-weight:300; max-width:560px; margin:0 auto; }
+  .header-meta { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin-top:22px; font-size:13.5px; opacity:0.8; }
+  .header-meta span { display:flex; align-items:center; gap:6px; }
+
+  /* ── Layout ── */
+  .container { max-width:1000px; margin:0 auto; padding:36px 24px 72px; }
+  .section { margin-bottom:56px; scroll-margin-top: 80px; }
+  .section-header {
+    display:flex; align-items:center; gap:14px; margin-bottom:20px;
+    padding-bottom:14px; border-bottom:2px solid var(--border);
+  }
+  .section-icon {
+    width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center;
+    font-size:20px; flex-shrink:0; font-weight:700;
+  }
+  .section-title { font-size:24px; font-weight:800; letter-spacing:-0.3px; }
+  .section-desc { font-size:14px; color:var(--text-secondary); margin-top:3px; }
+
+  /* ── Cards ── */
+  .card {
+    background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:28px; margin-bottom:18px; transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .card-green { border-left:4px solid var(--primary); }
+  .card-blue { border-left:4px solid var(--accent); }
+  .card-purple { border-left:4px solid var(--purple); }
+  .card-orange { border-left:4px solid var(--warning); }
+  .card-red { border-left:4px solid var(--danger); }
+  .card-teal { border-left:4px solid var(--teal); }
+  .card-title { font-size:17px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .card-body { color:var(--text-secondary); font-size:14.5px; }
+  .card-body p { margin-bottom:10px; }
+  .card-body p:last-child { margin-bottom:0; }
+
+  /* ── Vocabulary Card (Part 1) ── */
+  .vocab-grid {
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+    gap:16px; margin-top:14px;
+  }
+  .vocab-card {
+    background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:18px; border-top:4px solid var(--primary); transition:all .2s;
+    display:flex; flex-direction:column;
+  }
+  .vocab-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); }
+  .vocab-card.cat-structure { border-top-color:var(--primary); }
+  .vocab-card.cat-organisation { border-top-color:var(--accent); }
+  .vocab-card.cat-transport { border-top-color:var(--purple); }
+  .vocab-card.cat-effect { border-top-color:var(--danger); }
+  .vocab-card.cat-method { border-top-color:var(--warning); }
+  .vocab-card-head {
+    display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;
+  }
+  .vocab-term {
+    font-size:18px; font-weight:800; color:var(--primary-dark);
+    font-family:'JetBrains Mono', monospace;
+  }
+  .vocab-ipa {
+    font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--text-secondary);
+    background:#f1f5f9; padding:2px 8px; border-radius:4px;
+  }
+  .vocab-cat-tag {
+    font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;
+    padding:2px 8px; border-radius:4px; margin-left:auto;
+  }
+  .cat-tag-structure { background:var(--primary-light); color:var(--primary-dark); }
+  .cat-tag-organisation { background:var(--accent-light); color:var(--accent-dark); }
+  .cat-tag-transport { background:var(--purple-light); color:var(--purple); }
+  .cat-tag-effect { background:var(--danger-light); color:var(--danger); }
+  .cat-tag-method { background:var(--warning-light); color:#92400e; }
+  .vocab-cn {
+    font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    color:#166534; font-size:14px; font-weight:600; margin-bottom:8px;
+  }
+  .vocab-def {
+    font-size:13px; color:var(--text-secondary); line-height:1.7; margin-bottom:8px;
+  }
+  .vocab-excerpt {
+    font-size:12.5px; color:var(--text); background:#f8fafc;
+    border-left:3px solid var(--primary); padding:8px 12px;
+    border-radius:0 var(--radius-xs) var(--radius-xs) 0; font-style:italic;
+    line-height:1.65;
+  }
+  .vocab-excerpt::before { content:'📖 '; font-style:normal; }
+  .vocab-fig {
+    margin-top:8px; border-radius:var(--radius-xs); overflow:hidden;
+    background:#f8fafc; border:1px solid var(--border);
+  }
+  .vocab-fig img { display:block; width:100%; height:auto; }
+  .vocab-fig-caption { font-size:11px; color:var(--text-light); padding:4px 8px; text-align:center; }
+  .vocab-flag-btn {
+    margin-top:8px; padding:4px 12px; background:white; border:1px solid var(--border);
+    border-radius:100px; font-size:11.5px; font-weight:600; color:var(--text-secondary);
+    cursor:pointer; transition:all .2s; align-self:flex-start;
+  }
+  .vocab-flag-btn:hover { background:var(--danger-light); color:var(--danger); border-color:var(--danger); }
+  .vocab-flag-btn.flagged { background:var(--danger); color:white; border-color:var(--danger); }
+
+  /* ── Matching Quiz (Part 2) ── */
+  .matching-quiz {
+    background:#f8fafc; border-radius:var(--radius); padding:24px;
+    border:1px solid var(--border);
+  }
+  .matching-q {
+    background:white; border-radius:var(--radius-sm); padding:16px 18px;
+    margin-bottom:14px; border:1px solid var(--border); transition:all .2s;
+  }
+  .matching-q.correct { border-color:var(--primary); background:#f0fdf4; }
+  .matching-q.wrong { border-color:var(--danger); background:#fef2f2; }
+  .matching-q-def {
+    font-size:14.5px; color:var(--text); margin-bottom:10px; font-weight:500;
+    line-height:1.7;
+  }
+  .matching-q-def::before {
+    content:'Q' attr(data-num) '.'; font-weight:800; color:var(--primary-dark);
+    margin-right:6px;
+  }
+  .matching-options { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:8px; }
+  .matching-opt {
+    display:flex; align-items:center; gap:8px; padding:8px 12px;
+    border:1.5px solid var(--border); border-radius:var(--radius-xs);
+    cursor:pointer; transition:all .15s; background:white; font-size:13.5px;
+  }
+  .matching-opt:hover { border-color:var(--primary); background:var(--primary-light); }
+  .matching-opt input { accent-color: var(--primary); }
+  .matching-opt.selected { border-color:var(--primary); background:var(--primary-light); font-weight:600; }
+  .matching-opt.reveal-correct { border-color:var(--primary); background:#d1fae5; font-weight:700; }
+  .matching-opt.reveal-wrong { border-color:var(--danger); background:#fee2e2; }
+  .matching-feedback {
+    margin-top:10px; padding:8px 12px; border-radius:var(--radius-xs);
+    font-size:13px; display:none;
+  }
+  .matching-feedback.show { display:block; animation: fadeIn .3s ease; }
+  .matching-feedback.ok { background:#d1fae5; color:#065f46; }
+  .matching-feedback.no { background:#fee2e2; color:#991b1b; }
+  .quiz-toolbar {
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px;
+    padding:12px 16px; background:white; border-radius:var(--radius-sm); border:1px solid var(--border);
+  }
+  .quiz-btn {
+    padding:8px 18px; border:none; border-radius:var(--radius-xs);
+    font-size:13px; font-weight:700; cursor:pointer; transition:all .2s;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .quiz-btn-submit { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; }
+  .quiz-btn-submit:hover { transform:translateY(-1px); box-shadow:0 3px 10px rgba(5,150,105,.3); }
+  .quiz-btn-reset { background:white; color:var(--text-secondary); border:1px solid var(--border); }
+  .quiz-btn-reset:hover { background:#f1f5f9; }
+  .quiz-score {
+    margin-left:auto; padding:6px 16px; border-radius:100px;
+    background:var(--primary-light); color:var(--primary-dark);
+    font-weight:800; font-size:14px;
+  }
+
+  /* ── Cloze / CN→EN (Part 3 & 5) ── */
+  .cloze-input-area {
+    margin-top:12px; background:#fffbeb; border:1px solid #fde68a;
+    border-radius:var(--radius-sm); padding:14px;
+  }
+  .cloze-input-label {
+    font-size:12.5px; font-weight:700; color:#92400e; margin-bottom:6px;
+    text-transform:uppercase; letter-spacing:.3px;
+  }
+  .cloze-input {
+    width:100%; padding:9px 12px; border:1.5px solid #e2e8f0;
+    border-radius:var(--radius-xs); font-family:inherit; font-size:14px;
+    transition:border-color .2s; background:white;
+  }
+  .cloze-input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-light); }
+  .cloze-input:disabled { background:#f8fafc; color:var(--text-secondary); }
+  .cloze-textarea {
+    width:100%; min-height:72px; padding:10px 12px; border:1.5px solid #e2e8f0;
+    border-radius:var(--radius-sm); font-family:inherit; font-size:13.5px;
+    line-height:1.6; resize:vertical; transition:border-color .2s; background:white;
+  }
+  .cloze-textarea:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-light); }
+  .cloze-textarea:disabled { background:#f8fafc; color:var(--text-secondary); }
+  .cloze-blank {
+    display:inline-block; min-width:120px; padding:2px 8px; margin:0 3px;
+    border-bottom:2px solid var(--primary); background:var(--primary-light);
+    border-radius:4px 4px 0 0; font-weight:600; color:var(--primary-dark);
+  }
+  .cloze-blank.filled { background:#d1fae5; border-bottom-color:var(--primary); color:#065f46; }
+  .cloze-blank.wrong { background:#fee2e2; border-bottom-color:var(--danger); color:#991b1b; }
+
+  /* ── Cornell Notes (Part 4) ── */
+  .cornell-block {
+    display:grid; grid-template-columns:200px 1fr; gap:0;
+    background:white; border-radius:var(--radius); overflow:hidden;
+    box-shadow:var(--shadow); border:1px solid var(--border); margin:18px 0;
+  }
+  .cornell-cue {
+    background:linear-gradient(180deg, #f0fdf4, #dcfce7);
+    padding:20px 16px; border-right:2px dashed var(--primary);
+    font-size:13px; line-height:1.7;
+  }
+  .cornell-cue h5 {
+    font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.8px;
+    color:var(--primary-dark); margin-bottom:8px; margin-top:14px;
+  }
+  .cornell-cue h5:first-child { margin-top:0; }
+  .cornell-cue ul { list-style:none; padding:0; margin:0; }
+  .cornell-cue li {
+    padding:3px 0 3px 14px; position:relative; color:var(--text-secondary); font-size:12.5px;
+  }
+  .cornell-cue li::before {
+    content:'▸'; position:absolute; left:2px; color:var(--primary); font-weight:bold; font-size:10px;
+  }
+  .cornell-main {
+    padding:24px 26px; font-size:14.5px; line-height:1.95; color:var(--text);
+  }
+  .cornell-main p { margin-bottom:12px; }
+  .cornell-main h4 {
+    font-size:16px; font-weight:800; color:var(--primary-dark);
+    margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid var(--primary-light);
+  }
+  .cornell-main .term-inline { white-space:normal; display:inline; }
+  .cornell-main mark.user-hl {
+    background:#fef9c3; padding:1px 3px; border-radius:2px; cursor:pointer;
+    border-bottom:2px solid #f59e0b;
+  }
+  .cornell-main mark.user-hl:hover { background:#fef08a; }
+  .cornell-section-tag {
+    display:inline-block; background:var(--primary); color:white;
+    padding:2px 10px; border-radius:4px; font-size:11px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px;
+  }
+  .cornell-supplement {
+    background:linear-gradient(135deg,#eff6ff,#dbeafe); border-left:4px solid var(--accent);
+    border-radius:0 var(--radius-xs) var(--radius-xs) 0; padding:10px 14px;
+    margin:12px 0; font-size:13px;
+  }
+  .cornell-supplement::before {
+    content:'➕ Supplement (A-Level/IG) · '; font-weight:700; color:var(--accent-dark);
+    font-size:11.5px; text-transform:uppercase; letter-spacing:.3px;
+  }
+  .cornell-summary {
+    grid-column:1 / -1; background:#1e293b; color:white;
+    padding:16px 22px; font-size:13.5px; line-height:1.7;
+    border-top:2px solid #334155;
+  }
+  .cornell-summary-label {
+    font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px;
+    color:#fbbf24; margin-bottom:6px;
+  }
+  .cornell-actions {
+    grid-column:1 / -1; padding:10px 18px; background:#f8fafc;
+    border-top:1px solid var(--border); display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+    font-size:12px; color:var(--text-secondary);
+  }
+  .cornell-actions button {
+    padding:4px 10px; background:white; border:1px solid var(--border);
+    border-radius:100px; font-size:11.5px; font-weight:600; cursor:pointer; transition:all .2s;
+    color:var(--text-secondary);
+  }
+  .cornell-actions button:hover { background:var(--warning-light); color:#92400e; border-color:var(--warning); }
+  @media(max-width:700px) {
+    .cornell-block { grid-template-columns:1fr; }
+    .cornell-cue { border-right:none; border-bottom:2px dashed var(--primary); }
+  }
+
+  /* ── Feedback Panel ── */
+  .feedback-panel {
+    margin-top:14px; display:grid; grid-template-columns:1fr; gap:10px;
+  }
+  @media(min-width:640px){ .feedback-panel{ grid-template-columns:1fr 1fr 1fr; } }
+  .feedback-card { border-radius:var(--radius-sm); padding:12px 14px; font-size:12.5px; line-height:1.7; }
+  .fb-good { background:#f0fdf4; border-left:4px solid var(--primary); }
+  .fb-weak { background:#fef2f2; border-left:4px solid var(--danger); }
+  .fb-study { background:#eff6ff; border-left:4px solid var(--accent); }
+  .fb-title { font-weight:800; font-size:12px; text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; display:flex; align-items:center; gap:5px; }
+  .fb-good .fb-title { color:var(--primary-dark); }
+  .fb-weak .fb-title { color:var(--danger); }
+  .fb-study .fb-title { color:var(--accent-dark); }
+  .fb-list { list-style:none; padding:0; margin:0; }
+  .fb-list li { padding:3px 0 3px 16px; position:relative; color:var(--text-secondary); }
+  .fb-list li::before { content:''; position:absolute; left:0; top:11px; width:6px; height:6px; border-radius:50%; }
+  .fb-good .fb-list li::before { background:var(--primary); }
+  .fb-weak .fb-list li::before { background:var(--danger); }
+  .fb-study .fb-list li::before { background:var(--accent); }
+  .fb-score {
+    display:inline-block; padding:3px 12px; border-radius:100px; font-size:12px; font-weight:800;
+    margin-bottom:8px;
+  }
+  .score-high { background:#d1fae5; color:#065f46; }
+  .score-mid { background:#fef3c7; color:#92400e; }
+  .score-low { background:#fee2e2; color:#991b1b; }
+
+  /* ── Answer Block (bilingual) ── */
+  .quiz-answer { display:none; }
+  .quiz-answer.revealed { display:block; animation:fadeIn .4s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+  .answer-block {
+    margin-top:12px; background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+    border-left:4px solid var(--primary); border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+    padding:14px 18px; font-size:13px;
+  }
+  .answer-label {
+    display:inline-block; background:var(--primary); color:white; padding:2px 10px;
+    border-radius:4px; font-size:11.5px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.5px; margin-bottom:8px;
+  }
+  .answer-en { color:var(--text); line-height:1.85; }
+  .answer-cn {
+    font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    color:#166534; font-size:12.5px; line-height:1.85; margin-top:8px;
+    padding-top:8px; border-top:1px dashed #86efac;
+  }
+  .answer-cn strong { color:#14532d; }
+
+  /* ── Language Analysis ── */
+  .lang-analysis {
+    margin-top:12px; background:linear-gradient(135deg,#fefce8,#fef3c7);
+    border-left:4px solid #f59e0b; border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+    padding:14px 18px; font-size:13px;
+  }
+  .lang-label {
+    display:inline-block; background:#f59e0b; color:white; padding:2px 10px;
+    border-radius:4px; font-size:11.5px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.5px; margin-bottom:10px;
+  }
+  .lang-section { margin-bottom:10px; }
+  .lang-section:last-child { margin-bottom:0; }
+  .lang-section-title {
+    font-size:12.5px; font-weight:700; color:#92400e; margin-bottom:5px;
+    text-transform:uppercase; letter-spacing:.3px;
+  }
+  .lang-vocab-item {
+    display:grid; grid-template-columns:130px 60px 1fr; gap:6px 10px;
+    padding:3px 0; font-size:12.5px; line-height:1.6;
+    border-bottom:1px dotted #fde68a;
+  }
+  .lang-vocab-item:last-child { border-bottom:none; }
+  .lang-vocab-word { font-weight:700; color:#78350f; font-family:'JetBrains Mono', monospace; font-size:12px; }
+  .lang-vocab-pos { font-style:italic; color:#b45309; font-size:11px; }
+  .lang-vocab-def { color:var(--text-secondary); }
+  .lang-vocab-def .cn-gloss { color:#92400e; font-weight:500; }
+  .lang-grammar-point {
+    padding:5px 0; font-size:12.5px; line-height:1.7;
+    border-bottom:1px dotted #fde68a;
+  }
+  .lang-grammar-point:last-child { border-bottom:none; }
+  .lang-grammar-pattern {
+    font-family:'JetBrains Mono', monospace; font-size:11.5px;
+    color:#78350f; background:#fef9c3; padding:1px 5px; border-radius:3px;
+    margin-right:4px;
+  }
+  .lang-grammar-explain { color:var(--text-secondary); }
+  .lang-grammar-explain .cn-gloss { color:#92400e; }
+  .lang-grammar-example {
+    color:#78350f; font-style:italic; font-size:12px; margin-top:2px;
+  }
+
+  /* ── Answer Log ── */
+  .answer-log {
+    margin-top:24px; background:#1e293b; color:white; border-radius:var(--radius); padding:24px;
+  }
+  .answer-log h4 { font-size:16px; font-weight:800; margin-bottom:14px; }
+  .log-stats { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:16px; }
+  .log-stat { text-align:center; }
+  .log-stat-num { font-size:28px; font-weight:900; color:#fbbf24; }
+  .log-stat-label { font-size:11px; opacity:.7; text-transform:uppercase; letter-spacing:.5px; }
+  .log-table { width:100%; font-size:12.5px; border-collapse:collapse; }
+  .log-table th { text-align:left; padding:8px 10px; border-bottom:1px solid #334155; font-size:11px; text-transform:uppercase; letter-spacing:.3px; opacity:.7; }
+  .log-table td { padding:8px 10px; border-bottom:1px solid #334155; }
+  .log-table tr:last-child td { border-bottom:none; }
+  .log-empty { text-align:center; opacity:.5; padding:20px; font-style:italic; }
+  .quiz-q { margin-bottom:16px; padding:14px; background:white; border-radius:var(--radius-sm); border:1px solid var(--border); }
+  .q-num { display:inline-block; background:var(--primary); color:white; width:24px; height:24px;
+    border-radius:50%; text-align:center; line-height:24px; font-size:12px; font-weight:700; margin-right:8px; }
+  .q-text { font-weight:600; font-size:14px; }
+  .q-hint { font-size:12.5px; color:var(--text-light); margin-top:6px; font-style:italic; }
+
+  /* ── Mistake Book Panel ── */
+  .mistake-book {
+    position:fixed; right:0; top:0; bottom:0; width:420px; max-width:90vw;
+    background:white; box-shadow:-8px 0 30px rgba(0,0,0,.15);
+    transform:translateX(100%); transition:transform .3s ease;
+    z-index:1000; display:flex; flex-direction:column;
+  }
+  .mistake-book.open { transform:translateX(0); }
+  .mistake-book-head {
+    background:linear-gradient(135deg, #7c2d12, #dc2626); color:white;
+    padding:18px 22px; display:flex; align-items:center; gap:10px;
+  }
+  .mistake-book-head h3 { font-size:18px; font-weight:800; flex:1; }
+  .mistake-book-close {
+    width:32px; height:32px; border:none; background:rgba(255,255,255,.2);
+    color:white; border-radius:50%; cursor:pointer; font-size:16px; font-weight:700;
+  }
+  .mistake-book-close:hover { background:rgba(255,255,255,.3); }
+  .mistake-book-stats {
+    background:#fef2f2; padding:12px 22px; display:flex; gap:18px; flex-wrap:wrap;
+    border-bottom:1px solid #fecaca; font-size:12.5px;
+  }
+  .mb-stat { text-align:center; }
+  .mb-stat-num { font-size:22px; font-weight:900; color:#dc2626; line-height:1; }
+  .mb-stat-lbl { font-size:10px; color:#7c2d12; text-transform:uppercase; letter-spacing:.5px; }
+  .mistake-book-toolbar {
+    padding:10px 16px; background:#fef9c3; border-bottom:1px solid #fde68a;
+    display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+  }
+  .mb-btn {
+    padding:6px 12px; background:white; border:1px solid #e2e8f0;
+    border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;
+    transition:all .2s; color:var(--text-secondary);
+  }
+  .mb-btn:hover { background:#fef3c7; color:#92400e; border-color:#fde68a; }
+  .mb-btn-export {
+    background:linear-gradient(135deg,#dc2626,#b91c1c); color:white; border-color:#dc2626;
+  }
+  .mb-btn-export:hover { background:#b91c1c; color:white; }
+  .mistake-list { flex:1; overflow-y:auto; padding:14px 16px; }
+  .mistake-empty { text-align:center; color:var(--text-light); padding:40px 20px; font-style:italic; font-size:13.5px; }
+  .mistake-item {
+    background:#fef9c3; border:1px solid #fde68a; border-radius:var(--radius-sm);
+    padding:12px 14px; margin-bottom:10px; font-size:12.5px; line-height:1.65;
+  }
+  .mistake-item.cat-organisation { background:#eff6ff; border-color:#93c5fd; }
+  .mistake-item.cat-transport { background:#ede9fe; border-color:#c4b5fd; }
+  .mistake-item.cat-effect { background:#fee2e2; border-color:#fca5a5; }
+  .mistake-item.cat-method { background:#fef3c7; border-color:#fcd34d; }
+  .mi-head {
+    display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;
+  }
+  .mi-term { font-weight:800; font-size:14px; color:#7c2d12; font-family:'JetBrains Mono', monospace; }
+  .mi-cat {
+    font-size:9.5px; padding:1px 7px; border-radius:3px; background:white;
+    color:var(--text-secondary); font-weight:700; text-transform:uppercase; letter-spacing:.3px;
+  }
+  .mi-count {
+    margin-left:auto; font-size:11px; font-weight:800; color:#dc2626;
+    background:#fee2e2; padding:2px 8px; border-radius:100px;
+  }
+  .mi-cn { color:#7c2d12; font-size:12.5px; margin-bottom:4px; font-family:-apple-system,"PingFang SC",sans-serif; }
+  .mi-reason { color:var(--text-secondary); font-size:11.5px; margin-bottom:4px; }
+  .mi-reason strong { color:#7c2d12; }
+  .mi-key { color:var(--text); font-size:11.5px; background:white; padding:6px 8px; border-radius:4px; border-left:3px solid #f59e0b; }
+  .mi-actions { display:flex; gap:6px; margin-top:6px; }
+  .mi-actions button {
+    padding:3px 8px; font-size:10.5px; background:white; border:1px solid #e2e8f0;
+    border-radius:4px; cursor:pointer; color:var(--text-secondary); font-weight:600;
+  }
+  .mi-actions button:hover { background:#f1f5f9; }
+
+  .mb-toggle {
+    position:fixed; right:20px; bottom:20px; z-index:999;
+    width:56px; height:56px; border-radius:50%; cursor:pointer;
+    background:linear-gradient(135deg, #dc2626, #b91c1c); color:white;
+    border:none; font-size:24px; box-shadow:0 6px 20px rgba(220,38,38,.4);
+    display:flex; align-items:center; justify-content:center; transition:all .2s;
+  }
+  .mb-toggle:hover { transform:scale(1.1); }
+  .mb-toggle .badge {
+    position:absolute; top:-2px; right:-2px; min-width:20px; height:20px;
+    background:#fbbf24; color:#7c2d12; border-radius:10px; font-size:11px;
+    font-weight:800; display:flex; align-items:center; justify-content:center;
+    padding:0 5px; border:2px solid white;
+  }
+
+  /* ── Pronunciation Widget (reused from unit1) ── */
+  .speak-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; border-radius:50%;
+    background:linear-gradient(135deg, #059669, #0d9488);
+    color:white; border:none; cursor:pointer;
+    font-size:11px; line-height:1; padding:0;
+    vertical-align:middle; margin-left:4px;
+    transition:all .2s ease; box-shadow:0 1px 3px rgba(5,150,105,.3);
+    position:relative; flex-shrink:0;
+  }
+  .speak-btn:hover { transform:scale(1.2); box-shadow:0 2px 8px rgba(5,150,105,.4); }
+  .speak-btn:active { transform:scale(0.95); }
+  .speak-btn.playing {
+    animation:pulse-speak 0.6s ease infinite;
+    background:linear-gradient(135deg, #f59e0b, #ef4444);
+  }
+  .speak-btn.speak-inline { width:16px; height:16px; font-size:9px; margin-left:2px; margin-right:1px; vertical-align:baseline; opacity:0.7; }
+  .speak-btn.speak-inline:hover { opacity:1; }
+  .term-inline { white-space:normal; display:inline; }
+  .term-inline > span:first-child { border-bottom:1px dotted var(--primary); cursor:help; transition:background .2s; }
+  .term-inline:hover > span:first-child { background:var(--primary-light); }
+  @keyframes pulse-speak { 0%,100%{transform:scale(1);} 50%{transform:scale(1.25);} }
+  .term-popup {
+    position:absolute; bottom:calc(100% + 8px); left:50%;
+    transform:translateX(-50%) translateY(4px);
+    background:#1e293b; color:white;
+    padding:10px 14px; border-radius:8px;
+    font-size:12px; line-height:1.6; white-space:nowrap;
+    box-shadow:0 4px 16px rgba(0,0,0,.25);
+    opacity:0; pointer-events:none; transition:all .2s ease;
+    z-index:1000;
+  }
+  .term-popup::after {
+    content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    border:6px solid transparent; border-top-color:#1e293b;
+  }
+  .speak-btn:hover .term-popup,
+  .speak-btn.playing + .term-popup { opacity:1; transform:translateX(-50%) translateY(0); }
+  .popup-phonetic { font-family:'JetBrains Mono', monospace; color:#6ee7b7; font-size:11.5px; margin-bottom:3px; }
+  .popup-cn { font-family:-apple-system,"PingFang SC",sans-serif; color:#fde68a; font-size:12.5px; }
+  .popup-hint { color:#94a3b8; font-size:10px; margin-top:4px; }
+
+  /* ── TOC nav ── */
+  .toc-bar {
+    background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 20px; margin-bottom:36px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;
+    border:1px solid var(--border);
+    position:sticky; top:60px; z-index:50;
+  }
+  .toc-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-light); margin-right:4px; }
+  .toc-link {
+    padding:5px 12px; border-radius:100px; font-size:12.5px; font-weight:600; text-decoration:none;
+    color:var(--primary); background:var(--primary-light); transition:all .2s;
+  }
+  .toc-link:hover { background:var(--primary); color:white; }
+
+  /* ── Chinese gloss ── */
+  .cn {
+    font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    color:#b45309; font-size:12.5px; font-weight:500;
+    background:#fffbeb; padding:1px 6px; border-radius:4px; margin-left:4px;
+    white-space:nowrap; border:1px solid #fde68a;
+  }
+  .cn-soft {
+    font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    color:#92400e; font-size:12px; font-weight:400; margin-left:3px; opacity:0.85;
+  }
+
+  /* ── Callout ── */
+  .callout { border-radius:var(--radius); padding:18px 22px; margin:16px 0; display:flex; gap:14px; align-items:flex-start; font-size:14px; }
+  .callout-info { background:var(--accent-light); border-left:4px solid var(--accent); }
+  .callout-success { background:var(--primary-light); border-left:4px solid var(--primary); }
+  .callout-warn { background:var(--warning-light); border-left:4px solid var(--warning); }
+  .callout-danger { background:var(--danger-light); border-left:4px solid var(--danger); }
+  .callout-purple { background:var(--purple-light); border-left:4px solid var(--purple); }
+  .callout-icon { font-size:20px; flex-shrink:0; line-height:1; margin-top:2px; }
+  .callout-text { flex:1; }
+  .callout-title { font-weight:700; margin-bottom:3px; }
+  .callout-body { color:var(--text-secondary); font-size:13.5px; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align:center; padding:32px 24px; color:var(--text-light); font-size:13px;
+    border-top:1px solid var(--border); margin-top:20px;
+  }
+  .footer strong { color:var(--text-secondary); }
+
+  /* ── Print ── */
+  @media print {
+    body { background:white; font-size:12pt; }
+    .header { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .card { break-inside:avoid; box-shadow:none; border:1px solid #ddd; }
+    .cornell-block { break-inside:avoid; }
+    .speak-btn, .mb-toggle, .toc-bar, .topnav { display:none; }
+    .mistake-book { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═════════ TOP NAV ═════════ -->
+<nav class="topnav">
+  <a href="index.html" class="topnav-brand">
+    <span class="logo">🧬</span>
+    <span>ICMYP Biology · Study Hub</span>
+  </a>
+  <div class="topnav-links">
+    <a href="#part1" class="topnav-link">Vocab</a>
+    <a href="#part2" class="topnav-link">Match</a>
+    <a href="#part3" class="topnav-link">CN→EN</a>
+    <a href="#part4" class="topnav-link">Cornell</a>
+    <a href="#part5" class="topnav-link">Cloze</a>
+    <select id="voice-select" class="topnav-link" style="padding:6px 10px;border:1px solid var(--border);background:white;border-radius:8px;font-size:12px;cursor:pointer;" title="Choose TTS voice" onchange="changeVoice(this.value)">
+      <option value="jenny">🔊 Jenny (US)</option>
+      <option value="aria">🔊 Aria (US crisp)</option>
+      <option value="emma">🔊 Emma (UK)</option>
+      <option value="ana">🔊 Ana (young)</option>
+    </select>
+    <a href="index.html" class="topnav-link">← Home</a>
+  </div>
+</nav>
+
+<!-- ═════════ HEADER ═════════ -->
+<header class="header">
+  <div class="header-badge">🔬 Unit TS2 · Cell Biology</div>
+  <h1>Cell Biology &amp; Organisation</h1>
+  <p class="subtitle">Cell structure · organelles · levels of organisation · diffusion · osmosis · active transport — aligned with Cambridge IGCSE Biology 0610 Topic 2.</p>
+  <div class="header-meta">
+    <span>🎯 IGCSE 0610 Aligned</span>
+    <span>📖 Bilingual EN/中文</span>
+    <span>📝 5-Part Study System</span>
+    <span>📒 Mistake Book + PDF Export</span>
+  </div>
+</header>
+
+<!-- ═════════ TOC ═════════ -->
+<div class="container">
+<nav class="toc-bar">
+  <span class="toc-label">Jump to:</span>
+  <a href="#part1" class="toc-link">① 词条学习 Vocab</a>
+  <a href="#part2" class="toc-link">② 意思搭配 Matching</a>
+  <a href="#part3" class="toc-link">③ 中译英 CN→EN</a>
+  <a href="#part4" class="toc-link">④ 原文朗读 Cornell</a>
+  <a href="#part5" class="toc-link">⑤ 课文填空 Cloze</a>
+  <a href="#syllabus" class="toc-link">📋 Syllabus</a>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- PART 1: VOCABULARY CARDS                                       -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section class="section" id="part1">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--primary-light);color:var(--primary)">①</div>
+    <div>
+      <div class="section-title">Part 1 · 词条学习 Vocabulary Cards <span class="cn-soft">生词卡</span></div>
+      <div class="section-desc">~55 key terms with pronunciation 🔊, IPA, 中文释义, 课文摘录, 配图. Click 🔊 to hear. Flag 🚩 to send to mistake book.</div>
+    </div>
+  </div>
+  <div id="vocab-grid" class="vocab-grid"></div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- PART 2: MATCHING QUIZ                                          -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section class="section" id="part2">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--accent-light);color:var(--accent)">②</div>
+    <div>
+      <div class="section-title">Part 2 · 词条意思搭配 Vocabulary Matching <span class="cn-soft">英译配词</span></div>
+      <div class="section-desc">Read the full English definition, choose the correct term. Score + refresh. Every wrong answer → 错题本.</div>
+    </div>
+  </div>
+  <div id="matching-quiz" class="matching-quiz"></div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- PART 3: CN → EN RECALL                                         -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section class="section" id="part3">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--purple-light);color:var(--purple)">③</div>
+    <div>
+      <div class="section-title">Part 3 · 中文→英文 Recall <span class="cn-soft">看中写英</span></div>
+      <div class="section-desc">See Chinese explanation, type the matching English term / short phrase from the textbook. Tests whether the textbook English is mastered.</div>
+    </div>
+  </div>
+  <div id="cn-en-quiz"></div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- PART 4: CORNELL NOTES READING                                  -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section class="section" id="part4">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--warning-light);color:#92400e">④</div>
+    <div>
+      <div class="section-title">Part 4 · 原文朗读 + 知识摘要 Cornell Notes <span class="cn-soft">康奈尔笔记</span></div>
+      <div class="section-desc">Textbook reading organized by section (2.1, 2.2, 2.3, 2.4). Cue column = 讲解 + 知识点; main = 课文原文; bottom = 摘要. Click any term to look up. Select text + 🖊️ to highlight + note.</div>
+    </div>
+  </div>
+  <div class="callout callout-info">
+    <div class="callout-icon">💡</div>
+    <div class="callout-text">
+      <div class="callout-title">How to use the Cornell reader</div>
+      <div class="callout-body">① Read the main column aloud (oral reading practice). ② Cover the main, look only at the left cue column, recite the key points. ③ Select any text and click the 🖊️ button that appears to add a private highlight + note (saved to mistake book). ④ Where the textbook is thin, look for the ➕ Supplement tag (minimal A-Level/IG addition).</div>
+    </div>
+  </div>
+  <div id="cornell-container"></div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- PART 5: CLOZE + SHORT ANSWER                                   -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section class="section" id="part5">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--danger-light);color:var(--danger)">⑤</div>
+    <div>
+      <div class="section-title">Part 5 · 课文填空 + 主观问答 <span class="cn-soft">Cloze + Short Answer</span></div>
+      <div class="section-desc">50% fill-in-the-blank (key terms from textbook), 50% short-answer (exam style). Each answer → bilingual detailed 解答 (EN + CN + Language Notes). Every miss → 错题本.</div>
+    </div>
+  </div>
+  <div id="cloze-quiz"></div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SYLLABUS MAP                                                    -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section class="section" id="syllabus">
+  <div class="section-header">
+    <div class="section-icon" style="background:#f1f5f9;color:var(--text-secondary)">📋</div>
+    <div>
+      <div class="section-title">IGCSE 0610 Syllabus Coverage Map</div>
+      <div class="section-desc">Cambridge IGCSE Biology 0610 — Topic 2 (Cells) cross-check.</div>
+    </div>
+  </div>
+  <div class="card card-green">
+    <div class="card-title">Topic 2 · Cells — Spec Points Covered</div>
+    <div class="card-body" id="syllabus-body"></div>
+  </div>
+</section>
+
+</div><!-- /.container -->
+
+<!-- ═════════ FOOTER ═════════ -->
+<footer class="footer">
+  <p><strong>ICMYP Biology · Pre-IB Study Hub</strong> — Unit TS2: Cell Biology</p>
+  <p style="margin-top:6px;">Aligned with Cambridge IGCSE Biology 0610 · Bilingual EN/中文 · 5-Part Study System</p>
+  <p style="margin-top:14px;font-size:13px;color:var(--text-secondary);font-weight:600;">⚡ Powered by <strong style="color:var(--primary);">Michelle Yang</strong> · 2026</p>
+</footer>
+
+<!-- ═════════ MISTAKE BOOK FLOATING BUTTON ═════════ -->
+<button id="mb-toggle" class="mb-toggle" title="Open mistake book">
+  📒<span class="badge" id="mb-badge" style="display:none;">0</span>
+</button>
+
+<!-- ═════════ MISTAKE BOOK PANEL ═════════ -->
+<aside id="mistake-book" class="mistake-book">
+  <div class="mistake-book-head">
+    <h3>📒 错题本 Mistake Book</h3>
+    <button class="mistake-book-close" id="mb-close" title="Close">×</button>
+  </div>
+  <div class="mistake-book-stats">
+    <div class="mb-stat"><div class="mb-stat-num" id="mb-stat-total">0</div><div class="mb-stat-lbl">Total Mistakes</div></div>
+    <div class="mb-stat"><div class="mb-stat-num" id="mb-stat-unique">0</div><div class="mb-stat-lbl">Unique Terms</div></div>
+    <div class="mb-stat"><div class="mb-stat-num" id="mb-stat-worst">0×</div><div class="mb-stat-lbl">Most Missed</div></div>
+  </div>
+  <div class="mistake-book-toolbar">
+    <button class="mb-btn mb-btn-export" id="mb-export">📄 导出背诵纸 PDF</button>
+    <button class="mb-btn" id="mb-clear">🗑️ Clear All</button>
+    <span style="font-size:11px;color:var(--text-light);margin-left:auto;">localStorage · 本地保存</span>
+  </div>
+  <div class="mistake-list" id="mistake-list">
+    <div class="mistake-empty">No mistakes yet — start a quiz above! 💪</div>
+  </div>
+</aside>
+
+<script>
+/* ═════════════════════════════════════════════════════════════
+   DATA LAYER — VOCABULARY, QUIZZES, CORNELL CONTENT
+   (Populated from OCR + syllabus; see below)
+   ═════════════════════════════════════════════════════════════ */
+
+// ═════════════════════════════════════════════════════════════
+//  PART 1 · VOCABULARY  (~55 terms, from Glossary P19-22 + Key words P6/9/12/16)
+//  Categories: A=Cell structure  B=Organisation  C=Diffusion  D=Osmosis  E=Active transport
+// ═════════════════════════════════════════════════════════════
+var VOCAB = [
+  // ── A. Cell structure (2.1) ──
+  { term:"cell", ipa:"/sel/", cn:"细胞", def_en:"The smallest structural and functional unit of life, from which all organisms are built.",
+    excerpt:"All living organisms are made up of units called cells. Although cells may take on very specialised functions, they have certain features in common.", fig:"u2_fig01_microscope.png", cat:"structure" },
+  { term:"cell surface membrane", ipa:"/sel ˈsɜːfɪs ˈmembreɪn/", cn:"细胞表面膜 / 细胞膜", def_en:"A very thin layer surrounding the cytoplasm; it controls what enters and leaves the cell.",
+    excerpt:"The cytoplasm is surrounded by a cell surface membrane. It controls the entry and exit of dissolved substances and separates the cell's contents from its surroundings.", fig:"", cat:"structure" },
+  { term:"cytoplasm", ipa:"/ˈsaɪtəʊplæzəm/", cn:"细胞质", def_en:"The jelly-like material that fills a cell, containing water and dissolved substances.",
+    excerpt:"Cytoplasm contains water and dissolved substances such as sugar and salts. Chemical reactions go on in organelles — for example, proteins are made in ribosomes.", fig:"", cat:"structure" },
+  { term:"nucleus", ipa:"/ˈnjuːkliəs/", cn:"细胞核（pl. nuclei）", def_en:"A structure containing DNA in the form of chromosomes, carrying coded instructions that control the cell.",
+    excerpt:"The nucleus contains genetic material (DNA) which carries the coded instructions for controlling the activities and characteristics of the cell.", fig:"", cat:"structure" },
+  { term:"chromosome", ipa:"/ˈkrəʊməsəʊm/", cn:"染色体", def_en:"A thread-like structure of DNA carrying genes; only visible during cell division.",
+    excerpt:"The chromosomes only become visible during cell division.", fig:"", cat:"structure" },
+  { term:"gene", ipa:"/dʒiːn/", cn:"基因", def_en:"A length of DNA that codes for a protein and controls a heritable characteristic.",
+    excerpt:"DNA contains genetic information, in the form of genes, that controls the proteins made in the cell.", fig:"", cat:"structure" },
+  { term:"mitochondrion", ipa:"/ˌmaɪtəˈkɒndriən/", cn:"线粒体（pl. mitochondria）", def_en:"An organelle where aerobic respiration releases energy from glucose.",
+    excerpt:"Energy is released by aerobic respiration in mitochondria. Large numbers of mitochondria in a cell indicate a high rate of metabolism.", fig:"", cat:"structure" },
+  { term:"ribosome", ipa:"/ˈraɪbəsəʊm/", cn:"核糖体", def_en:"A very small organelle that uses information on DNA (mRNA) to make protein molecules.",
+    excerpt:"Proteins are made from ribosomes on rough endoplasmic reticulum.", fig:"", cat:"structure" },
+  { term:"cell wall", ipa:"/sel wɔːl/", cn:"细胞壁", def_en:"A tough, freely-permeable layer of cellulose outside the cell membrane of plant, fungal and bacterial cells.",
+    excerpt:"The cellulose cell wall provides structural support and protects against damage caused by osmotic intake of water. It is freely permeable.", fig:"", cat:"structure" },
+  { term:"cellulose", ipa:"/ˈseljʊləʊz/", cn:"纤维素", def_en:"A carbohydrate forming long fibres that make up plant cell walls.",
+    excerpt:"The presence of the cellulose cell wall means that plant cells tend to be regular in shape.", fig:"", cat:"structure" },
+  { term:"chloroplast", ipa:"/ˈklɒrəplɑːst/", cn:"叶绿体", def_en:"An organelle in some plant cells containing chlorophyll, where photosynthesis takes place.",
+    excerpt:"Chloroplasts contain the pigment chlorophyll and the enzymes necessary for the production of glucose by photosynthesis.", fig:"", cat:"structure" },
+  { term:"chlorophyll", ipa:"/ˈklɒrəfɪl/", cn:"叶绿素", def_en:"A green pigment in chloroplasts that absorbs light energy for photosynthesis.",
+    excerpt:"Chlorophyll absorbs energy from light; the energy is used to combine carbon dioxide with water to make glucose.", fig:"", cat:"structure" },
+  { term:"vacuole", ipa:"/ˈvækjuəʊl/", cn:"液泡", def_en:"A fluid-filled space in a cell, separated from the cytoplasm by a membrane.",
+    excerpt:"The large permanent vacuole contains water to provide turgor pressure and may store ions and molecules.", fig:"", cat:"structure" },
+  { term:"magnification", ipa:"/ˌmæɡnɪfɪˈkeɪʃən/", cn:"放大倍数", def_en:"How many times larger an image is than the actual object (M = image ÷ actual).",
+    excerpt:"Magnification = Measured length ÷ Actual length.  e.g. image 10 mm ÷ actual 1 mm = ×10.", fig:"", cat:"structure" },
+  { term:"turgidity", ipa:"/ˈtɜːdʒɪdəti/", cn:"膨压 / 紧胀状态", def_en:"The firm state of a plant cell when its vacuole is full and presses the cytoplasm against the cell wall.",
+    excerpt:"Pressure of cell contents against the cell wall leads to turgidity.", fig:"u2_fig07_plant_cell_osmosis.png", cat:"structure" },
+
+  // ── B. Organisation (2.2) ──
+  { term:"specialised cell", ipa:"/ˈspeʃəlaɪzd sel/", cn:"特化细胞 / 分化细胞", def_en:"A cell whose structure is adapted to carry out a particular function.",
+    excerpt:"Different types of cell have particular structures designed to help them carry out different tasks — they have become specialised.", fig:"u2_fig03_organisation_hierarchy.png", cat:"organisation" },
+  { term:"red blood cell", ipa:"/red blʌd sel/", cn:"红细胞 / 红血球 (erythrocyte)", def_en:"An animal cell that transports oxygen; filled with haemoglobin, no nucleus, very flexible.",
+    excerpt:"The cytoplasm is filled with the pigment haemoglobin which carries oxygen. The cells have no nucleus, leaving more space for haemoglobin.", fig:"", cat:"organisation" },
+  { term:"haemoglobin", ipa:"/ˌhiːməˈɡləʊbɪn/", cn:"血红蛋白", def_en:"The red pigment in red blood cells that binds and carries oxygen.",
+    excerpt:"Haemoglobin carries oxygen from the lungs to the tissues where respiration occurs.", fig:"", cat:"organisation" },
+  { term:"root hair cell", ipa:"/ruːt heə sel/", cn:"根毛细胞", def_en:"A plant cell with a long extension that increases surface area for absorbing water and minerals.",
+    excerpt:"The cell has a long extension (a root hair) which increases the surface area for the absorption of water and mineral ions.", fig:"", cat:"organisation" },
+  { term:"xylem vessel", ipa:"/ˈzaɪləm ˈvesl/", cn:"木质部导管", def_en:"A hollow plant tube that transports water and supports the plant.",
+    excerpt:"Xylem has no cytoplasm (so water passes freely), no end walls (forming a continuous tube), and walls strengthened with lignin.", fig:"", cat:"organisation" },
+  { term:"tissue", ipa:"/ˈtɪʃuː/", cn:"组织", def_en:"A group of similar cells with the same structure working together to perform a shared function.",
+    excerpt:"Cells with similar structures and functions are massed together in tissues — e.g. muscle tissue, epithelial tissue.", fig:"u2_fig03_organisation_hierarchy.png", cat:"organisation" },
+  { term:"organ", ipa:"/ˈɔːɡən/", cn:"器官", def_en:"A group of different tissues combined into a complex structure performing a particular function.",
+    excerpt:"Several tissues may be combined to form an organ, such as the small intestine or the heart.", fig:"", cat:"organisation" },
+  { term:"organ system", ipa:"/ˈɔːɡən ˈsɪstəm/", cn:"器官系统", def_en:"Several organs working together to perform a particular body function.",
+    excerpt:"In complex organisms, several organs work together to perform a particular task, forming an organ system.", fig:"", cat:"organisation" },
+
+  // ── C. Diffusion (2.3) ──
+  { term:"diffusion", ipa:"/dɪˈfjuːʒən/", cn:"扩散 / 弥散", def_en:"The net movement of particles from a region of higher concentration to a region of lower concentration (down a gradient), as a result of random movement.",
+    excerpt:"Diffusion is the main process by which substances move over short distances in living organisms. It has no energy cost.", fig:"u2_fig04_membrane_diffusion.png", cat:"transport" },
+  { term:"particle", ipa:"/ˈpɑːtɪkl/", cn:"粒子 / 微粒", def_en:"The smallest pieces of a substance — molecules, atoms or ions.",
+    excerpt:"Particles collide more often when they are close together — when their concentration is high.", fig:"", cat:"transport" },
+  { term:"concentration gradient", ipa:"/ˌkɒnsənˈtreɪʃən ˈɡreɪdiənt/", cn:"浓度梯度", def_en:"An imaginary 'slope' from a region of high concentration to a region of low concentration.",
+    excerpt:"Net movement of particles goes down a concentration gradient, from high to low concentration.", fig:"", cat:"transport" },
+  { term:"net movement", ipa:"/net ˈmuːvmənt/", cn:"净移动 / 净流动", def_en:"The overall (average) movement of particles in one direction, after random motion is averaged out.",
+    excerpt:"Particles move randomly, but the overall / net movement is down the concentration gradient.", fig:"", cat:"transport" },
+  { term:"partially permeable membrane", ipa:"/ˈpɑːʃəli ˈpɜːmiəbl ˈmembreɪn/", cn:"半透膜 / 部分透性膜", def_en:"A membrane that lets some particles through but prevents others passing.",
+    excerpt:"The diagram shows a partially permeable membrane — it is permeable to glucose and water but impermeable to protein.", fig:"u2_fig04_membrane_diffusion.png", cat:"transport" },
+  { term:"surface area to volume ratio", ipa:"/ˈsɜːfɪs ˈeəriə tə ˈvɒljuːm ˈreɪʃiəʊ/", cn:"表面积与体积比", def_en:"The surface area of an object divided by its volume; smaller objects have a larger ratio, so faster diffusion.",
+    excerpt:"Smaller cubes turned orange faster — a high surface area : volume ratio speeds up diffusion.", fig:"u2_fig05_surface_area_diffusion.png", cat:"transport" },
+
+  // ── D. Osmosis (2.4) ──
+  { term:"osmosis", ipa:"/ɒzˈməʊsɪs/", cn:"渗透作用", def_en:"The net movement of water molecules from a region of higher water potential to a region of lower water potential, through a partially permeable membrane.",
+    excerpt:"This diffusion of water is called osmosis, and will continue until water equilibrium has been reached.", fig:"u2_fig06_osmosis_diagram.png", cat:"effect" },
+  { term:"water potential", ipa:"/ˈwɔːtə pəˈtenʃl/", cn:"水势", def_en:"A measure of the tendency of water to move; pure water has the highest water potential; adding solute lowers it.",
+    excerpt:"A solution with many water molecules has a high water potential; one with few has a low water potential.", fig:"", cat:"effect" },
+  { term:"hypotonic", ipa:"/ˌhaɪpəʊˈtɒnɪk/", cn:"低渗（溶液水势较高）", def_en:"A solution with a higher water potential than the cell contents (more dilute); water enters the cell.",
+    excerpt:"In a solution of higher water potential (hypotonic), a cell takes in water by osmosis.", fig:"u2_fig08_animal_cell_osmosis.png", cat:"effect" },
+  { term:"hypertonic", ipa:"/ˌhaɪpəˈtɒnɪk/", cn:"高渗（溶液水势较低）", def_en:"A solution with a lower water potential than the cell contents (more concentrated); water leaves the cell.",
+    excerpt:"In a solution of lower water potential (hypertonic), a cell loses water and shrinks.", fig:"u2_fig08_animal_cell_osmosis.png", cat:"effect" },
+  { term:"isotonic", ipa:"/ˌaɪsəˈtɒnɪk/", cn:"等渗（水势相等）", def_en:"A solution with the same water potential as the cell contents; no net water movement.",
+    excerpt:"In a solution of equal water potential (isotonic), there is no net movement of water — the cell is in equilibrium.", fig:"", cat:"effect" },
+  { term:"turgid", ipa:"/ˈtɜːdʒɪd/", cn:"坚挺 / 紧胀（植物细胞）", def_en:"The firm, swollen state of a plant cell that has taken in water by osmosis so the cytoplasm pushes hard on the wall.",
+    excerpt:"The cytoplasm pushes hard against the cell wall and the cell becomes turgid (firm).", fig:"u2_fig07_plant_cell_osmosis.png", cat:"effect" },
+  { term:"flaccid", ipa:"/ˈflæsɪd/", cn:"萎蔫 / 软塌（植物细胞）", def_en:"The soft, floppy state of a plant cell that has lost water so the cytoplasm no longer presses on the wall.",
+    excerpt:"Water leaves by osmosis; the cytoplasm pulls away from the cell wall and the cell becomes flaccid (floppy).", fig:"u2_fig07_plant_cell_osmosis.png", cat:"effect" },
+  { term:"plasmolysis", ipa:"/ˌplæzməˈlɒsɪs/", cn:"质壁分离", def_en:"The shrinking of cytoplasm away from the cell wall when a plant cell loses water by osmosis.",
+    excerpt:"In a hypertonic solution the cell membrane tears away from the cell wall — plasmolysis.", fig:"", cat:"effect" },
+  { term:"crenated", ipa:"/ˈkriːneɪtɪd/", cn:"皱缩（动物细胞）", def_en:"The shrivelled, spiky state of an animal cell that has lost water in a hypertonic solution.",
+    excerpt:"In a solution of lower water potential the cell loses water, shrinks and becomes crenated.", fig:"u2_fig08_animal_cell_osmosis.png", cat:"effect" },
+  { term:"haemolysis", ipa:"/hiːˈmɒləsɪs/", cn:"溶血（动物细胞胀破）", def_en:"The bursting of an animal cell (e.g. red blood cell) that has taken in too much water in a hypotonic solution.",
+    excerpt:"In a solution of higher water potential the cell takes in water, swells and bursts (haemolysis).", fig:"u2_fig08_animal_cell_osmosis.png", cat:"effect" },
+
+  // ── E. Active transport & bulk transport ──
+  { term:"active transport", ipa:"/ˈæktɪv ˈtrænspɔːt/", cn:"主动运输", def_en:"The movement of molecules or ions through a membrane from a region of lower concentration to a region of higher concentration (against a gradient), using energy from respiration.",
+    excerpt:"Active transport can move molecules against a concentration gradient but requires energy and involves protein carriers in membranes.", fig:"u2_fig09_active_transport.png", cat:"method" },
+  { term:"passive transport", ipa:"/ˈpæsɪv ˈtrænspɔːt/", cn:"被动运输", def_en:"Movement of substances across a membrane that does NOT require energy from respiration (e.g. diffusion, osmosis).",
+    excerpt:"Diffusion and osmosis are passive — they go down a gradient and need no energy input from the cell.", fig:"", cat:"method" },
+  { term:"carrier protein", ipa:"/ˈkæriə ˈprəʊtiːn/", cn:"载体蛋白", def_en:"Protein molecules in a membrane that use energy to change shape and move specific ions or molecules into or out of a cell.",
+    excerpt:"Carriers pick up, carry and release particles across the membrane, even against a gradient.", fig:"u2_fig09_active_transport.png", cat:"method" },
+  { term:"endocytosis", ipa:"/ˌendəʊsaɪˈtəʊsɪs/", cn:"内吞作用", def_en:"Bulk uptake of large particles or droplets into a cell by the membrane engulfing them.",
+    excerpt:"Some particles are too large to cross a membrane — the cell surface membrane engulfs them (endocytosis).", fig:"u2_fig10_phagocytosis.png", cat:"method" },
+  { term:"exocytosis", ipa:"/ˌeksəʊsaɪˈtəʊsɪs/", cn:"胞吐作用", def_en:"Bulk release of large molecules (e.g. enzymes, hormones) out of a cell by vesicle fusion with the membrane.",
+    excerpt:"Secretory vesicles containing cell products such as hormones or enzymes fuse with the membrane and release their contents (exocytosis).", fig:"u2_fig11_exocytosis.png", cat:"method" },
+  { term:"phagocytosis", ipa:"/ˌfæɡəsaɪˈtəʊsɪs/", cn:"吞噬作用", def_en:"A type of endocytosis in which a cell engulfs solid particles (e.g. a white blood cell engulfing a microbe).",
+    excerpt:"Phagocytosis is used by white blood cells — particles are literally engulfed by the cell surface membrane.", fig:"u2_fig10_phagocytosis.png", cat:"method" },
+  { term:"equilibrium", ipa:"/ˌiːkwɪˈlɪbriəm/", cn:"平衡 / 动态平衡", def_en:"A state reached when the concentration of particles (or water potential) is equal on both sides, so there is no net movement.",
+    excerpt:"Diffusion continues until equilibrium is reached — after that, particles move but there is no net movement.", fig:"", cat:"method" }
+];
+
+// ─── PHONETICS + CN_DICT + TERM_LIST (auto-built from VOCAB) ───
+var PHONETICS = {}, CN_DICT = {}, TERM_LIST = [];
+VOCAB.forEach(function(v){
+  PHONETICS[v.term.toLowerCase()] = v.ipa;
+  CN_DICT[v.term.toLowerCase()]   = v.cn;
+  TERM_LIST.push(v.term);
+});
+// build regex of all terms, longest first so multi-word terms match first
+TERM_LIST.sort(function(a,b){ return b.length - a.length; });
+var _esc = function(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); };
+TERM_REGEX = new RegExp("\\b(" + TERM_LIST.map(_esc).join("|") + ")\\b", "gi");
+
+// ═════════════════════════════════════════════════════════════
+//  PART 2 · MATCHING QUIZ  (English definition → correct term)
+// ═════════════════════════════════════════════════════════════
+var MATCH_POOL = VOCAB.map(function(v){
+  return { term: v.term, def_en: v.def_en, ipa: v.ipa, cn: v.cn, cat: v.cat };
+});
+
+// ═════════════════════════════════════════════════════════════
+//  PART 3 · CN → EN RECALL  (given Chinese, write the English term)
+// ═════════════════════════════════════════════════════════════
+var CN_EN_POOL = VOCAB.map(function(v){
+  return {
+    cn: v.cn,
+    accept: [v.term],
+    example_en: v.excerpt,
+    hint: v.ipa + "  ·  category " + v.cat,
+    full_def: v.def_en
+  };
+});
+
+// ═════════════════════════════════════════════════════════════
+//  PART 4 · CORNELL NOTES  (4 sections aligned to 2.1 / 2.2 / 2.3 / 2.4)
+// ═════════════════════════════════════════════════════════════
+var CORNELL_SECTIONS = [
+  {
+    tag: "2.1",
+    title: "Organisms are made up of cells",
+    cue: {
+      "Light microscope": "Magnifies ~400×; needs dyes/stains (methylene blue for animal, iodine for plant) to improve contrast.",
+      "Magnification formula": "Magnification = Measured length (image) ÷ Actual length.  Units must match.",
+      "3 features ALL cells share": "Cell surface membrane, cytoplasm, nucleus (or DNA region).",
+      "3 EXTRA features in plant cells": "Cellulose cell wall, large permanent vacuole, chloroplasts.",
+      "Typical sizes": "Animal cell ≈ 25 μm; Plant cell ≈ 60 μm (0.06 mm)."
+    },
+    main_html: "<p>All living organisms are made up of units called <b>cells</b>. Cells are too small to see with the naked eye, so a <b>light microscope</b> is used: visible light passes through a specimen and a series of lenses magnify the image. A useful magnification of about <b>400 times</b> can be achieved. Contrast is improved by using <b>dyes or stains</b> — methylene blue for animal cells (the nucleus shows up well), iodine solution for plant cells.</p>" +
+      "<p>Although cells specialise, they share three features in common: a <b>cell surface membrane</b> surrounding the cytoplasm, <b>cytoplasm</b> containing water and dissolved substances, and a <b>nucleus</b> containing genetic material (DNA). Plant cells have three additional features: a <b>cellulose cell wall</b>, a large permanent <b>vacuole</b>, and may contain <b>chloroplasts</b>.</p>" +
+      "<p>The <b>cell surface membrane</b> controls entry and exit of dissolved substances and separates the cell from its surroundings. <b>Cytoplasm</b> holds organelles such as <b>ribosomes</b> (protein synthesis) and <b>mitochondria</b> (aerobic respiration — large numbers indicate a high metabolic rate). The <b>nucleus</b> carries coded instructions on chromosomes that control the cell's activities; chromosomes are only visible during cell division.</p>" +
+      "<p>In plant cells, <b>chloroplasts</b> contain the green pigment <b>chlorophyll</b> and the enzymes for photosynthesis; the large permanent <b>vacuole</b> provides turgor pressure; the <b>cellulose cell wall</b> is freely permeable and gives structural support. Plant cells therefore tend to be regular in shape and larger (~60 μm), while animal cells are irregular and smaller (~25 μm).</p>" +
+      "<p><b>Size and magnification.</b> Size is measured in mm or μm (1 mm = 1000 μm). When a structure is too small to draw actual size, we use: <i>Magnification = Measured length ÷ Actual length</i>. A scale bar can also be used to work out magnification.</p>",
+    summary_en: "All cells share a membrane, cytoplasm and nucleus; plant cells add a cellulose wall, vacuole and chloroplasts. Microscopes (×400) and stains reveal them. Magnification = image size ÷ actual size.",
+    summary_cn: "所有细胞共有：细胞膜、细胞质、细胞核；植物细胞额外有纤维素细胞壁、大液泡、叶绿体。用显微镜（×400）+ 染色观察。放大倍数 = 像长 ÷ 实长。"
+  },
+  {
+    tag: "2.2",
+    title: "The organisation of living organisms",
+    cue: {
+      "Levels (small → large)": "Cell → tissue → organ → organ system → organism.",
+      "Tissue": "A group of similar cells working together to perform a shared function.",
+      "Organ": "A group of different tissues working together to perform a particular function.",
+      "Organ system": "Several organs working together to perform a body function.",
+      "Specialised cells": "Red blood cell, muscle cell, ciliated cell, nerve cell (animal); root hair cell, xylem vessel, palisade cell (plant)."
+    },
+    main_html: "<p>Large organisms are <b>multicellular</b>. Different cell types have particular structures designed to help them carry out different tasks — they have become <b>specialised</b>. Examples: the <b>red blood cell</b> transports oxygen (filled with haemoglobin, no nucleus, flexible to squeeze through narrow vessels); the <b>root hair cell</b> has a long extension increasing surface area for absorbing water and minerals; the <b>xylem vessel</b> has no cytoplasm and no end wall so it forms a continuous tube, strengthened with <b>lignin</b>.</p>" +
+      "<p>Cells with similar structures and functions are massed together into <b>tissues</b>. Animal tissues include <b>epithelium</b> (lines tubes & covers surfaces), <b>connective tissue</b> / <b>blood</b> (transports & defends), <b>muscle tissue</b> (contracts), <b>nervous tissue</b> (transmits impulses). Plant tissues include <b>epidermis</b>, <b>mesophyll</b> (photosynthesis), <b>vascular tissue</b> (transport).</p>" +
+      "<p>Several tissues combine to form an <b>organ</b> — a complex structure with a particular function (e.g. the small intestine, the heart, a leaf). In complex organisms, several organs work together to perform a task, forming an <b>organ system</b> (e.g. digestive system, excretory system). Each cell, tissue and organ has a specialised part to play — there is a <b>division of labour</b> — but their activities must be coordinated.</p>" +
+      "<p>The full hierarchy of organisation is: <b>organelle → cell → tissue → organ → organ system → organism</b>.</p>",
+    summary_en: "Organisation hierarchy: cell → tissue → organ → organ system → organism. Each level is built from the level below; specialised cells carry out specific jobs (division of labour).",
+    summary_cn: "组织层级：细胞 → 组织 → 器官 → 器官系统 → 生物体。特化细胞执行特定功能（分工），逐级组合成更大的功能单位。"
+  },
+  {
+    tag: "2.3",
+    title: "Movement in and out of cells: diffusion",
+    cue: {
+      "Diffusion (definition)": "Net movement of particles from high to low concentration (down a gradient) due to random motion.",
+      "Partially permeable membrane": "Lets some particles through, blocks others (e.g. permeable to water & glucose, not protein).",
+      "Concentration gradient": "A 'slope' from high concentration to low concentration; particles move down it.",
+      "Adaptations for fast diffusion": "Short distance, large surface area, steep & maintained gradient.",
+      "Surface area : volume ratio": "Smaller objects have a larger ratio → faster diffusion to the centre."
+    },
+    main_html: "<p>The cell cytoplasm is surrounded by a <b>cell surface membrane</b> that regulates what passes in and out. Not all particles can cross it — sometimes they are too big, or have the wrong charge, or the membrane's chemistry blocks them. A <b>partially permeable membrane</b> lets some particles (e.g. water, glucose) through but blocks others (e.g. protein).</p>" +
+      "<p><b>Diffusion</b> is the main process by which substances move over short distances in living organisms. <b>Particles</b> (molecules, atoms, ions) in a liquid or gas move randomly, colliding and changing direction. They collide more often when crowded together (high concentration), so the <b>net movement</b> is from a region of higher concentration to a region of lower concentration — down a <b>concentration gradient</b> — until <b>equilibrium</b> is reached. Diffusion is <b>passive</b> — it costs the organism no energy.</p>" +
+      "<p>Many life processes depend on diffusion: O₂ and CO₂ exchange in the lungs and leaves; absorption of glucose and amino acids from the gut; mineral ion uptake by roots. Living organisms have adaptations to speed up diffusion:</p>" +
+      "<ul><li><b>Diffusion distances are short</b> — lung membranes are very thin.</li><li><b>Large surface area</b> — many alveoli, root hairs, villi.</li><li><b>Concentration gradients are maintained</b> — circulating blood carries glucose away, breathing refreshes the air in the lungs.</li></ul>" +
+      "<p>The <b>surface area to volume ratio</b> experiment: cubes of purple gelatin were placed in acid and the time for each cube to turn orange was recorded. Smaller cubes (larger SA:Vol ratio) turned orange faster — showing that diffusion is more efficient at supplying materials when SA:Vol is high. This is why large organisms need specialised exchange surfaces and transport systems.</p>",
+    summary_en: "Diffusion = passive net movement of particles down a concentration gradient through a partially permeable membrane. Fast when distance is short, surface area large, and gradient steep.",
+    summary_cn: "扩散 = 粒子顺浓度梯度（高→低）的净移动，被动、不耗能。距离短、表面积大、梯度陡时扩散快。小物体表面积/体积比大，扩散到中心更快。"
+  },
+  {
+    tag: "2.4",
+    title: "Movement in and out of cells: osmosis & active transport",
+    cue: {
+      "Osmosis (definition)": "Net movement of WATER from high water potential to low water potential through a partially permeable membrane.",
+      "Water potential": "Tendency of water to move. Pure water = highest. Adding solute lowers it. (= dilute = high; concentrated = low).",
+      "Plant cell in hypotonic": "Takes in water → becomes turgid (firm, healthy). Cell wall prevents bursting.",
+      "Plant cell in hypertonic": "Loses water → flaccid → plasmolysis (membrane pulls away from wall).",
+      "Animal cell in hypotonic": "Takes in water → swells → bursts (haemolysis) — no wall to stop it.",
+      "Animal cell in hypertonic": "Loses water → shrinks → crenated.",
+      "Active transport": "Movement AGAINST a gradient, using energy from respiration, via carrier proteins.",
+      "Endo/exocytosis": "Bulk transport of large particles — endocytosis (in), exocytosis (out). Phagocytosis = 'cell eating'."
+    },
+    main_html: "<p><b>Osmosis</b> is a special case of diffusion — it is the diffusion of <b>water molecules</b>. Living cells are surrounded by a partially permeable membrane, and the cytoplasm and surroundings are both <b>aqueous solutions</b> (water = solvent, dissolved substances = solute). Because talking about water 'concentration' is confusing, biologists use the term <b>water potential</b>: pure water has the highest water potential; adding solute lowers it. A dilute solution = high water potential; a concentrated solution = low water potential.</p>" +
+      "<p><b>Osmosis = the net movement of water molecules from a region of higher water potential to a region of lower water potential, down a water potential gradient, through a partially permeable membrane.</b> It continues until water equilibrium is reached.</p>" +
+      "<p><b>Plant cells and osmosis.</b> If water enters by osmosis, the cytoplasm swells and pushes against the cellulose cell wall — the cell becomes <b>turgid</b> (firm). If water leaves, the cytoplasm shrinks and the cell becomes <b>flaccid</b> (floppy); in extreme cases the membrane pulls away from the wall — <b>plasmolysis</b>. The cell wall stops the plant cell from bursting.</p>" +
+      "<p><b>Animal cells and osmosis.</b> Animal cells have no cell wall. In a <b>hypotonic</b> solution (higher water potential outside), water enters and the cell swells and bursts — <b>haemolysis</b> (red blood cells leave only a 'ghost' membrane). In a <b>hypertonic</b> solution (lower water potential outside), water leaves and the cell shrinks and becomes <b>crenated</b>. In an <b>isotonic</b> solution, there is no net movement. This is why mammals rely on the kidney to keep blood plasma and body fluids at the same water potential as cells (<b>osmoregulation</b>).</p>" +
+      "<p><b>Active transport.</b> Diffusion only moves particles down a gradient. But cells sometimes need to move particles <b>against</b> a concentration gradient. <b>Active transport</b> uses <b>energy from respiration</b> and <b>carrier proteins</b> in the membrane to do this. Carriers are specific — like enzymes, they recognise and select particular molecules. Examples: uptake of mineral ions by root hair cells; uptake of glucose by villi epithelial cells (even after equilibrium is reached between gut and blood).</p>" +
+      "<p><b>Bulk transport.</b> Some particles are too large to cross by diffusion or active transport. The membrane engulfs them — <b>endocytosis</b> (bulk uptake). A special case is <b>phagocytosis</b> ('cell eating') used by white blood cells to engulf microbes. The reverse — releasing large molecules such as enzymes or hormones out of the cell — is <b>exocytosis</b> (vesicles fuse with the membrane).</p>",
+    summary_en: "Osmosis = water moves from high to low water potential through a partially permeable membrane. Plant cells become turgid (water in) or flaccid/plasmolysed (water out); animal cells burst (haemolysis) or crenate. Active transport moves particles against a gradient using energy + carrier proteins. Endocytosis/phagocytosis (in) and exocytosis (out) handle large particles.",
+    summary_cn: "渗透 = 水分子顺水势梯度（高→低）穿过半透膜的净移动。植物细胞：吸水→坚挺；失水→萎蔫→质壁分离（细胞壁防胀破）。动物细胞：吸水→溶血胀破；失水→皱缩。主动运输 = 逆浓度梯度，耗能，需载体蛋白。大颗粒走内吞（吞噬）/ 胞吐。"
+  }
+];
+
+// ═════════════════════════════════════════════════════════════
+//  PART 5 · CLOZE (fill-in) + SHORT ANSWER  (50/50)
+//  Cloze answers MUST match a VOCAB term so the speaker + lang-notes work.
+// ═════════════════════════════════════════════════════════════
+var CLOZE_POOL = [
+  // ── Cell structure (2.1) ──
+  { type:"cloze", before:"All living organisms are made up of units called", answer:"cells", after:", which are too small to see without a microscope.", hint:"The smallest unit of life." },
+  { type:"cloze", before:"A plant cell has three extra features that an animal cell does not: a cellulose cell wall, a large permanent", answer:"vacuole", after:", and chloroplasts.", hint:"A fluid-filled space that gives turgor." },
+  { type:"cloze", before:"The pigment that absorbs light energy in photosynthesis is called", answer:"chlorophyll", after:", found inside chloroplasts.", hint:"Makes leaves green." },
+  { type:"cloze", before:"Magnification = measured length ÷", answer:"actual length", after:". Units must be the same.", hint:"The real size of the object." },
+  { type:"cloze", before:"Aerobic respiration releasing energy from glucose takes place in the", answer:"mitochondrion", after:"(pl. mitochondria).", hint:"Powerhouse of the cell." },
+  { type:"cloze", before:"Proteins are made by tiny organelles called", answer:"ribosome", after:"s, on the rough endoplasmic reticulum.", hint:"Site of protein synthesis." },
+  // ── Organisation (2.2) ──
+  { type:"cloze", before:"A group of similar cells working together to perform a shared function is called a", answer:"tissue", after:".", hint:"e.g. muscle, epithelium, mesophyll." },
+  { type:"cloze", before:"A group of different tissues combined into a complex structure with a particular function is called an", answer:"organ", after:", such as the small intestine.", hint:"e.g. heart, leaf, stomach." },
+  { type:"cloze", before:"The oxygen-carrying pigment inside a red blood cell is called", answer:"haemoglobin", after:".", hint:"Red, binds O₂." },
+  { type:"cloze", before:"A plant cell with a long extension that increases surface area for water absorption is the", answer:"root hair cell", after:".", hint:"Found on roots." },
+  { type:"cloze", before:"Water-carrying tubes in plants strengthened by lignin are called", answer:"xylem vessel", after:"s.", hint:"No cytoplasm, no end wall." },
+  // ── Diffusion (2.3) ──
+  { type:"cloze", before:"The net movement of particles from a high concentration to a low concentration is called", answer:"diffusion", after:".", hint:"Passive, no energy cost." },
+  { type:"cloze", before:"A membrane that lets some particles through but blocks others is called a", answer:"partially permeable membrane", after:".", hint:"Also called semi-permeable." },
+  { type:"cloze", before:"Diffusion is faster when the surface area to", answer:"volume", after:"ratio is larger.", hint:"Smaller objects have a higher one." },
+  { type:"cloze", before:"The imaginary 'slope' from high concentration to low concentration is called a", answer:"concentration gradient", after:".", hint:"Particles move down it." },
+  // ── Osmosis & active transport (2.4) ──
+  { type:"cloze", before:"The diffusion of water molecules through a partially permeable membrane is called", answer:"osmosis", after:".", hint:"A special case of diffusion." },
+  { type:"cloze", before:"The term for 'the tendency of water to move', which is lowered by adding solute, is", answer:"water potential", after:".", hint:"Pure water has the highest." },
+  { type:"cloze", before:"A plant cell that has lost water and gone soft / floppy is described as", answer:"flaccid", after:".", hint:"Opposite of turgid." },
+  { type:"cloze", before:"When an animal red blood cell is placed in pure water it swells and bursts — this is called", answer:"haemolysis", after:".", hint:"Bursting of a red blood cell." },
+  { type:"cloze", before:"A shrivelled, spiky animal cell that has lost water is described as", answer:"crenated", after:".", hint:"Animal cell in hypertonic solution." },
+  { type:"cloze", before:"Movement of particles against a concentration gradient, using energy from respiration, is called", answer:"active transport", after:".", hint:"Needs carrier proteins + ATP." },
+  { type:"cloze", before:"The proteins in the membrane that change shape to move specific particles are called", answer:"carrier protein", after:"s.", hint:"Specific, like enzymes." },
+  { type:"cloze", before:"When a white blood cell engulfs a microbe, the process is called", answer:"phagocytosis", after:".", hint:"'Cell eating'." },
+  { type:"cloze", before:"Release of large molecules out of a cell by vesicle fusion is called", answer:"exocytosis", after:".", hint:"Bulk release — e.g. enzymes, hormones." }
+];
+
+var SHORT_POOL = [
+  { type:"short",
+    q_en:"Explain why a plant cell does not burst when placed in pure water, but an animal cell does.",
+    q_cn:"解释为什么植物细胞放进纯水中不会胀破，而动物细胞会。",
+    keywords:["cell wall","turgid","pressure","no cell wall","burst","haemolysis"],
+    model_en:"A plant cell is surrounded by a rigid cellulose cell wall. When water enters by osmosis, the cytoplasm swells and pushes against the wall, but the strong wall resists further expansion so the cell becomes turgid (firm) instead of bursting. An animal cell has no cell wall — only a thin cell surface membrane — so when water enters by osmosis it keeps swelling until the membrane ruptures; this bursting of a red blood cell is called haemolysis.",
+    model_cn:"植物细胞外有坚韧的纤维素细胞壁。渗透吸水后，细胞质膨胀并压向细胞壁，但细胞壁阻止进一步膨胀，细胞只变得坚挺而不会破裂。动物细胞没有细胞壁，只有薄薄的细胞膜，所以不断吸水直到膜破裂——红细胞胀破叫溶血。",
+    lang_notes:"Key structure words: <b>cell wall</b> (细胞壁), <b>turgid</b> (坚挺的), <b>burst/haemolysis</b> (胀破/溶血). Causal connectors: <b>because</b>, <b>so</b>, <b>instead of</b>, <b>until</b>.  Write in two halves — plant cell first, then animal cell — using <i>whereas / however / by contrast</i> to link them." },
+
+  { type:"short",
+    q_en:"Define diffusion and give two examples of life processes that depend on it.",
+    q_cn:"定义扩散，并举出两个依赖扩散的生命过程。",
+    keywords:["net movement","particles","high concentration","low concentration","gradient","passive","lungs","leaves","gut","roots"],
+    model_en:"Diffusion is the net movement of particles (molecules or ions) from a region of higher concentration to a region of lower concentration — that is, down a concentration gradient — as a result of their random movement. It is a passive process, so it costs the organism no energy. Two examples: (1) the exchange of oxygen and carbon dioxide between the blood and the air in the lungs; (2) the absorption of glucose and amino acids from the small intestine into the blood.",
+    model_cn:"扩散是粒子（分子或离子）由高浓度区域向低浓度区域的净移动——即顺浓度梯度——由粒子的随机运动产生。它是被动过程，不消耗能量。两个例子：(1) 肺中血液与肺泡气之间的 O₂ 和 CO₂ 交换；(2) 小肠中葡萄糖和氨基酸进入血液的吸收。",
+    lang_notes:"Definition frame: <b>X is the … of … from … to …</b>. Use <b>net movement</b> not just 'movement'. Give the gradient direction with <b>from high … to low …</b>. Examples connector: <b>For example, / Two examples are: (1) …; (2) …</b>." },
+
+  { type:"short",
+    q_en:"State three ways living organisms are adapted to speed up diffusion.",
+    q_cn:"说出生物加速扩散的三种适应方式。",
+    keywords:["short distance","thin","surface area","large","gradient","maintained","blood","breathing"],
+    model_en:"Living organisms speed up diffusion by: (1) keeping diffusion distances short — for example, the membranes in the lungs are very thin; (2) providing a large surface area — for example, the many alveoli in the lungs, the villi in the intestine, and root hairs on roots; (3) maintaining a steep concentration gradient — for example, the continual movement of blood carries absorbed glucose away, and breathing refreshes the air in the lungs, keeping the gradient high.",
+    model_cn:"生物加速扩散的三种方式：(1) 缩短扩散距离——例如肺膜非常薄；(2) 提供大的表面积——例如肺泡、小肠绒毛、根毛；(3) 维持陡峭的浓度梯度——例如血液循环不断带走已吸收的葡萄糖，呼吸不断更新肺内空气。",
+    lang_notes:"List frame: <b>by: (1) … ; (2) … ; (3) …</b>. Each item = cause + <b>for example</b> + concrete case. Avoid vague words like <i>good / fast</i> — use measurable terms: <b>thin, large, steep</b>." },
+
+  { type:"short",
+    q_en:"Define active transport and explain why it needs energy from respiration.",
+    q_cn:"定义主动运输，并解释为什么它需要呼吸作用提供的能量。",
+    keywords:["against","concentration gradient","lower to higher","energy","respiration","carrier protein","specific"],
+    model_en:"Active transport is the movement of molecules or ions through a cell membrane from a region of lower concentration to a region of higher concentration — that is, against a concentration gradient — using energy from respiration and involving carrier proteins in the membrane. It needs energy because particles do not naturally move against a gradient; the carrier proteins must change shape to pick up, carry and release specific particles, and this shape change is powered by energy released during respiration (ATP). Active transport is specific — the cell can choose which molecules to absorb.",
+    model_cn:"主动运输是分子或离子穿过细胞膜，从低浓度区域移向高浓度区域（即逆浓度梯度）的过程，需要呼吸作用释放的能量，并依赖膜上的载体蛋白。它之所以需要能量，是因为粒子本身不会逆梯度移动；载体蛋白必须改变形状来摄取、运输、释放特定粒子，这一形变由呼吸作用释放的能量（ATP）驱动。主动运输具有特异性——细胞可以选择吸收哪些分子。",
+    lang_notes:"Definition must include 3 things: (1) direction = <b>against</b> the gradient; (2) <b>energy from respiration</b>; (3) <b>carrier proteins</b>. Explain <i>why</i> energy is needed: particles don't move uphill by themselves — the carrier must do work (change shape). Compare with <b>passive</b> = diffusion/osmosis, no energy." },
+
+  { type:"short",
+    q_en:"Describe what happens to a red blood cell when it is placed in a solution with a lower water potential than the cell contents.",
+    q_cn:"描述红细胞被放入水势低于细胞内含物的溶液（高渗溶液）时会发生什么。",
+    keywords:["hypertonic","lower water potential","water leaves","osmosis","shrinks","crenated","no cell wall"],
+    model_en:"A solution with a lower water potential than the red blood cell's contents is a hypertonic solution. Water moves by osmosis from the cell (higher water potential) to the surrounding solution (lower water potential), down the water potential gradient. Because the red blood cell has no cell wall, it shrinks and its membrane becomes wrinkled and spiky — the cell is described as crenated. If the solution is strongly hypertonic the cell may be permanently damaged.",
+    model_cn:"水势低于红细胞内含物的溶液是高渗溶液。水分子通过渗透作用从细胞（水势较高）流向周围溶液（水势较低），顺水势梯度移动。因为红细胞没有细胞壁，细胞皱缩，细胞膜变得皱巴巴、带尖刺——这种状态叫皱缩。如果溶液渗透压很高，细胞可能被永久损伤。",
+    lang_notes:"Process narration in present tense: <b>water moves … the cell shrinks … it becomes …</b>. Direction words: <b>out of / into</b>. State terms: <b>crenated</b> (皱缩), <b>hypertonic</b> (高渗). Remember: lower water potential OUTSIDE = water leaves the cell." },
+
+  { type:"short",
+    q_en:"Compare diffusion and active transport in a table. Include one example of each.",
+    q_cn:"用表格比较扩散和主动运输，各举一例。",
+    keywords:["passive","active","down","against","gradient","energy","no energy","carrier","oxygen","glucose","villi"],
+    model_en:"Diffusion: particles move DOWN a concentration gradient (high → low); it is passive and needs no energy from respiration; no carrier proteins are involved; example — oxygen diffusing from the lung air into the blood. Active transport: particles move AGAINST a concentration gradient (low → high); it requires energy from respiration; it involves specific carrier proteins in the membrane; example — uptake of glucose by epithelial cells of the villi even when the blood already has more glucose than the gut contents. Both move particles across the cell surface membrane.",
+    model_cn:"扩散：粒子顺浓度梯度（高→低）移动；被动，不需要呼吸作用供能；不涉及载体蛋白；例子——氧气从肺泡气扩散进入血液。主动运输：粒子逆浓度梯度（低→高）移动；需要呼吸作用供能；需要膜上特异载体蛋白；例子——小肠绒毛上皮细胞吸收葡萄糖，即使血液中葡萄糖浓度已高于肠腔。两者都是粒子穿过细胞表面膜。",
+    lang_notes:"Comparison structure: feature-by-feature. Use <b>whereas / while / by contrast</b> to pair the two. Three axes to compare: <b>(1) direction of gradient, (2) energy needed, (3) carrier involvement</b>. End with the similarity: <b>Both …</b>." }
+];
+
+// Final guard: ensure pools are non-empty
+console.log("[Unit 2] VOCAB:", VOCAB.length, "MATCH:", MATCH_POOL.length, "CN_EN:", CN_EN_POOL.length, "CORNELL:", CORNELL_SECTIONS.length, "CLOZE:", CLOZE_POOL.length, "SHORT:", SHORT_POOL.length);
+/* DATA_END */
+</script>
+
+<script>
+/* ═════════════════════════════════════════════════════════════
+   TTS MULTI-PROVIDER (v2.0 — Edge-TTS local proxy primary)
+   Strategy: Edge-TTS (local proxy, Jenny neural) → StreamElements → Web Speech fallback
+   ═════════════════════════════════════════════════════════════ */
+var TTS_PROXY = 'http://127.0.0.1:8766/tts';   // local Edge-TTS proxy
+var TTS_VOICE = 'jenny';                         // en-US-JennyNeural
+var TTS_PROXY_ONLINE = true;                     // probe and set
+var currentAudio = null;
+var ttsLocked = false;
+var cachedVoice = null;
+
+// Probe local TTS proxy at startup (silent — no popup)
+(function probeTTSProxy() {
+  fetch('http://127.0.0.1:8766/health', { method:'GET' })
+    .then(function(r){ TTS_PROXY_ONLINE = r.ok; })
+    .catch(function(){ TTS_PROXY_ONLINE = false; });
+})();
+
+function refreshVoiceCache() {
+  if (!('speechSynthesis' in window)) return;
+  var voices = window.speechSynthesis.getVoices();
+  var pref = ['Google US English', 'Samantha', 'Karen', 'Microsoft Aria', 'Microsoft Zira'];
+  for (var i=0; i<pref.length; i++) {
+    for (var j=0; j<voices.length; j++) {
+      if (voices[j].name === pref[i]) { cachedVoice = voices[j]; return; }
+    }
+  }
+  for (var k=0; k<voices.length; k++) {
+    if (/en-/i.test(voices[k].lang) && /female|woman|aria|zira|samantha|karen|joanna/i.test(voices[k].name)) {
+      cachedVoice = voices[k]; return;
+    }
+  }
+  for (var m=0; m<voices.length; m++) {
+    if (/^en/i.test(voices[m].lang)) { cachedVoice = voices[m]; return; }
+  }
+}
+if ('speechSynthesis' in window) {
+  refreshVoiceCache();
+  window.speechSynthesis.onvoiceschanged = refreshVoiceCache;
+}
+
+function stopAudio() {
+  ttsLocked = false;
+  if (currentAudio) {
+    try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e) {}
+    currentAudio = null;
+  }
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+function isOnline() { return navigator.onLine !== false; }
+
+function speakWord(word) {
+  stopAudio();
+  if (!isOnline()) { speakWebSpeech(word); return; }
+  // Priority 1: Edge-TTS local proxy (best quality)
+  if (TTS_PROXY_ONLINE !== false) {
+    speakEdgeTTS(word, 2500).then(function(ok) {
+      if (ok) return;
+      // Edge failed → fall back to SE
+      return speakStreamElements(word, 1500).then(function(){}, function(){
+        speakWebSpeech(word);
+      });
+    }).catch(function(){ speakWebSpeech(word); });
+    return;
+  }
+  // Proxy offline → SE → Web Speech
+  speakStreamElements(word, 1500).then(function(ok){
+    if (!ok) speakWebSpeech(word);
+  }).catch(function(){ speakWebSpeech(word); });
+}
+
+function speakEdgeTTS(word, timeoutMs) {
+  timeoutMs = timeoutMs || 2500;
+  return new Promise(function(resolve, reject) {
+    var url = TTS_PROXY + '?text=' + encodeURIComponent(word) + '&voice=' + TTS_VOICE + '&rate=-5%25';
+    var audio = new Audio(url);
+    audio.volume = 1.0;
+    var settled = false;
+    audio.addEventListener('canplaythrough', function() {
+      if (settled || ttsLocked) { resolve(true); return; }
+      settled = true; ttsLocked = true; currentAudio = audio;
+      audio.play().then(function() { resolve(true); }).catch(function(e) { ttsLocked = false; reject(e); });
+    }, { once:true });
+    audio.addEventListener('error', function() {
+      if (settled) return; settled = true;
+      TTS_PROXY_ONLINE = false;  // mark proxy as down, skip next time
+      resolve(false);
+    }, { once:true });
+    setTimeout(function() {
+      if (!settled) { settled = true; TTS_PROXY_ONLINE = false; resolve(false); }
+    }, timeoutMs);
+    audio.load();
+  });
+}
+
+function speakStreamElements(word, timeoutMs) {
+  timeoutMs = timeoutMs || 2000;
+  return new Promise(function(resolve, reject) {
+    var url = 'https://api.streamelements.com/kappa/v2/speech?voice=Joanna&text=' + encodeURIComponent(word);
+    var audio = new Audio(url);
+    audio.volume = 1.0;
+    var settled = false;
+    audio.addEventListener('canplaythrough', function() {
+      if (settled || ttsLocked) { resolve(true); return; }
+      settled = true; ttsLocked = true; currentAudio = audio;
+      audio.play().then(function() { resolve(true); }).catch(function(e) { ttsLocked = false; reject(e); });
+    }, { once:true });
+    audio.addEventListener('error', function() { if (settled) return; settled = true; resolve(false); }, { once:true });
+    setTimeout(function() { if (!settled) { settled = true; resolve(false); } }, timeoutMs);
+    audio.load();
+  });
+}
+
+function speakWebSpeech(word) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  if (!cachedVoice) refreshVoiceCache();
+  if (!ttsLocked) ttsLocked = true;
+  var u = new SpeechSynthesisUtterance(word);
+  u.lang = 'en-US'; u.rate = 0.88; u.pitch = 1.05; u.volume = 1.0;
+  if (cachedVoice) { u.voice = cachedVoice; u.lang = cachedVoice.lang; }
+  u.onend = function() {};
+  u.onerror = function() { ttsLocked = false; };
+  window.speechSynthesis.speak(u);
+}
+
+function getPhonetic(word) { return PHONETICS[word.toLowerCase()] || ''; }
+function getCN(word) { return CN_DICT[word.toLowerCase()] || ''; }
+function changeVoice(v) { TTS_VOICE = v; try { localStorage.setItem('icmyp_tts_voice', v); } catch(e){} }
+(function loadVoicePref(){ try { var v = localStorage.getItem('icmyp_tts_voice'); if (v) { TTS_VOICE = v; var s = document.getElementById('voice-select'); if (s) s.value = v; } } catch(e){} })();
+
+function createSpeakButton(word) {
+  var btn = document.createElement('button');
+  btn.className = 'speak-btn';
+  btn.innerHTML = '🔊';
+  btn.title = 'Click to hear: ' + word;
+  btn.type = 'button';
+  btn.setAttribute('aria-label', 'Pronounce ' + word);
+  var phonetic = getPhonetic(word), cn = getCN(word);
+  var html = '';
+  if (phonetic) html += '<div class="popup-phonetic">' + phonetic + '</div>';
+  if (cn) html += '<div class="popup-cn">' + cn + '</div>';
+  if (!phonetic && !cn) html += '<div class="popup-cn">Click to hear</div>';
+  html += '<div class="popup-hint">🔊 click to play</div>';
+  var popup = document.createElement('div');
+  popup.className = 'term-popup';
+  popup.innerHTML = html;
+  btn.appendChild(popup);
+  btn.addEventListener('click', function(e) {
+    e.preventDefault(); e.stopPropagation();
+    speakWord(word);
+    btn.classList.add('playing');
+    setTimeout(function() { btn.classList.remove('playing'); }, 1500);
+  });
+  return btn;
+}
+
+function createInlineSpeakBtn(word) {
+  var btn = createSpeakButton(word);
+  btn.classList.add('speak-inline');
+  return btn;
+}
+
+/* ─── Inline term scanning (reused from unit1) ─── */
+function processTextNode(textNode) {
+  var text = textNode.nodeValue;
+  if (!text || text.trim().length < 2) return;
+  var matches = [];
+  var regex = new RegExp(TERM_REGEX.source, 'gi');
+  var match;
+  while ((match = regex.exec(text)) !== null) {
+    var term = match[0], found = null;
+    for (var i=0; i<TERM_LIST.length; i++) {
+      if (TERM_LIST[i].toLowerCase() === term.toLowerCase()) { found = TERM_LIST[i]; break; }
+    }
+    if (found) matches.push({ index: match.index, length: match[0].length, term: found });
+  }
+  if (matches.length === 0) return;
+  var frag = document.createDocumentFragment();
+  var lastEnd = 0, termsAdded = {};
+  matches.forEach(function(m) {
+    if (m.index > lastEnd) frag.appendChild(document.createTextNode(text.slice(lastEnd, m.index)));
+    var termKey = m.term.toLowerCase();
+    if (termsAdded[termKey]) {
+      frag.appendChild(document.createTextNode(text.slice(m.index, m.index + m.length)));
+    } else {
+      var span = document.createElement('span');
+      span.className = 'term-inline';
+      var termText = document.createElement('span');
+      termText.textContent = text.slice(m.index, m.index + m.length);
+      span.appendChild(termText);
+      span.appendChild(createInlineSpeakBtn(m.term));
+      frag.appendChild(span);
+      termsAdded[termKey] = true;
+    }
+    lastEnd = m.index + m.length;
+  });
+  if (lastEnd < text.length) frag.appendChild(document.createTextNode(text.slice(lastEnd)));
+  textNode.parentNode.replaceChild(frag, textNode);
+}
+
+function walkAndEnhance(element) {
+  if (!element || element.nodeType !== 1) return;
+  var skipTags = ['SCRIPT','STYLE','NOSCRIPT','IFRAME','BUTTON','INPUT','TEXTAREA','SELECT','CODE','PRE','MARK'];
+  if (skipTags.indexOf(element.tagName) !== -1) return;
+  if (element.classList && (element.classList.contains('speak-btn') || element.classList.contains('term-popup'))) return;
+  var textNodes = [];
+  var walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+    acceptNode: function(node) {
+      if (!node.nodeValue || node.nodeValue.trim().length < 2) return NodeFilter.FILTER_REJECT;
+      var parent = node.parentNode;
+      if (!parent) return NodeFilter.FILTER_REJECT;
+      if (skipTags.indexOf(parent.tagName) !== -1) return NodeFilter.FILTER_REJECT;
+      if (parent.classList && parent.classList.contains('speak-btn')) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  var node;
+  while ((node = walker.nextNode())) textNodes.push(node);
+  textNodes.forEach(function(tn) {
+    if (TERM_REGEX.test(tn.nodeValue)) processTextNode(tn);
+  });
+}
+
+/* ═════════════════════════════════════════════════════════════
+   MISTAKE BOOK (localStorage)
+   ═════════════════════════════════════════════════════════════ */
+var MB_KEY = 'unit2_mistakebook_v1';
+var mistakeBook = { items: {} };
+
+function mbLoad() {
+  try {
+    var raw = localStorage.getItem(MB_KEY);
+    if (raw) mistakeBook = JSON.parse(raw);
+    if (!mistakeBook.items) mistakeBook.items = {};
+  } catch(e) { mistakeBook = { items: {} }; }
+}
+function mbSave() {
+  try { localStorage.setItem(MB_KEY, JSON.stringify(mistakeBook)); } catch(e) {}
+}
+function mbAdd(entry) {
+  // entry: {term, category, cn, prompt, userAnswer, correctAnswer, reason_en, reason_cn, key_en, key_cn, part}
+  if (!entry.term) return;
+  var key = entry.term.toLowerCase();
+  if (!mistakeBook.items[key]) {
+    mistakeBook.items[key] = {
+      term: entry.term,
+      category: entry.category || 'structure',
+      cn: entry.cn || '',
+      count: 0,
+      firstWrong: null,
+      lastWrong: null,
+      reasons: [],
+      prompts: [],
+      userAnswers: [],
+      keys_en: [],
+      keys_cn: []
+    };
+  }
+  var item = mistakeBook.items[key];
+  item.count++;
+  if (!item.firstWrong) item.firstWrong = Date.now();
+  item.lastWrong = Date.now();
+  if (entry.reason_en && item.reasons.indexOf(entry.reason_en) === -1) item.reasons.push(entry.reason_en);
+  if (entry.prompt && item.prompts.indexOf(entry.prompt) === -1 && item.prompts.length < 3) item.prompts.push(entry.prompt);
+  if (entry.userAnswer && item.userAnswers.length < 3) item.userAnswers.push(entry.userAnswer);
+  if (entry.key_en && item.keys_en.indexOf(entry.key_en) === -1) item.keys_en.push(entry.key_en);
+  if (entry.key_cn && item.keys_cn.indexOf(entry.key_cn) === -1) item.keys_cn.push(entry.key_cn);
+  if (entry.cn && !item.cn) item.cn = entry.cn;
+  if (entry.category && item.category === 'structure') item.category = entry.category;
+  mbSave();
+  mbRender();
+}
+function mbRemove(term) {
+  var key = (term || '').toLowerCase();
+  if (mistakeBook.items[key]) { delete mistakeBook.items[key]; mbSave(); mbRender(); }
+}
+function mbClearAll() {
+  if (!confirm('Clear ALL mistakes? This cannot be undone.')) return;
+  mistakeBook = { items: {} };
+  mbSave(); mbRender();
+}
+function mbRender() {
+  var list = document.getElementById('mistake-list');
+  var items = Object.values(mistakeBook.items).sort(function(a,b){ return b.count - a.count; });
+  document.getElementById('mb-stat-total').textContent = items.reduce(function(s,i){return s+i.count;},0);
+  document.getElementById('mb-stat-unique').textContent = items.length;
+  document.getElementById('mb-stat-worst').textContent = items.length ? items[0].count + '×' : '0×';
+  var badge = document.getElementById('mb-badge');
+  if (items.length > 0) { badge.style.display='flex'; badge.textContent = items.length; } else { badge.style.display='none'; }
+  if (items.length === 0) {
+    list.innerHTML = '<div class="mistake-empty">No mistakes yet — start a quiz above! 💪</div>';
+    return;
+  }
+  var catClass = { structure:'', organelle:'cat-organelle', transport:'cat-transport', effect:'cat-effect', method:'cat-method' };
+  list.innerHTML = items.map(function(it) {
+    var cls = catClass[it.category] || '';
+    var reasonsHTML = (it.reasons[0] || '—').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    var keyEn = (it.keys_en[0] || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    var keyCn = (it.keys_cn[0] || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    return '<div class="mistake-item ' + cls + '">' +
+      '<div class="mi-head">' +
+        '<span class="mi-term">' + it.term.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</span>' +
+        '<span class="mi-cat">' + (it.category||'term') + '</span>' +
+        '<span class="mi-count">错 ' + it.count + ' 次</span>' +
+      '</div>' +
+      (it.cn ? '<div class="mi-cn">' + it.cn.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</div>' : '') +
+      '<div class="mi-reason"><strong>Why wrong:</strong> ' + reasonsHTML + '</div>' +
+      (keyEn || keyCn ? '<div class="mi-key"><strong>Key:</strong> ' + keyEn + (keyCn ? ' · ' + keyCn : '') + '</div>' : '') +
+      '<div class="mi-actions">' +
+        '<button onclick="mbRemove(\'' + it.term.replace(/'/g,"\\'") + '\')">✓ 已掌握</button>' +
+        '<button onclick="speakWord(\'' + it.term.replace(/'/g,"\\'") + '\')">🔊 朗读</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+function mbToggle() {
+  var panel = document.getElementById('mistake-book');
+  panel.classList.toggle('open');
+}
+document.getElementById('mb-toggle').addEventListener('click', mbToggle);
+document.getElementById('mb-close').addEventListener('click', mbToggle);
+document.getElementById('mb-clear').addEventListener('click', mbClearAll);
+
+/* ═════════════════════════════════════════════════════════════
+   PDF EXPORT (jsPDF Cornell layout — paper-saving)
+   Loaded dynamically; gracefully hidden if CDN blocked.
+   ═════════════════════════════════════════════════════════════ */
+document.getElementById('mb-export').addEventListener('click', function() {
+  var items = Object.values(mistakeBook.items).sort(function(a,b){ return b.count - a.count; });
+  if (items.length === 0) { alert('No mistakes to export yet!'); return; }
+  exportMistakesPDF(items);
+});
+
+function exportMistakesPDF(items) {
+  // Use print-to-PDF via a hidden iframe with print-optimized CSS (most reliable offline).
+  // Falls back to window.open if iframe blocked.
+  var html = generateMistakeSheetHTML(items);
+  var iframe = document.createElement('iframe');
+  iframe.style.cssText = 'position:fixed;right:-9999px;bottom:-9999px;width:0;height:0;border:0;';
+  document.body.appendChild(iframe);
+  var doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+  setTimeout(function() {
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } catch(e) {
+      var w = window.open('', '_blank');
+      w.document.write(html);
+      w.document.close();
+    }
+    setTimeout(function() { document.body.removeChild(iframe); }, 2000);
+  }, 400);
+}
+
+function generateMistakeSheetHTML(items) {
+  var today = new Date().toISOString().slice(0,10);
+  var rows = items.map(function(it, idx) {
+    var reasons = (it.reasons[0] || '—').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    var keysEn = (it.keys_en[0] || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    var keysCn = (it.keys_cn[0] || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    var prompt = (it.prompts[0] || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    var cn = (it.cn || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    return '<div class="mb-row">' +
+      '<div class="mb-cue">' +
+        '<div class="mb-num">' + (idx+1) + '</div>' +
+        '<div class="mb-term">' + it.term.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</div>' +
+        '<div class="mb-cn">' + cn + '</div>' +
+        '<div class="mb-count">×' + it.count + '</div>' +
+      '</div>' +
+      '<div class="mb-main">' +
+        (prompt ? '<div class="mb-prompt">' + prompt + '</div>' : '') +
+        '<div class="mb-reason"><b>Why wrong:</b> ' + reasons + '</div>' +
+        (keysEn ? '<div class="mb-key"><b>Key EN:</b> ' + keysEn + '</div>' : '') +
+        (keysCn ? '<div class="mb-key"><b>关键点:</b> ' + keysCn + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Unit 2 错题背诵纸 ' + today + '</title>' +
+    '<style>' +
+    '@page { size: A4; margin: 10mm 8mm; }' +
+    'body { font-family: -apple-system, "PingFang SC", "Helvetica", sans-serif; color:#1e293b; font-size:9.5pt; line-height:1.5; margin:0; }' +
+    '.mb-head { text-align:center; border-bottom:2px solid #1e293b; padding-bottom:6px; margin-bottom:8px; }' +
+    '.mb-head h1 { font-size:14pt; margin:0; }' +
+    '.mb-head .sub { font-size:9pt; color:#64748b; margin-top:2px; }' +
+    '.mb-row { display:flex; gap:0; border:1px solid #cbd5e1; border-radius:4px; margin-bottom:5px; overflow:hidden; break-inside:avoid; }' +
+    '.mb-cue { width:30%; background:#fef9c3; padding:6px 8px; border-right:1px dashed #92400e; }' +
+    '.mb-num { display:inline-block; width:16px; height:16px; background:#dc2626; color:white; border-radius:50%; text-align:center; line-height:16px; font-size:8pt; font-weight:700; margin-right:4px; }' +
+    '.mb-term { display:inline; font-weight:700; font-family:"Courier New",monospace; font-size:10pt; color:#7c2d12; }' +
+    '.mb-cn { font-size:8.5pt; color:#92400e; margin-top:2px; }' +
+    '.mb-count { display:inline-block; margin-left:6px; font-size:8pt; color:white; background:#dc2626; padding:1px 6px; border-radius:8px; font-weight:700; }' +
+    '.mb-main { flex:1; padding:6px 8px; font-size:9pt; }' +
+    '.mb-prompt { font-style:italic; color:#475569; margin-bottom:3px; font-size:8.5pt; }' +
+    '.mb-reason { margin-bottom:2px; }' +
+    '.mb-key { color:#374151; }' +
+    '.mb-key b, .mb-reason b { color:#7c2d12; }' +
+    '@media print { body { font-size:9pt; } .mb-row { break-inside:avoid; } }' +
+    '</style></head><body>' +
+    '<div class="mb-head"><h1>📒 Unit 2 · Cell Biology — 错题背诵纸 Mistake Recap Sheet</h1>' +
+    '<div class="sub">Generated ' + today + ' · ' + items.length + ' unique terms · ICMYP Biology · ⚡ Powered by Michelle Yang · 2026</div></div>' +
+    rows +
+    '</body></html>';
+}
+
+/* ═════════════════════════════════════════════════════════════
+   PART 1 RENDERER (Vocab cards)
+   ═════════════════════════════════════════════════════════════ */
+function renderVocab() {
+  var grid = document.getElementById('vocab-grid');
+  grid.innerHTML = VOCAB.map(function(v) {
+    var figHTML = v.fig ? '<div class="vocab-fig"><img src="' + v.fig + '" alt="' + v.term + '" loading="lazy"><div class="vocab-fig-caption">' + (v.figCaption || v.term) + '</div></div>' : '';
+    return '<div class="vocab-card cat-' + v.cat + '" data-term="' + v.term.toLowerCase() + '">' +
+      '<div class="vocab-card-head">' +
+        '<span class="vocab-term">' + v.term + '</span>' +
+        (v.ipa ? '<span class="vocab-ipa">' + v.ipa + '</span>' : '') +
+        '<span class="vocab-cat-tag cat-tag-' + v.cat + '">' + v.cat + '</span>' +
+      '</div>' +
+      '<div class="vocab-cn">' + v.cn + '</div>' +
+      '<div class="vocab-def">' + v.def_en + '</div>' +
+      (v.excerpt ? '<div class="vocab-excerpt">' + v.excerpt + '</div>' : '') +
+      figHTML +
+      '<button class="vocab-flag-btn" onclick="flagVocab(\'' + v.term.replace(/'/g,"\\'") + '\')">🚩 加入生词本</button>' +
+    '</div>';
+  }).join('');
+  // add speak buttons to each term
+  grid.querySelectorAll('.vocab-card').forEach(function(card) {
+    var termEl = card.querySelector('.vocab-term');
+    var word = termEl.textContent.trim();
+    termEl.appendChild(createSpeakButton(word));
+  });
+}
+
+function flagVocab(term) {
+  var v = VOCAB.find(function(x){ return x.term.toLowerCase() === term.toLowerCase(); });
+  if (!v) return;
+  mbAdd({
+    part: 'vocab', term: v.term, category: v.cat, cn: v.cn,
+    prompt: 'Flagged from vocab card',
+    userAnswer: '—', correctAnswer: v.def_en,
+    reason_en: 'Manually flagged for review',
+    reason_cn: '主动标记待复习',
+    key_en: v.def_en, key_cn: v.cn
+  });
+  // visual feedback
+  var card = document.querySelector('.vocab-card[data-term="' + term.toLowerCase() + '"] .vocab-flag-btn');
+  if (card) { card.classList.add('flagged'); card.textContent = '✓ 已加入错题本'; }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   PART 2 RENDERER (Matching quiz)
+   ═════════════════════════════════════════════════════════════ */
+var matchState = { questions: [], answered: 0, correct: 0 };
+
+function matchingPickQuestions(n) {
+  var pool = MATCH_POOL.slice();
+  // shuffle pool
+  for (var i = pool.length-1; i>0; i--) {
+    var j = Math.floor(Math.random()*(i+1));
+    var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+  }
+  return pool.slice(0, Math.min(n, pool.length)).map(function(item) {
+    // build 4 options: 1 correct + 3 distractors
+    var others = MATCH_POOL.filter(function(x){ return x.term !== item.term; });
+    for (var k = others.length-1; k>0; k--) {
+      var m = Math.floor(Math.random()*(k+1));
+      var tmp = others[k]; others[k] = others[m]; others[m] = tmp;
+    }
+    var distractors = others.slice(0,3).map(function(x){ return x.term; });
+    var opts = [item.term].concat(distractors);
+    for (var p = opts.length-1; p>0; p--) {
+      var q = Math.floor(Math.random()*(p+1));
+      var tt = opts[p]; opts[p] = opts[q]; opts[q] = tt;
+    }
+    return { def: item.def_en, correct: item.term, options: opts, category: item.cat || item.category, cn: item.cn };
+  });
+}
+
+function renderMatching() {
+  matchState.questions = matchingPickQuestions(20);
+  matchState.answered = 0; matchState.correct = 0;
+  var container = document.getElementById('matching-quiz');
+  var html = '<div class="quiz-toolbar">' +
+    '<button class="quiz-btn quiz-btn-submit" id="match-submit">✓ Submit All</button>' +
+    '<button class="quiz-btn quiz-btn-reset" id="match-reset">🔄 重新出题 Reshuffle</button>' +
+    '<span class="quiz-score" id="match-score">0 / 0</span>' +
+  '</div>';
+  html += matchState.questions.map(function(q, i) {
+    var optsHTML = q.options.map(function(opt, j) {
+      return '<label class="matching-opt" data-q="' + i + '" data-opt="' + opt + '">' +
+        '<input type="radio" name="mq' + i + '" value="' + opt + '">' +
+        '<span>' + opt + '</span>' +
+      '</label>';
+    }).join('');
+    return '<div class="matching-q" data-qi="' + i + '" data-correct="' + q.correct + '" data-category="' + (q.category||'structure') + '" data-cn="' + (q.cn||'') + '">' +
+      '<div class="matching-q-def" data-num="' + (i+1) + '">' + q.def + '</div>' +
+      '<div class="matching-options">' + optsHTML + '</div>' +
+      '<div class="matching-feedback"></div>' +
+    '</div>';
+  }).join('');
+  container.innerHTML = html;
+
+  // bind radio changes for visual selection
+  container.querySelectorAll('.matching-opt').forEach(function(lbl) {
+    lbl.addEventListener('click', function() {
+      var qi = lbl.getAttribute('data-q');
+      container.querySelectorAll('.matching-opt[data-q="' + qi + '"]').forEach(function(l){ l.classList.remove('selected'); });
+      lbl.classList.add('selected');
+    });
+  });
+
+  document.getElementById('match-submit').addEventListener('click', submitMatching);
+  document.getElementById('match-reset').addEventListener('click', renderMatching);
+  updateMatchScore();
+}
+
+function submitMatching() {
+  var correct = 0, answered = 0;
+  document.querySelectorAll('.matching-q').forEach(function(qEl) {
+    var qi = qEl.getAttribute('data-qi');
+    var correctTerm = qEl.getAttribute('data-correct');
+    var category = qEl.getAttribute('data-category');
+    var cn = qEl.getAttribute('data-cn');
+    var selected = qEl.querySelector('input:checked');
+    var fb = qEl.querySelector('.matching-feedback');
+    qEl.querySelectorAll('.matching-opt').forEach(function(opt) {
+      var optTerm = opt.getAttribute('data-opt');
+      opt.querySelector('input').disabled = true;
+      opt.classList.remove('selected');
+      if (optTerm === correctTerm) opt.classList.add('reveal-correct');
+      else if (selected && optTerm === selected.value) opt.classList.add('reveal-wrong');
+    });
+    if (selected) {
+      answered++;
+      if (selected.value === correctTerm) {
+        correct++;
+        qEl.classList.add('correct');
+        fb.className = 'matching-feedback ok show';
+        fb.innerHTML = '✓ Correct! <strong>' + correctTerm + '</strong>' + (cn ? ' · ' + cn : '');
+      } else {
+        qEl.classList.add('wrong');
+        fb.className = 'matching-feedback no show';
+        fb.innerHTML = '✗ Wrong. Correct answer: <strong>' + correctTerm + '</strong>' + (cn ? ' · ' + cn : '');
+        // add to mistake book
+        var vocabItem = VOCAB.find(function(v){ return v.term.toLowerCase() === correctTerm.toLowerCase(); });
+        mbAdd({
+          part: 'matching', term: correctTerm, category: category, cn: cn,
+          prompt: qEl.querySelector('.matching-q-def').textContent.trim(),
+          userAnswer: selected.value, correctAnswer: correctTerm,
+          reason_en: 'Confused "' + correctTerm + '" with "' + selected.value + '". Re-read the definition.',
+          reason_cn: '把 ' + correctTerm + ' 和 ' + selected.value + ' 搞混了，重读定义。',
+          key_en: vocabItem ? vocabItem.def_en : '',
+          key_cn: cn
+        });
+      }
+    }
+  });
+  matchState.answered = answered; matchState.correct = correct;
+  updateMatchScore();
+  document.getElementById('match-submit').disabled = true;
+}
+
+function updateMatchScore() {
+  var el = document.getElementById('match-score');
+  if (el) el.textContent = matchState.correct + ' / ' + matchState.questions.length + (matchState.answered ? '' : ' (pending)');
+}
+
+/* ═════════════════════════════════════════════════════════════
+   PART 3 RENDERER (CN → EN recall, keyword-scored)
+   ═════════════════════════════════════════════════════════════ */
+function normalizeAnswer(s) {
+  return (s || '').toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, ' ');
+}
+
+function renderCnEn() {
+  var container = document.getElementById('cn-en-quiz');
+  var html = '<div class="quiz-toolbar">' +
+    '<span style="font-size:13px;color:var(--text-secondary);">Type the <strong>English term</strong> that matches the Chinese definition. Keyword-match scored.</span>' +
+    '<span class="quiz-score" id="cnen-score" style="margin-left:auto;">0 / 0</span>' +
+  '</div>';
+  html += CN_EN_POOL.map(function(item, i) {
+    return '<div class="quiz-q" data-qi="' + i + '">' +
+      '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">' + item.cn + '</span></div>' +
+      (item.hint ? '<div class="q-hint">💡 ' + item.hint + '</div>' : '') +
+      '<div class="cloze-input-area">' +
+        '<div class="cloze-input-label">Your English answer</div>' +
+        '<input type="text" class="cloze-input" data-qi="' + i + '" placeholder="type the English term...">' +
+        '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">' +
+          '<button class="quiz-btn quiz-btn-submit" onclick="submitCnEn(' + i + ')">✓ Submit</button>' +
+          '<button class="quiz-btn quiz-btn-reset" onclick="resetCnEn(' + i + ')">🔄 Retry</button>' +
+          '<button class="quiz-btn quiz-btn-reset" onclick="peekCnEn(' + i + ')">👁️ Show Answer</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="cnen-feedback"></div>' +
+    '</div>';
+  }).join('');
+  container.innerHTML = html;
+}
+
+function submitCnEn(i) {
+  var item = CN_EN_POOL[i];
+  var input = document.querySelector('#cn-en-quiz .cloze-input[data-qi="' + i + '"]');
+  if (!input) { console.warn('submitCnEn: no input for qi=' + i); return; }
+  var userVal = input.value.trim();
+  if (!userVal) { alert('Type an answer first!'); return; }
+  var userNorm = normalizeAnswer(userVal);
+  var acceptNorm = item.accept.map(normalizeAnswer);
+  var correct = acceptNorm.some(function(a){ return a === userNorm; });
+  var partial = acceptNorm.some(function(a){ return a.includes(userNorm) && userNorm.length >= 4; });
+  var score = correct ? 100 : (partial ? 60 : 0);
+  var fb = document.querySelector('#cn-en-quiz .quiz-q[data-qi="' + i + '"] .cnen-feedback');
+  input.disabled = true;
+
+  var scoreClass = score >= 80 ? 'score-high' : (score >= 50 ? 'score-mid' : 'score-low');
+  var goodPoints = [], weakPoints = [], studyPoints = [];
+
+  if (correct) {
+    goodPoints.push('Spelled correctly: <strong>' + item.accept[0] + '</strong>');
+    goodPoints.push('Recognised the Chinese → English mapping');
+  } else if (partial) {
+    weakPoints.push('Close but not exact: typed "' + userVal + '", accepted "' + item.accept.join(' / ') + '"');
+    weakPoints.push('Spelling needs tightening');
+  } else {
+    weakPoints.push('Wrong answer: "' + userVal + '"');
+    weakPoints.push('Correct term: <strong>' + item.accept.join(' / ') + '</strong>');
+  }
+  studyPoints.push('Textbook sentence: <em>' + item.example_en + '</em>');
+
+  fb.innerHTML =
+    '<div class="feedback-panel">' +
+      '<div class="feedback-card fb-good"><div class="fb-title">✓ 做得好 Strengths</div><ul class="fb-list"><li>' + goodPoints.join('</li><li>') + '</li></ul></div>' +
+      '<div class="feedback-card fb-weak"><div class="fb-title">✗ 待加强 Gaps</div><ul class="fb-list"><li>' + weakPoints.join('</li><li>') + '</li></ul></div>' +
+      '<div class="feedback-card fb-study"><div class="fb-title">📖 复习要点 Study</div><ul class="fb-list"><li>' + studyPoints.join('</li><li>') + '</li></ul></div>' +
+    '</div>' +
+    '<span class="fb-score ' + scoreClass + '">Score: ' + score + '%</span>' +
+    '<div class="answer-block">' +
+      '<span class="answer-label">📖 Reference Answer</span>' +
+      '<div class="answer-en"><strong>' + item.accept.join(' / ') + '</strong> — ' + item.example_en + '</div>' +
+    '</div>';
+
+  if (!correct) {
+    var vocabItem = VOCAB.find(function(v){ return v.term.toLowerCase() === item.accept[0].toLowerCase(); });
+    mbAdd({
+      part: 'cnen', term: item.accept[0], category: vocabItem ? vocabItem.category : 'structure', cn: item.cn,
+      prompt: 'CN→EN: ' + item.cn,
+      userAnswer: userVal, correctAnswer: item.accept.join(' / '),
+      reason_en: 'Could not recall the English term from Chinese "' + item.cn + '". Typed "' + userVal + '".',
+      reason_cn: '看到中文 "' + item.cn + '" 想不出英文，写成了 "' + userVal + '"。',
+      key_en: item.example_en, key_cn: item.cn
+    });
+  }
+  updateCnEnScore();
+}
+
+function resetCnEn(i) {
+  var q = document.querySelector('#cn-en-quiz .quiz-q[data-qi="' + i + '"]');
+  if (!q) return;
+  var input = q.querySelector('.cloze-input');
+  if (input) { input.disabled = false; input.value = ''; }
+  var fb = q.querySelector('.cnen-feedback'); if (fb) fb.innerHTML = '';
+  updateCnEnScore();
+}
+
+function peekCnEn(i) {
+  var item = CN_EN_POOL[i];
+  var fb = document.querySelector('#cn-en-quiz .quiz-q[data-qi="' + i + '"] .cnen-feedback');
+  var input = document.querySelector('#cn-en-quiz .cloze-input[data-qi="' + i + '"]');
+  if (input) input.disabled = true;
+  if (fb) fb.innerHTML = '<div class="answer-block">' +
+    '<span class="answer-label">👁️ 直接查看答案</span>' +
+    '<div class="answer-en"><strong>' + item.accept.join(' / ') + '</strong> — ' + item.example_en + '</div>' +
+  '</div>';
+}
+
+function updateCnEnScore() {
+  var answered = 0, correct = 0;
+  document.querySelectorAll('#cn-en-quiz .quiz-q').forEach(function(q) {
+    var fb = q.querySelector('.cnen-feedback');
+    if (fb.innerHTML.trim()) {
+      answered++;
+      if (fb.querySelector('.score-high')) correct++;
+    }
+  });
+  var el = document.getElementById('cnen-score');
+  if (el) el.textContent = correct + ' / ' + CN_EN_POOL.length;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   PART 4 RENDERER (Cornell notes)
+   ═════════════════════════════════════════════════════════════ */
+function renderCornell() {
+  var container = document.getElementById('cornell-container');
+  container.innerHTML = CORNELL_SECTIONS.map(function(sec, idx) {
+    var cueHTML = '';
+    // cue is a {term: explanation} map → render as Key-Terms list
+    var cueKeys = Object.keys(sec.cue || {});
+    if (cueKeys.length) {
+      cueHTML += '<h5>🔑 Cue · 关键记忆点</h5><dl class="cue-list">';
+      cueKeys.forEach(function(k){
+        cueHTML += '<dt>' + k + '</dt><dd>' + sec.cue[k] + '</dd>';
+      });
+      cueHTML += '</dl>';
+    }
+    return '<div class="cornell-block" data-si="' + idx + '">' +
+      '<div class="cornell-cue">' + cueHTML + '</div>' +
+      '<div class="cornell-main">' +
+        '<span class="cornell-section-tag">📖 Section ' + sec.tag + '</span>' +
+        '<h4>' + sec.title + '</h4>' +
+        sec.main_html +
+      '</div>' +
+      '<div class="cornell-summary">' +
+        '<div class="cornell-summary-label">📝 Summary · 摘要</div>' +
+        '<div><strong>EN:</strong> ' + sec.summary_en + '</div>' +
+        '<div style="margin-top:4px;font-family:-apple-system,PingFang SC,sans-serif;"><strong>中文:</strong> ' + sec.summary_cn + '</div>' +
+      '</div>' +
+      '<div class="cornell-actions">' +
+        '<span>🖊️ Select text in the passage above, then:</span>' +
+        '<button onclick="addHighlight(' + idx + ')">📌 Save highlight + note</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  // enhance terms
+  container.querySelectorAll('.cornell-main').forEach(function(el){ walkAndEnhance(el); });
+}
+
+function addHighlight(si) {
+  var sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+    alert('Please select a passage of text in the Cornell reading first.');
+    return;
+  }
+  var range = sel.getRangeAt(0);
+  var sec = document.querySelector('.cornell-block[data-si="' + si + '"] .cornell-main');
+  if (!sec.contains(range.commonAncestorContainer)) {
+    alert('Please select text inside the reading passage.');
+    return;
+  }
+  var text = range.toString().trim();
+  if (!text || text.length < 3) { alert('Selection too short.'); return; }
+  var note = prompt('Add a note for this highlight? (optional)', '');
+  try {
+    var mark = document.createElement('mark');
+    mark.className = 'user-hl';
+    mark.title = 'Highlight: ' + text + (note ? '\nNote: ' + note : '');
+    try {
+      range.surroundContents(mark);
+    } catch(e) {
+      // fallback for cross-element selections
+      mark.appendChild(range.extractContents());
+      range.insertNode(mark);
+    }
+    var secObj = CORNELL_SECTIONS[si];
+    mbAdd({
+      part: 'cornell', term: text.slice(0, 40) + (text.length > 40 ? '…' : ''),
+      category: 'method', cn: note || 'Highlight from Section ' + secObj.tag,
+      prompt: 'Cornell Section ' + secObj.tag + ': ' + secObj.title,
+      userAnswer: '—', correctAnswer: text,
+      reason_en: 'Highlighted for review' + (note ? ': ' + note : ''),
+      reason_cn: '康奈尔笔记高亮' + (note ? '：' + note : ''),
+      key_en: text, key_cn: note || ''
+    });
+    sel.removeAllRanges();
+  } catch(e) {
+    alert('Could not highlight this selection. Try a smaller passage.');
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   PART 5 RENDERER (Cloze + Short answer)
+   ═════════════════════════════════════════════════════════════ */
+function renderCloze() {
+  var container = document.getElementById('cloze-quiz');
+  var allQ = CLOZE_POOL.concat(SHORT_POOL);
+  // shuffle
+  for (var i = allQ.length-1; i>0; i--) {
+    var j = Math.floor(Math.random()*(i+1));
+    var t = allQ[i]; allQ[i] = allQ[j]; allQ[j] = t;
+  }
+  var html = '<div class="quiz-toolbar">' +
+    '<span style="font-size:13px;color:var(--text-secondary);"><strong>' + allQ.length + ' questions</strong> · ' + CLOZE_POOL.length + ' cloze + ' + SHORT_POOL.length + ' short-answer</span>' +
+    '<span class="quiz-score" id="cloze-score" style="margin-left:auto;">0 / 0</span>' +
+  '</div>';
+  html += allQ.map(function(q, i) {
+    if (q.type === 'cloze') {
+      return '<div class="quiz-q" data-qi="' + i + '">' +
+        '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">Fill in the blank</span> <span style="font-size:11px;color:var(--text-light);">[Cloze · 填空]</span></div>' +
+        '<div style="margin-top:8px;font-size:14px;line-height:1.8;">' + q.before + '<span class="cloze-blank">_____</span>' + q.after + '</div>' +
+        (q.hint ? '<div class="q-hint">💡 ' + q.hint + '</div>' : '') +
+        '<div class="cloze-input-area">' +
+          '<div class="cloze-input-label">Your answer (the missing term)</div>' +
+          '<input type="text" class="cloze-input" data-qi="' + i + '" placeholder="type the missing word...">' +
+          '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">' +
+            '<button class="quiz-btn quiz-btn-submit" onclick="submitCloze(' + i + ')">✓ Submit</button>' +
+            '<button class="quiz-btn quiz-btn-reset" onclick="resetCloze(' + i + ')">🔄 Retry</button>' +
+            '<button class="quiz-btn quiz-btn-reset" onclick="peekCloze(' + i + ')">👁️ Show Answer</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cloze-feedback"></div>' +
+      '</div>';
+    } else {
+      return '<div class="quiz-q" data-qi="' + i + '">' +
+        '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">' + q.q_en + '</span> <span style="font-size:11px;color:var(--text-light);">[Short Answer · 主观题]</span></div>' +
+        (q.q_cn ? '<div class="q-hint">📌 ' + q.q_cn + '</div>' : '') +
+        '<div class="cloze-input-area">' +
+          '<div class="cloze-input-label">Your answer (full English sentence)</div>' +
+          '<textarea class="cloze-textarea" data-qi="' + i + '" placeholder="Write your full English answer here..."></textarea>' +
+          '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">' +
+            '<button class="quiz-btn quiz-btn-submit" onclick="submitShort(' + i + ')">✓ Submit</button>' +
+            '<button class="quiz-btn quiz-btn-reset" onclick="resetShort(' + i + ')">🔄 Retry</button>' +
+            '<button class="quiz-btn quiz-btn-reset" onclick="peekShort(' + i + ')">👁️ Show Answer</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cloze-feedback"></div>' +
+      '</div>';
+    }
+  }).join('');
+  container.innerHTML = html;
+}
+
+function submitCloze(i) {
+  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
+  var input = document.querySelector('#cloze-quiz .cloze-input[data-qi="' + i + '"]');
+  if (!input) { console.warn('submitCloze: no input for qi=' + i + ' (probably a short-answer question)'); return; }
+  var userVal = input.value.trim();
+  if (!userVal) { alert('Type an answer first!'); return; }
+  var userNorm = normalizeAnswer(userVal);
+  var ansNorm = normalizeAnswer(q.answer);
+  var correct = userNorm === ansNorm || (ansNorm.includes(userNorm) && userNorm.length >= 4);
+  var score = correct ? 100 : 0;
+  var fb = document.querySelector('#cloze-quiz .quiz-q[data-qi="' + i + '"] .cloze-feedback');
+  input.disabled = true;
+
+  var scoreClass = score >= 80 ? 'score-high' : 'score-low';
+  var goodPoints = [], weakPoints = [], studyPoints = [];
+  if (correct) {
+    goodPoints.push('Correct term: <strong>' + q.answer + '</strong>');
+  } else {
+    weakPoints.push('You wrote: "' + userVal + '"');
+    weakPoints.push('Correct answer: <strong>' + q.answer + '</strong>');
+  }
+  studyPoints.push('The full sentence: <em>' + q.before + ' <strong>' + q.answer + '</strong> ' + q.after + '</em>');
+
+  fb.innerHTML =
+    '<span class="fb-score ' + scoreClass + '">Score: ' + score + '%</span>' +
+    '<div class="feedback-panel">' +
+      '<div class="feedback-card fb-good"><div class="fb-title">✓ 做得好</div><ul class="fb-list"><li>' + goodPoints.join('</li><li>') + '</li></ul></div>' +
+      '<div class="feedback-card fb-weak"><div class="fb-title">✗ 待加强</div><ul class="fb-list"><li>' + weakPoints.join('</li><li>') + '</li></ul></div>' +
+      '<div class="feedback-card fb-study"><div class="fb-title">📖 句子</div><ul class="fb-list"><li>' + studyPoints.join('</li><li>') + '</li></ul></div>' +
+    '</div>' +
+    '<div class="answer-block">' +
+      '<span class="answer-label">📖 解答</span>' +
+      '<div class="answer-en"><strong>' + q.answer + '</strong></div>' +
+      (q.answer_cn ? '<div class="answer-cn">' + q.answer_cn + '</div>' : '') +
+    '</div>';
+
+  if (!correct) {
+    var vocabItem = VOCAB.find(function(v){ return v.term.toLowerCase() === q.answer.toLowerCase(); });
+    mbAdd({
+      part: 'cloze', term: q.answer, category: vocabItem ? vocabItem.cat : 'structure',
+      cn: vocabItem ? vocabItem.cn : '',
+      prompt: 'Cloze: ' + q.before + ' ___ ' + q.after,
+      userAnswer: userVal, correctAnswer: q.answer,
+      reason_en: 'Cloze fill-in wrong. Correct: "' + q.answer + '".',
+      reason_cn: '填空错误，正确答案是 ' + q.answer + '。',
+      key_en: vocabItem ? vocabItem.def_en : q.answer, key_cn: vocabItem ? vocabItem.cn : ''
+    });
+  }
+  updateClozeScore();
+}
+
+function submitShort(i) {
+  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
+  var ta = document.querySelector('#cloze-quiz .cloze-textarea[data-qi="' + i + '"]');
+  if (!ta) { console.warn('submitShort: no textarea for qi=' + i); return; }
+  var userVal = ta.value.trim();
+  if (!userVal) { alert('Type an answer first!'); return; }
+  var userLower = userVal.toLowerCase();
+  var essentialHit = 0, essentialTotal = q.keywords.length;
+  var missing = [], hit = [];
+  q.keywords.forEach(function(k){
+    if (userLower.indexOf(k.toLowerCase()) !== -1) { essentialHit++; hit.push(k); }
+    else missing.push(k);
+  });
+  var ratio = essentialTotal > 0 ? essentialHit / essentialTotal : 0;
+  var score = Math.round(ratio * 100);
+  if (score === 0 && ratio > 0.3) score = 30;
+  var fb = document.querySelector('#cloze-quiz .quiz-q[data-qi="' + i + '"] .cloze-feedback');
+  ta.disabled = true;
+  var scoreClass = score >= 80 ? 'score-high' : (score >= 50 ? 'score-mid' : 'score-low');
+
+  fb.innerHTML =
+    '<span class="fb-score ' + scoreClass + '">Score: ' + score + '%</span>' +
+    '<div class="feedback-panel">' +
+      '<div class="feedback-card fb-good"><div class="fb-title">✓ 做得好</div><ul class="fb-list"><li>' + (hit.length ? 'Used key terms: <strong>' + hit.join(', ') + '</strong>' : '—') + '</li></ul></div>' +
+      '<div class="feedback-card fb-weak"><div class="fb-title">✗ 缺失关键词</div><ul class="fb-list"><li>' + (missing.length ? '<strong>' + missing.join(', ') + '</strong>' : 'All keywords present ✓') + '</li></ul></div>' +
+      '<div class="feedback-card fb-study"><div class="fb-title">📖 范答</div><ul class="fb-list"><li>See model answer below</li></ul></div>' +
+    '</div>' +
+    '<div class="answer-block">' +
+      '<span class="answer-label">📖 范答 Model Answer</span>' +
+      '<div class="answer-en">' + q.model_en + '</div>' +
+      '<div class="answer-cn"><strong>中文翻译:</strong> ' + q.model_cn + '</div>' +
+    '</div>' +
+    (q.lang_notes ? '<div class="lang-analysis">' +
+      '<span class="lang-label">📝 Language Notes · 语言解析</span>' +
+      q.lang_notes +
+    '</div>' : '');
+
+  if (score < 80) {
+    var termGuess = q.keywords[0] || q.q_en.split(/\s+/).slice(0,3).join(' ');
+    var vocabItem = VOCAB.find(function(v){ return v.term.toLowerCase() === termGuess.toLowerCase(); });
+    mbAdd({
+      part: 'short', term: termGuess, category: vocabItem ? vocabItem.cat : 'structure',
+      cn: vocabItem ? vocabItem.cn : '',
+      prompt: 'Short Q: ' + q.q_en,
+      userAnswer: userVal.slice(0, 100), correctAnswer: q.model_en,
+      reason_en: 'Missing keywords: ' + missing.join(', '),
+      reason_cn: '缺失关键词：' + missing.join('、'),
+      key_en: q.model_en, key_cn: q.model_cn
+    });
+  }
+  updateClozeScore();
+}
+
+function resetCloze(i) {
+  var q = document.querySelector('#cloze-quiz .quiz-q[data-qi="' + i + '"]');
+  if (!q) return;
+  var input = q.querySelector('.cloze-input, .cloze-textarea');
+  if (input) { input.disabled = false; input.value = ''; }
+  var fb = q.querySelector('.cloze-feedback'); if (fb) fb.innerHTML = '';
+  updateClozeScore();
+}
+function resetShort(i) { return resetCloze(i); }
+
+function peekCloze(i) {
+  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
+  var fb = document.querySelector('#cloze-quiz .quiz-q[data-qi="' + i + '"] .cloze-feedback');
+  var inp = document.querySelector('#cloze-quiz .cloze-input[data-qi="' + i + '"]');
+  if (inp) inp.disabled = true;
+  if (fb) fb.innerHTML = '<div class="answer-block"><span class="answer-label">👁️ 直接查看答案</span><div class="answer-en"><strong>' + q.answer + '</strong></div></div>';
+}
+function peekShort(i) {
+  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
+  var fb = document.querySelector('#cloze-quiz .quiz-q[data-qi="' + i + '"] .cloze-feedback');
+  var ta = document.querySelector('#cloze-quiz .cloze-textarea[data-qi="' + i + '"]');
+  if (ta) ta.disabled = true;
+  if (fb) fb.innerHTML = '<div class="answer-block"><span class="answer-label">👁️ 范答</span><div class="answer-en">' + q.model_en + '</div><div class="answer-cn"><strong>中文:</strong> ' + q.model_cn + '</div></div>';
+}
+
+function updateClozeScore() {
+  var answered = 0, correct = 0;
+  document.querySelectorAll('#cloze-quiz .quiz-q').forEach(function(q) {
+    var fb = q.querySelector('.cloze-feedback');
+    if (fb.innerHTML.trim()) {
+      answered++;
+      var sc = fb.querySelector('.fb-score');
+      if (sc && sc.classList.contains('score-high')) correct++;
+    }
+  });
+  var total = CLOZE_POOL.length + SHORT_POOL.length;
+  var el = document.getElementById('cloze-score');
+  if (el) el.textContent = correct + ' / ' + total;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   SYLLABUS MAP
+   ═════════════════════════════════════════════════════════════ */
+function renderSyllabus() {
+  var body = document.getElementById('syllabus-body');
+  var specs = [
+    { code: '2.1', text: 'Describe and compare the structures of animal, plant and bacterial cells', covered: true },
+    { code: '2.2.1', text: 'Describe and interpret drawings of animal and plant cells', covered: true },
+    { code: '2.2.2', text: 'Describe and interpret drawings of bacterial cells', covered: true },
+    { code: '2.2.3', text: 'State the functions of structures in animal, plant and bacterial cells', covered: true },
+    { code: '2.2.4', text: 'Identify the structures in animal, plant and bacterial cells from images', covered: true },
+    { code: '2.2.5', text: 'Calculate magnification and actual size using the formula', covered: true },
+    { code: '2.3', text: 'Describe the levels of organisation (cell → tissue → organ → organ system → organism)', covered: true },
+    { code: '2.4', text: 'State the differences between plant and animal cells (cell wall, chloroplasts, vacuole)', covered: true },
+    { code: '3.1', text: 'Define diffusion as net movement of particles down a concentration gradient', covered: true },
+    { code: '3.2', text: 'State factors affecting diffusion (concentration gradient, distance, surface area, temperature)', covered: true },
+    { code: '3.3', text: 'Explain the importance of diffusion in cells and organisms', covered: true },
+    { code: '3.4', text: 'Define osmosis as net movement of water across a partially permeable membrane', covered: true },
+    { code: '3.5', text: 'Describe and explain the effects of osmosis on plant and animal cells (turgid, plasmolysed, crenated, haemolysed)', covered: true },
+    { code: '3.6', text: 'Define active transport as movement of particles against a concentration gradient requiring energy from respiration', covered: true },
+    { code: '3.7', text: 'Explain the importance of active transport (e.g. mineral ion uptake in roots, glucose uptake in gut)', covered: true },
+    { code: '3.8', text: 'Compare diffusion, osmosis and active transport', covered: true }
+  ];
+  var covered = specs.filter(function(s){ return s.covered; }).length;
+  var html = '<p style="margin-bottom:10px;"><strong>Coverage:</strong> ' + covered + ' / ' + specs.length + ' spec points addressed · IGCSE 0610 Topic 2 (Cells) + Topic 3 (Movement in/out of cells)</p>';
+  html += '<table class="compare-table" style="width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px;"><thead><tr style="background:#1e293b;color:white;"><th style="padding:10px 12px;text-align:left;">Spec Code</th><th style="padding:10px 12px;text-align:left;">Description</th><th style="padding:10px 12px;text-align:center;">Covered</th></tr></thead><tbody>';
+  specs.forEach(function(s) {
+    html += '<tr style="border-bottom:1px solid var(--border);"><td style="padding:10px 12px;font-family:JetBrains Mono,monospace;font-weight:700;color:var(--primary-dark);">' + s.code + '</td><td style="padding:10px 12px;">' + s.text + '</td><td style="padding:10px 12px;text-align:center;" class="check">✓</td></tr>';
+  });
+  html += '</tbody></table>';
+  body.innerHTML = html;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   INIT
+   ═════════════════════════════════════════════════════════════ */
+function buildTermRegex() {
+  TERM_LIST = Object.keys(CN_DICT);
+  // greedy match longer terms first
+  TERM_LIST.sort(function(a,b){ return b.length - a.length; });
+  var escaped = TERM_LIST.map(function(t){
+    return t.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  });
+  TERM_REGEX = new RegExp('\\b(' + escaped.join('|') + ')\\b', 'gi');
+}
+
+function init() {
+  mbLoad();
+  buildTermRegex();
+  renderVocab();
+  renderMatching();
+  renderCnEn();
+  renderCornell();
+  renderCloze();
+  renderSyllabus();
+  mbRender();
+  // enhance terms in card bodies and callouts
+  document.querySelectorAll('.card-body, .callout-body').forEach(function(el){ walkAndEnhance(el); });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+
+</body>
+</html>

@@ -2669,13 +2669,22 @@
   }
 
   // ═══════════════════════════════════════════════════════
-  // HIGH-QUALITY TTS — smart multi-provider with instant fallback
-  // Strategy: Web Speech API (instant, offline) + cloud TTS (higher quality, online)
+  // HIGH-QUALITY TTS v2.0 — Edge-TTS (local proxy) primary
+  // Strategy: Edge-TTS → StreamElements Polly → Web Speech fallback
   // ═══════════════════════════════════════════════════════
-  var currentAudio = null;   // track playing audio element
-  var ttsLocked = false;     // lock once ANY provider starts playing
+  var TTS_PROXY = 'http://127.0.0.1:8766/tts';
+  var TTS_VOICE = 'jenny';
+  var TTS_PROXY_ONLINE = true;
+  var currentAudio = null;
+  var ttsLocked = false;
 
-  // Stop any currently playing audio
+  // Probe local TTS proxy at startup
+  (function probeTTSProxy() {
+    fetch('http://127.0.0.1:8766/health', { method:'GET' })
+      .then(function(r){ TTS_PROXY_ONLINE = r.ok; })
+      .catch(function(){ TTS_PROXY_ONLINE = false; });
+  })();
+
   function stopAudio() {
     ttsLocked = false;
     if (currentAudio) {
@@ -2687,103 +2696,46 @@
     }
   }
 
-  // Check if we're online
   function isOnline() {
     return navigator.onLine !== false;
   }
 
-  // ═══════════════════════════════════════════════════════
-  // SMART SPEAK: instant response + quality upgrade
-  // ═══════════════════════════════════════════════════════
   function speakWord(word) {
     stopAudio();
-
-    // OFFLINE or no network → Web Speech API immediately (no delay!)
-    if (!isOnline()) {
-      speakWebSpeech(word);
+    if (!isOnline()) { speakWebSpeech(word); return; }
+    if (TTS_PROXY_ONLINE !== false) {
+      speakEdgeTTS(word, 2500).then(function(ok) {
+        if (ok) return;
+        return speakStreamElements(word, 1500).then(function(){}, function(){
+          speakWebSpeech(word);
+        });
+      }).catch(function(){ speakWebSpeech(word); });
       return;
     }
-
-    // ONLINE: try cloud TTS with SHORT timeout (1.5s), fall back to Web Speech instantly
-    // Start both: Web Speech plays immediately, cloud TTS "races" to upgrade
-    var cloudStarted = false;
-    var webSpeechStarted = false;
-
-    // 1) Fire Web Speech API immediately (guaranteed instant sound, no lag)
-    //    It will be cancelled if cloud TTS succeeds within 1.5s
-    setTimeout(function() {
-      if (!cloudStarted && !ttsLocked) {
-        webSpeechStarted = true;
-        speakWebSpeech(word);
-      }
-    }, 50); // 50ms delay — nearly instant
-
-    // 2) Simultaneously try cloud TTS (higher quality) with 1.5s timeout
-    if (isOnline()) {
-      speakGoogleTTS(word, 1500).then(function(ok) {
-        if (ok) {
-          cloudStarted = true;
-          // Cloud TTS succeeded — stop Web Speech if it started
-          if (webSpeechStarted && 'speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-          }
-        }
-      }).catch(function() {
-        // Google failed — try StreamElements with 1.5s timeout
-        if (ttsLocked) return; // Web Speech already playing
-        return speakStreamElements(word, 1500);
-      }).then(function(ok) {
-        if (ok) {
-          cloudStarted = true;
-          if (webSpeechStarted && 'speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-          }
-        }
-      }).catch(function() {
-        // All cloud failed — Web Speech is already playing (or will play)
-      });
-    }
+    speakStreamElements(word, 1500).then(function(ok){
+      if (!ok) speakWebSpeech(word);
+    }).catch(function(){ speakWebSpeech(word); });
   }
 
-  // Provider 1: Google Translate TTS (highest quality)
-  function speakGoogleTTS(word, timeoutMs) {
-    timeoutMs = timeoutMs || 2000;
+  // Provider 1: Edge-TTS (local proxy, Microsoft neural voices)
+  function speakEdgeTTS(word, timeoutMs) {
+    timeoutMs = timeoutMs || 2500;
     return new Promise(function(resolve, reject) {
-      var url = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' +
-                encodeURIComponent(word) +
-                '&tl=en&client=tw-ob';
+      var url = TTS_PROXY + '?text=' + encodeURIComponent(word) + '&voice=' + TTS_VOICE + '&rate=-5%25';
       var audio = new Audio(url);
-      audio.crossOrigin = 'anonymous';
       audio.volume = 1.0;
       var settled = false;
-
       audio.addEventListener('canplaythrough', function() {
         if (settled || ttsLocked) { resolve(true); return; }
-        settled = true;
-        ttsLocked = true;
-        currentAudio = audio;
-        audio.play().then(function() {
-          resolve(true);
-        }).catch(function(e) {
-          ttsLocked = false;
-          reject(e);
-        });
-      }, { once: true });
-
+        settled = true; ttsLocked = true; currentAudio = audio;
+        audio.play().then(function() { resolve(true); }).catch(function(e) { ttsLocked = false; reject(e); });
+      }, { once:true });
       audio.addEventListener('error', function() {
-        if (settled) return;
-        settled = true;
-        reject(new Error('Google TTS failed'));
-      }, { once: true });
-
-      // Short timeout — fall back fast
+        if (settled) return; settled = true; TTS_PROXY_ONLINE = false; resolve(false);
+      }, { once:true });
       setTimeout(function() {
-        if (!settled) {
-          settled = true;
-          reject(new Error('Google TTS timeout'));
-        }
+        if (!settled) { settled = true; TTS_PROXY_ONLINE = false; resolve(false); }
       }, timeoutMs);
-
       audio.load();
     });
   }
@@ -2798,33 +2750,13 @@
       var audio = new Audio(url);
       audio.volume = 1.0;
       var settled = false;
-
       audio.addEventListener('canplaythrough', function() {
         if (settled || ttsLocked) { resolve(true); return; }
-        settled = true;
-        ttsLocked = true;
-        currentAudio = audio;
-        audio.play().then(function() {
-          resolve(true);
-        }).catch(function(e) {
-          ttsLocked = false;
-          reject(e);
-        });
-      }, { once: true });
-
-      audio.addEventListener('error', function() {
-        if (settled) return;
-        settled = true;
-        reject(new Error('StreamElements failed'));
-      }, { once: true });
-
-      setTimeout(function() {
-        if (!settled) {
-          settled = true;
-          reject(new Error('StreamElements timeout'));
-        }
-      }, timeoutMs);
-
+        settled = true; ttsLocked = true; currentAudio = audio;
+        audio.play().then(function() { resolve(true); }).catch(function(e) { ttsLocked = false; reject(e); });
+      }, { once:true });
+      audio.addEventListener('error', function() { if (settled) return; settled = true; resolve(false); }, { once:true });
+      setTimeout(function() { if (!settled) { settled = true; resolve(false); } }, timeoutMs);
       audio.load();
     });
   }

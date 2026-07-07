@@ -1,9 +1,9 @@
 # ICMYP Biology Study Hub — Content Generation SOP
 
-> **Version: v1.5**
+> **Version: v1.4**
 > **Created: 2026-06-28**
-> **Updated: 2026-07-06** (TTS upgraded to Edge-TTS neural voices via local proxy)
-> **Status: ACTIVE** (replaces v1.4)
+> **Updated: 2026-07-06** (5-part study architecture + mistake book + Cornell notes + PDF export)
+> **Status: ACTIVE** (replaces v1.3)
 > **Scope: All units of ICMYP Biology Study Hub**
 
 ---
@@ -15,14 +15,10 @@ This SOP defines the standard prompt and workflow for generating any new unit pa
 **Project location:** `/Users/fy/WorkBuddy/2026-06-28-17-44-53/`
 **Existing files:**
 - `index.html` — Site homepage with unit directory (update unit card status when new unit is added)
-- `unit1.html` — Unit TS1 (v1.5 TTS engine retrofitted)
-- `unit2.html` — Unit TS2 **(CURRENT REFERENCE — 5-part architecture + mistake book + Edge-TTS voice selector)**
-- `tts_server.py` — Edge-TTS local proxy server (port 8766)
-- `start_tts.sh` — TTS server launcher
+- `unit1.html` — Unit TS1 (original architecture — vocabulary + diagrams + single quiz)
+- `unit2.html` — Unit TS2 **(CURRENT REFERENCE — 5-part architecture + mistake book)**
 - `diagrams/` — Cropped textbook figures (prefixed: `fig*.png` for U1, `u2_fig*.png` for U2)
 - `.workbuddy/rules/` — This SOP document (versioned)
-
-**⚠️ Before opening any unit page, run:** `./start_tts.sh` (one-time, then leave running in background)
 
 ---
 
@@ -154,31 +150,15 @@ This SOP defines the standard prompt and workflow for generating any new unit pa
 - **Hover 🔊** → popup shows IPA phonetic + Chinese meaning
 - **Inline terms** → dotted blue underline + small 🔊 button
 
-### Multi-provider TTS fallback chain (v1.5 — Edge-TTS primary):
-1. **Edge-TTS local proxy** (Microsoft neural network, **primary**) — `http://127.0.0.1:8766/tts`
-   - Voice map: `jenny` (en-US-JennyNeural, warm, default) · `aria` (en-US-AriaNeural, crisp) · `emma` (en-GB-EmmaNeural, UK) · `ana` (en-US-AnaNeural, younger) · `guy` (male)
-   - **Free, no API key, no rate limit.** Caches all audio to `~/.cache/icmyp_tts/` for instant replay.
-   - Launched via `./start_tts.sh` (nohup background, port 8766)
-   - Probe at page load: `fetch('http://127.0.0.1:8766/health')` → sets `TTS_PROXY_ONLINE`
-   - If proxy down, automatically skipped on subsequent requests
+### Multi-provider TTS fallback chain:
+1. **Google Translate TTS** (neural network, highest quality) — `translate.google.com/translate_tts`
 2. **StreamElements TTS** (Amazon Polly voice "Joanna", US female) — `api.streamelements.com`
 3. **Web Speech API** (browser built-in, female voice selection) — fallback
 
-### Critical infrastructure files:
-- `tts_server.py` — Edge-TTS proxy server (aiohttp + edge-tts library)
-- `start_tts.sh` — launcher script (check, start, health-verify)
-- Cache dir: `~/.cache/icmyp_tts/` (auto-created, md5-hash filenames)
-
-### HTML-side integration:
-- `TTS_PROXY` constant: `'http://127.0.0.1:8766/tts'`
-- `TTS_VOICE` variable: defaults to `'jenny'`, user-selectable via dropdown in nav bar (`#voice-select`)
-- Voice preference saved to `localStorage` key `'icmyp_tts_voice'`
-- Provider chain: `speakEdgeTTS()` → `speakStreamElements()` → `speakWebSpeech()`
-- `TTS_PROXY_ONLINE` flag — set false on first error/timeout, skips Edge for rest of session
-
-### Legacy notes (DEPRECATED in v1.5):
-- Google Translate TTS (`translate.google.com/translate_tts`) — removed: low quality, frequent CORS blocks
-- Old "race" pattern (Web Speech starts in 50ms, cloud races to upgrade) — removed: caused double voice artifacts
+- Providers tried in order; if one fails (CORS/rate limit), automatically falls back to next
+- **`ttsLocked` mechanism** — once ANY provider starts playing, a lock flag prevents other providers from also playing (prevents double voice). Lock released by `stopAudio()` on next request.
+- **`settled` flag** per provider — prevents same provider from resolving twice (canplaythrough + error race condition)
+- **Offline mode:** if `navigator.onLine === false`, skip cloud providers → use Web Speech API immediately (no 3s delay)
 
 ### Dictionaries (auto-built from VOCAB array in v1.4):
 ```javascript
@@ -362,8 +342,7 @@ Before marking a unit as complete, verify:
 | **v1.1** | 2026-06-28 | TTS upgraded: multi-provider fallback chain. DEPRECATED — see archive/SOP_v1.1_2026-06-28.md. |
 | **v1.2** | 2026-06-28 | TTS: `ttsLocked` lock + `settled` flag. Quiz: "Show Answer" button + usage instructions. DEPRECATED — see archive/SOP_v1.2_2026-06-28.md. |
 | **v1.3** | 2026-06-29 | TTS: instant playback + offline Web Speech fallback. GitHub Pages deployment documented. DEPRECATED — see archive/SOP_v1.3_2026-06-29.md. |
-| **v1.4** | 2026-07-06 | **MAJOR: 5-part study architecture** (vocab → matching → CN→EN recall → Cornell reading → cloze+short). Added unified **mistake book** (localStorage, aggregates from all 5 parts). Added **Cornell notes** layout with highlight+annotate. Added **PDF export** (printable背诵纸, A4 Cornell layout). Standardized scanned-PDF workflow (PyMuPDF + easyocr). Reference implementation: `unit2.html`. DEPRECATED — see archive/SOP_v1.4_2026-07-06.md. |
-| **v1.5** | 2026-07-06 | **TTS upgraded to Edge-TTS** (Microsoft neural voices via local proxy on port 8766). Free, no API key, no rate limit. Voice selector dropdown added to nav bar (Jenny/Aria/Emma/Ana). Cache to ~/.cache/icmyp_tts/. Google Translate TTS removed (low quality). Old "race" pattern removed. Added `tts_server.py` + `start_tts.sh`. |
+| **v1.4** | 2026-07-06 | **MAJOR: 5-part study architecture** (vocab → matching → CN→EN recall → Cornell reading → cloze+short). Added unified **mistake book** (localStorage, aggregates from all 5 parts). Added **Cornell notes** layout with highlight+annotate. Added **PDF export** (printable背诵纸, A4 Cornell layout). Standardized scanned-PDF workflow (PyMuPDF + easyocr). Reference implementation: `unit2.html`. |
 
 ---
 

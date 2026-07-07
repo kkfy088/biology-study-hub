@@ -1,0 +1,63 @@
+# ─────────── 项目级 ───────────
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node（如果将来加构建）
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+
+# ─────────── 临时 / 缓存 ───────────
+/tmp/
+*.tmp
+*.bak
+*.old
+
+# TTS 缓存（运行时产物，不入库）
+~/.cache/icmyp_tts/
+
+# 调试输出
+/tmp/unit2_*
+/tmp/unit3_*
+/tmp/unit2_shots/
+/tmp/chrome-debug-profile*
+/tmp/chrome*.log
+/tmp/tts_server.log
+/tmp/icmyp_tts.log
+
+# ─────────── 项目内部 ───────────
+# OCR 中间产物（每次跑 OCR 重新生成）
+/tmp/easyocr_*
+
+# PyMuPDF 渲染的页面图（用于裁切原图的中间产物）
+# 注意：最终裁切后的 diagrams/*.png 是要入库的！
+
+# ─────────── 敏感 ───────────
+.env
+.env.local
+*.key
+*.pem
+secrets.json
