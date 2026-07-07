@@ -212,7 +212,7 @@ localStorage["unit2_mistakebook_v1"] = {
 ## 8. 测试与质量保证
 
 ### 端到端测试（CDP 自动化）
-脚本：`.workbuddy/tools/debug_unit2.cjs`
+脚本：`tests/debug_unit2.cjs`
 
 12 项测试覆盖：
 - 页面加载 + 数据池完整性
@@ -245,7 +245,7 @@ https://kkfy088.github.io/biology-study-hub/
 ```
 
 ### 为什么用 `.nojekyll`？
-GitHub Pages 默认会用 Jekyll 处理 `_` 开头的文件/文件夹，我们的代码有 `.workbuddy/` 这类路径。加 `.nojekyll` 让所有文件按原始路径直接服务。
+GitHub Pages 默认会用 Jekyll 处理 `_` 开头的文件/文件夹，加 `.nojekyll` 让所有文件按原始路径直接服务。
 
 ---
 

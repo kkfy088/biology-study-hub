@@ -11,8 +11,8 @@
 set -e
 
 PORT=8766
-PYTHON="/Users/fy/.workbuddy/binaries/python/envs/default/bin/python"
-SCRIPT="/Users/fy/WorkBuddy/2026-06-28-17-44-53/tts_server.py"
+PYTHON="python3"
+SCRIPT="$(cd "$(dirname "$0")" && pwd)/tts_server.py"
 
 # Already running?
 if lsof -i :$PORT -sTCP:LISTEN >/dev/null 2>&1; then

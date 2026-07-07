@@ -2,7 +2,7 @@
 const fs = require('fs');
 const vm = require('vm');
 
-const html = fs.readFileSync('/Users/fy/WorkBuddy/2026-06-28-17-44-53/dashboard-web/DashboardCat_看板.html', 'utf-8');
+const html = fs.readFileSync(__dirname + '/DashboardCat_看板.html', 'utf-8');
 
 // 1. 结构检查
 const checks = [];

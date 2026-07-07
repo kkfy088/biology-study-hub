@@ -2,8 +2,8 @@
 """构建单文件 HTML 看板：模板 + Chart.js + SheetJS + 应用逻辑"""
 import os
 
-BASE = '/Users/fy/WorkBuddy/2026-06-28-17-44-53/dashboard-web'
-NODE = '/Users/fy/.workbuddy/binaries/node/workspace/node_modules'
+BASE = os.path.dirname(os.path.abspath(__file__))
+NODE = os.path.join(os.path.expanduser('~'), 'node_modules')
 
 with open(os.path.join(BASE, 'part1_head_body.html'), encoding='utf-8') as f:
     html = f.read()

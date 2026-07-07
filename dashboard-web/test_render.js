@@ -1,10 +1,10 @@
 // jsdom 端到端渲染测试：加载 HTML → 模拟上传 → 校验 DOM 渲染
 const fs = require('fs');
 const vm = require('vm');
-const { JSDOM } = require('/Users/fy/.workbuddy/binaries/node/workspace/node_modules/jsdom');
+const { JSDOM } = require('jsdom');
 
-const html = fs.readFileSync('/Users/fy/WorkBuddy/2026-06-28-17-44-53/dashboard-web/DashboardCat_看板.html', 'utf-8');
-const xlsxData = fs.readFileSync('/Users/fy/WorkBuddy/2026-06-28-17-44-53/review-assistance/demo_data.xlsx');
+const html = fs.readFileSync(__dirname + '/DashboardCat_看板.html', 'utf-8');
+const xlsxData = fs.readFileSync(__dirname + '/../review-assistance/demo_data.xlsx');
 
 const dom = new JSDOM(html, { runScripts: 'outside-only', pretendToBeVisual: true });
 const { window } = dom;

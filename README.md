@@ -62,11 +62,8 @@ biology-study-hub/
 ├── README.md               # ← 你正在看的这份
 ├── DEVELOPMENT.md          # 开发指南（如何新增一个单元）
 ├── ARCHITECTURE.md         # 系统架构详解
-└── .workbuddy/
-    ├── rules/SOP.md        # 内容生成 SOP v1.5（权威标准）
-    ├── rules/archive/      # 历史版本 SOP（v1.0–v1.4）
-    ├── memory/             # 项目工作日志（按天）
-    └── tools/              # 自动化测试脚本
+├── tests/                  # 自动化测试脚本
+└── docs/                   # 项目文档与 SOP
 ```
 
 ## 🚀 本地运行
@@ -113,11 +110,11 @@ http://localhost:8765/
 |------|------|
 | **[DEVELOPMENT.md](DEVELOPMENT.md)** | 开发流程：如何新增一个单元、如何修改 TTS、如何跑测试 |
 | **[ARCHITECTURE.md](ARCHITECTURE.md)** | 系统架构：5-Part 系统设计、错题本数据结构、TTS 多备份链、考纲对齐 |
-| **[.workbuddy/rules/SOP.md](.workbuddy/rules/SOP.md)** | 内容生成 SOP v1.5（最权威的标准，所有新单元必须遵守） |
+| **[docs/SOP.md](docs/SOP.md)** | 内容生成 SOP v1.5（最权威的标准，所有新单元必须遵守） |
 
 ## ✅ 质量保证
 
-每个单元上线前必须通过 **12 项端到端自动化测试**（脚本：`.workbuddy/tools/debug_unit2.cjs`）：
+每个单元上线前必须通过 **12 项端到端自动化测试**（脚本：`tests/debug_unit2.cjs`）：
 
 1. 页面加载、数据池完整（VOCAB/POOL/CORNELL/CLOZE/SHORT 数量正确）
 2. 5 个部分全部渲染

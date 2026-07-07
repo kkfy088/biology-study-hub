@@ -147,9 +147,9 @@ cp unit2.html unit3.html
 
 ```bash
 # 改一下 debug 脚本里的 URL（unit2 → unit3）和 localStorage key
-sed -i '' 's/unit2/unit3/g' .workbuddy/tools/debug_unit2.cjs
-mv .workbuddy/tools/debug_unit2.cjs .workbuddy/tools/debug_unit3.cjs
-.workbuddy/tools/run_test.sh   # 但要改下脚本里引用的文件名
+sed -i '' 's/unit2/unit3/g' tests/debug_unit2.cjs
+mv tests/debug_unit2.cjs tests/debug_unit3.cjs
+bash tests/run_test.sh   # 但要改下脚本里引用的文件名
 ```
 
 12 项测试必须全部通过。
@@ -223,10 +223,10 @@ python3 -m http.server 8765 &           # 静态站点
 ### 跑全部 12 项端到端测试
 
 ```bash
-cd /Users/fy/WorkBuddy/2026-06-28-17-44-53
-/Users/fy/.workbuddy/binaries/node/versions/22.22.2/bin/node .workbuddy/tools/debug_unit2.cjs
+cd michelle-learn-biology
+node tests/debug_unit2.cjs
 # 或
-bash .workbuddy/tools/run_test.sh
+bash tests/run_test.sh
 ```
 
 预期输出：
@@ -324,7 +324,7 @@ gh run view <run-id> --repo kkfy088/biology-study-hub
 
 ## 7. 项目约定（必须遵守）
 
-完整约定见 `.workbuddy/rules/SOP.md`，关键摘录：
+完整约定见 `docs/SOP.md`，关键摘录：
 
 | 项 | 约定 |
 |----|------|

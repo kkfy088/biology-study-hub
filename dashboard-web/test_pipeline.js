@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const XLSX = require('/Users/fy/.workbuddy/binaries/node/workspace/node_modules/xlsx');
+const XLSX = require('xlsx');
 
 // 浏览器全局桩
 const noopEl = new Proxy({}, { get: () => () => noopEl });
@@ -19,12 +19,12 @@ const ctx = {
 };
 ctx.global = ctx;
 
-const logic = fs.readFileSync('/Users/fy/WorkBuddy/2026-06-28-17-44-53/dashboard-web/part2_logic.js', 'utf-8');
+const logic = fs.readFileSync(__dirname + '/part2_logic.js', 'utf-8');
 vm.createContext(ctx);
 vm.runInContext(logic, ctx);
 
 // 读取 demo_data.xlsx
-const data = fs.readFileSync('/Users/fy/WorkBuddy/2026-06-28-17-44-53/review-assistance/demo_data.xlsx');
+const data = fs.readFileSync(__dirname + '/../review-assistance/demo_data.xlsx');
 const wb = XLSX.read(data, { type: 'buffer' });
 console.log('Sheets:', wb.SheetNames);
 
