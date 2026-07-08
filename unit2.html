@@ -669,6 +669,82 @@
   }
   .footer strong { color:var(--text-secondary); }
 
+  /* ── R1/R2: Selection Popup (划词查词 + 长句解释) ── */
+  .sel-popup {
+    position:fixed; z-index:1200; background:white; border-radius:12px;
+    box-shadow:0 8px 32px rgba(0,0,0,.18); border:1px solid #e2e8f0;
+    max-width:380px; min-width:200px; padding:0; overflow:hidden;
+    opacity:0; transform:translateY(6px) scale(.96); transition:all .15s ease;
+    pointer-events:none;
+  }
+  .sel-popup.visible { opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+  .sel-popup-loading {
+    padding:16px 20px; text-align:center; color:var(--text-light);
+    font-size:13px; font-style:italic;
+  }
+  .sel-popup-loading .spinner {
+    display:inline-block; width:14px; height:14px; border:2px solid #e2e8f0;
+    border-top-color:var(--primary); border-radius:50%; animation:spin .6s linear infinite;
+    margin-right:6px; vertical-align:middle;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .sel-popup-header {
+    display:flex; align-items:center; gap:6px; padding:10px 14px;
+    background:linear-gradient(135deg,#4f46e5,#7c3aed); color:white;
+    font-size:13px; font-weight:700;
+  }
+  .sel-popup-body { padding:12px 14px; }
+  .sel-popup-word { font-size:18px; font-weight:800; color:var(--text); }
+  .sel-popup-ipa { font-size:14px; color:#6366f1; margin-top:2px; font-family:monospace; }
+  .sel-popup-cn { font-size:14px; color:var(--text); margin-top:6px; line-height:1.6;
+    font-family:-apple-system,"PingFang SC",sans-serif; }
+  .sel-popup-en { font-size:13px; color:var(--text-secondary); margin-top:6px; line-height:1.6; }
+  .sel-popup-actions { display:flex; gap:6px; padding:8px 14px 12px; flex-wrap:wrap; }
+  .sel-popup-btn {
+    padding:6px 12px; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer;
+    font-size:12px; font-weight:600; background:white; color:var(--text-secondary);
+    transition:all .15s; display:flex; align-items:center; gap:4px;
+  }
+  .sel-popup-btn:hover { background:#f1f5f9; border-color:#c7d2fe; color:#4f46e5; }
+  .sel-popup-btn.primary { background:linear-gradient(135deg,#4f46e5,#7c3aed); color:white; border-color:#4f46e5; }
+  .sel-popup-btn.primary:hover { opacity:.9; }
+  .sel-popup-explain {
+    margin-top:8px; padding:10px 12px; background:#f8fafc; border-radius:8px;
+    font-size:13px; line-height:1.7; color:var(--text); border-left:3px solid #818cf8;
+    display:none;
+  }
+  .sel-popup-explain.visible { display:block; }
+  .sel-popup-explain h6 { font-size:11px; font-weight:800; text-transform:uppercase;
+    letter-spacing:.5px; color:#6366f1; margin-bottom:4px; }
+  .sel-popup-error { padding:12px 14px; color:#dc2626; font-size:13px; }
+
+  /* ── Settings Panel (API Key) ── */
+  .settings-toggle {
+    position:fixed; left:20px; bottom:20px; z-index:999;
+    width:44px; height:44px; border-radius:50%; cursor:pointer;
+    background:white; border:1px solid var(--border); font-size:20px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    display:flex; align-items:center; justify-content:center; transition:all .2s;
+  }
+  .settings-toggle:hover { background:#f1f5f9; transform:scale(1.05); }
+  .settings-panel {
+    position:fixed; left:20px; bottom:72px; z-index:1001;
+    width:340px; background:white; border-radius:14px;
+    box-shadow:0 8px 32px rgba(0,0,0,.15); border:1px solid var(--border);
+    padding:18px; display:none;
+  }
+  .settings-panel.visible { display:block; }
+  .settings-panel h4 { font-size:15px; font-weight:800; margin-bottom:10px; color:var(--text); }
+  .settings-panel label { font-size:12px; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:4px; }
+  .settings-panel input {
+    width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px;
+    font-size:13px; margin-bottom:10px; font-family:monospace;
+  }
+  .settings-panel .hint { font-size:11px; color:var(--text-light); margin-top:-6px; margin-bottom:10px; }
+  .settings-panel .status { font-size:12px; padding:6px 10px; border-radius:6px; margin-top:6px; }
+  .settings-panel .status.ok { background:#dcfce7; color:#166534; }
+  .settings-panel .status.off { background:#fef2f2; color:#991b1b; }
+
   /* ── Print ── */
   @media print {
     body { background:white; font-size:12pt; }
@@ -841,7 +917,23 @@
   <p style="margin-top:14px;font-size:13px;color:var(--text-secondary);font-weight:600;">⚡ Powered by <strong style="color:var(--primary);">Michelle Yang</strong> · 2026</p>
 </footer>
 
-<!-- ═════════ MISTAKE BOOK FLOATING BUTTON ═════════ -->
+<!-- ═════════ R1/R2: SELECTION POPUP ═════════ -->
+<div id="sel-popup" class="sel-popup"></div>
+
+<!-- ═════════ R1/R2: SETTINGS PANEL ═════════ -->
+<button class="settings-toggle" id="settings-toggle" title="AI 设置">⚙️</button>
+<div class="settings-panel" id="settings-panel">
+  <h4>⚙️ AI 引擎设置</h4>
+  <label>GLM API Key</label>
+  <input type="password" id="ai-api-key" placeholder="粘贴你的智谱 API Key">
+  <div class="hint">从 bigmodel.cn 控制台获取。Key 保存在本地 localStorage。</div>
+  <label>模型</label>
+  <input type="text" id="ai-model" placeholder="glm-4.6v-flash" value="glm-4.6v-flash">
+  <button class="sel-popup-btn primary" onclick="saveAIConfig()">保存</button>
+  <div class="status off" id="ai-status">⚠️ 未配置 — 划词将使用内置词典</div>
+</div>
+
+<!-- ═════════ NOTEBOOK FLOATING BUTTON ═════════ -->
 <button id="mb-toggle" class="mb-toggle" title="打开笔记本 Notebook">
   📒<span class="badge" id="mb-badge" style="display:none;">0</span>
 </button>
@@ -1514,6 +1606,273 @@ document.getElementById('mb-close').addEventListener('click', mbToggle);
 document.getElementById('mb-clear').addEventListener('click', mbClearAll);
 
 /* ═════════════════════════════════════════════════════════════
+   R1/R2: SELECTION POPUP — 划词查词 + 长句解释
+   Strategy: Built-in dict (instant) → GLM API (deep lookup/explain)
+   ═════════════════════════════════════════════════════════════ */
+var AI_CONFIG = {
+  apiKey: localStorage.getItem('glm_api_key') || '',
+  model: localStorage.getItem('glm_model') || 'glm-4.6v-flash',
+  baseUrl: 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+};
+var selPopup = document.getElementById('sel-popup');
+var selTimer = null;
+
+// Init settings panel state
+(function initAIConfig() {
+  var keyInput = document.getElementById('ai-api-key');
+  var modelInput = document.getElementById('ai-model');
+  var statusEl = document.getElementById('ai-status');
+  if (AI_CONFIG.apiKey) { keyInput.value = AI_CONFIG.apiKey; }
+  if (AI_CONFIG.model) { modelInput.value = AI_CONFIG.model; }
+  updateAIStatus();
+
+  document.getElementById('settings-toggle').addEventListener('click', function() {
+    document.getElementById('settings-panel').classList.toggle('visible');
+  });
+})();
+
+function saveAIConfig() {
+  AI_CONFIG.apiKey = document.getElementById('ai-api-key').value.trim();
+  AI_CONFIG.model = document.getElementById('ai-model').value.trim() || 'glm-4.6v-flash';
+  localStorage.setItem('glm_api_key', AI_CONFIG.apiKey);
+  localStorage.setItem('glm_model', AI_CONFIG.model);
+  updateAIStatus();
+}
+
+function updateAIStatus() {
+  var el = document.getElementById('ai-status');
+  if (AI_CONFIG.apiKey) {
+    el.className = 'status ok';
+    el.textContent = '✅ 已连接 — 模型: ' + AI_CONFIG.model;
+  } else {
+    el.className = 'status off';
+    el.textContent = '⚠️ 未配置 — 划词将使用内置词典';
+  }
+}
+
+// Detect text selection
+document.addEventListener('mouseup', function(e) {
+  // Ignore clicks inside the popup or settings
+  if (selPopup.contains(e.target) || document.getElementById('settings-panel').contains(e.target)) return;
+  clearTimeout(selTimer);
+  selTimer = setTimeout(function() { handleSelection(e); }, 150);
+});
+
+// Also handle touch
+document.addEventListener('touchend', function(e) {
+  if (selPopup.contains(e.target)) return;
+  clearTimeout(selTimer);
+  selTimer = setTimeout(function() { handleSelection(e); }, 300);
+});
+
+function handleSelection(e) {
+  var sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+    hideSelPopup();
+    return;
+  }
+  var text = sel.toString().trim();
+  if (!text || text.length < 1) { hideSelPopup(); return; }
+
+  // Position popup near the selection
+  var rect = sel.getRangeAt(0).getBoundingClientRect();
+  var x = rect.left + rect.width / 2;
+  var y = rect.bottom + window.scrollY + 8;
+
+  showSelPopup(text, x, y);
+}
+
+function showSelPopup(text, x, y) {
+  // Position
+  selPopup.style.left = Math.max(10, Math.min(x - 190, window.innerWidth - 400)) + 'px';
+  selPopup.style.top = (y - window.scrollY + 10) + 'px';
+
+  var isSentence = text.split(/\s+/).length > 6 || text.length > 60;
+
+  if (isSentence) {
+    // Long sentence: show lookup + explain buttons
+    selPopup.innerHTML =
+      '<div class="sel-popup-header">📖 长句分析</div>' +
+      '<div class="sel-popup-body"><div style="font-size:13px;color:var(--text);line-height:1.6;">"' + escapeHtml(text.slice(0, 120)) + (text.length > 120 ? '…' : '') + '"</div></div>' +
+      '<div class="sel-popup-actions">' +
+        '<button class="sel-popup-btn" onclick="selLookup(\'' + escapeJs(text) + '\')">🔍 查词</button>' +
+        '<button class="sel-popup-btn primary" onclick="selExplain(\'' + escapeJs(text) + '\')">💡 解释句子</button>' +
+        '<button class="sel-popup-btn" onclick="selSpeak(\'' + escapeJs(text) + '\')">🔊 朗读</button>' +
+      '</div>' +
+      '<div class="sel-popup-explain" id="sel-explain"></div>';
+  } else {
+    // Word/phrase: instant lookup
+    var word = text.trim();
+    selPopup.innerHTML =
+      '<div class="sel-popup-header">📖 查词</div>' +
+      '<div class="sel-popup-body">' +
+        '<div class="sel-popup-word">' + escapeHtml(word) + '</div>' +
+        '<div id="sel-ipa"></div>' +
+        '<div id="sel-cn"></div>' +
+        '<div id="sel-en"></div>' +
+      '</div>' +
+      '<div class="sel-popup-actions">' +
+        '<button class="sel-popup-btn" onclick="selSpeak(\'' + escapeJs(word) + '\')">🔊 朗读</button>' +
+        '<button class="sel-popup-btn primary" onclick="selDeepLookup(\'' + escapeJs(word) + '\')">🔍 深度查询</button>' +
+      '</div>' +
+      '<div class="sel-popup-explain" id="sel-explain"></div>';
+
+    // Instant lookup from built-in dictionary
+    var ipa = getPhonetic(word);
+    var cn = getCN(word);
+    if (ipa) { document.getElementById('sel-ipa').innerHTML = '/' + ipa + '/'; }
+    if (cn) { document.getElementById('sel-cn').innerHTML = cn; }
+    if (!ipa && !cn && AI_CONFIG.apiKey) {
+      // Auto deep lookup if no built-in entry
+      selDeepLookup(word);
+    } else if (!ipa && !cn) {
+      document.getElementById('sel-cn').innerHTML = '<span style="color:var(--text-light);font-style:italic;">内置词典无此词，点击"深度查询"</span>';
+    }
+  }
+
+  selPopup.classList.add('visible');
+}
+
+function hideSelPopup() {
+  selPopup.classList.remove('visible');
+}
+
+// Close popup on outside click
+document.addEventListener('mousedown', function(e) {
+  if (!selPopup.contains(e.target) && !e.target.closest('.settings-panel')) {
+    if (window.getSelection().toString().trim() === '') hideSelPopup();
+  }
+});
+
+// Speak
+function selSpeak(text) {
+  if (typeof speakWord === 'function') { speakWord(text); }
+  else if ('speechSynthesis' in window) {
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US';
+    speechSynthesis.speak(u);
+  }
+}
+
+// Deep lookup via GLM API
+async function selDeepLookup(word) {
+  var explainEl = document.getElementById('sel-explain');
+  if (!explainEl) return;
+  explainEl.className = 'sel-popup-explain visible';
+  explainEl.innerHTML = '<div class="sel-popup-loading"><span class="spinner"></span>正在查询…</div>';
+
+  if (!AI_CONFIG.apiKey) {
+    explainEl.innerHTML = '<div class="sel-popup-error">⚠️ 请先在 ⚙️ 设置中配置 API Key</div>';
+    return;
+  }
+
+  try {
+    var resp = await callGLM([
+      { role: 'system', content: 'You are a biology dictionary for IGCSE students. Given a word/phrase, return: IPA pronunciation, Chinese meaning (中文释义), and a simple English definition. Format: IPA: /.../ | CN: ... | EN: ...' },
+      { role: 'user', content: 'Look up: "' + word + '"' }
+    ]);
+    explainEl.innerHTML = formatLookupResult(resp, word);
+  } catch(e) {
+    explainEl.innerHTML = '<div class="sel-popup-error">查询失败: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+// Lookup for sentence words
+async function selLookup(text) {
+  var explainEl = document.getElementById('sel-explain');
+  if (!explainEl) return;
+  explainEl.className = 'sel-popup-explain visible';
+  explainEl.innerHTML = '<div class="sel-popup-loading"><span class="spinner"></span>正在查询关键词…</div>';
+
+  if (!AI_CONFIG.apiKey) {
+    explainEl.innerHTML = '<div class="sel-popup-error">⚠️ 请先在 ⚙️ 设置中配置 API Key</div>';
+    return;
+  }
+
+  try {
+    var resp = await callGLM([
+      { role: 'system', content: 'You are a biology tutor. Given a sentence, extract key biology terms and provide their Chinese meanings. Return as a list: term — 释义' },
+      { role: 'user', content: 'Extract key terms from: "' + text + '"' }
+    ]);
+    explainEl.innerHTML = '<h6>🔍 关键词</h6>' + escapeHtml(resp);
+  } catch(e) {
+    explainEl.innerHTML = '<div class="sel-popup-error">查询失败: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+// Explain long sentence
+async function selExplain(text) {
+  var explainEl = document.getElementById('sel-explain');
+  if (!explainEl) return;
+  explainEl.className = 'sel-popup-explain visible';
+  explainEl.innerHTML = '<div class="sel-popup-loading"><span class="spinner"></span>正在分析句子结构…</div>';
+
+  if (!AI_CONFIG.apiKey) {
+    explainEl.innerHTML = '<div class="sel-popup-error">⚠️ 请先在 ⚙️ 设置中配置 API Key</div>';
+    return;
+  }
+
+  try {
+    var resp = await callGLM([
+      { role: 'system', content: 'You are an English teacher for Chinese students studying IGCSE Biology. Given a long English sentence: 1) Translate it to Chinese (中文翻译). 2) Identify the main clause structure (主谓宾). 3) Explain why the sentence is written this way (语法解释, in Chinese). Keep it concise.' },
+      { role: 'user', content: 'Explain this sentence: "' + text + '"' }
+    ]);
+    explainEl.innerHTML = '<h6>💡 句子解释</h6>' + escapeHtml(resp);
+  } catch(e) {
+    explainEl.innerHTML = '<div class="sel-popup-error">分析失败: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+// GLM API call (OpenAI compatible)
+async function callGLM(messages) {
+  var resp = await fetch(AI_CONFIG.baseUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + AI_CONFIG.apiKey
+    },
+    body: JSON.stringify({
+      model: AI_CONFIG.model,
+      messages: messages,
+      max_tokens: 800,
+      temperature: 0.3
+    })
+  });
+  if (!resp.ok) {
+    var err = await resp.text();
+    throw new Error('API ' + resp.status + ': ' + err.slice(0, 100));
+  }
+  var data = await resp.json();
+  return data.choices[0].message.content.trim();
+}
+
+function formatLookupResult(text, word) {
+  // Try to parse "IPA: /.../ | CN: ... | EN: ..." format
+  var html = '';
+  var ipaMatch = text.match(/IPA:\s*\/[^\/]+\//);
+  var cnMatch = text.match(/CN:\s*(.+?)(\||$)/);
+  var enMatch = text.match(/EN:\s*(.+?)(\||$)/);
+  if (ipaMatch) { document.getElementById('sel-ipa').innerHTML = ipaMatch[0].replace('IPA: ', ''); }
+  if (cnMatch) {
+    document.getElementById('sel-cn').innerHTML = cnMatch[1].trim();
+    document.getElementById('sel-cn').style.display = 'block';
+  }
+  html += '<h6>📖 详细释义</h6>';
+  if (enMatch) html += escapeHtml(enMatch[1].trim()) + '<br>';
+  html += escapeHtml(text);
+  return html;
+}
+
+// Utility: escape HTML
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+// Utility: escape for JS string
+function escapeJs(s) {
+  return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
+
+/* ═════════════════════════════════════════════════════════════
    PDF EXPORT (jsPDF Cornell layout — paper-saving)
    Loaded dynamically; gracefully hidden if CDN blocked.
    ═════════════════════════════════════════════════════════════ */
@@ -2089,6 +2448,11 @@ function submitShort(i) {
       '<div class="feedback-card fb-weak"><div class="fb-title">✗ 缺失关键词</div><ul class="fb-list"><li>' + (missing.length ? '<strong>' + missing.join(', ') + '</strong>' : 'All keywords present ✓') + '</li></ul></div>' +
       '<div class="feedback-card fb-study"><div class="fb-title">📖 范答</div><ul class="fb-list"><li>See model answer below</li></ul></div>' +
     '</div>' +
+    '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">' +
+      '<button class="sel-popup-btn primary" onclick="aiGradeShort(' + i + ',\'' + escapeJs(userVal.slice(0,500)) + '\')">🤖 AI 深度评分</button>' +
+      '<button class="sel-popup-btn" onclick="jumpToCornellShort(' + i + ')">📖 跳转课文</button>' +
+    '</div>' +
+    '<div id="ai-grade-' + i + '" class="sel-popup-explain"></div>' +
     '<div class="answer-block">' +
       '<span class="answer-label">📖 范答 Model Answer</span>' +
       '<div class="answer-en">' + q.model_en + '</div>' +
@@ -2113,6 +2477,76 @@ function submitShort(i) {
     });
   }
   updateClozeScore();
+}
+
+// R3: AI grading for short answer questions
+async function aiGradeShort(i, userAnswer) {
+  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
+  var gradeEl = document.getElementById('ai-grade-' + i);
+  if (!gradeEl) return;
+  gradeEl.className = 'sel-popup-explain visible';
+  gradeEl.innerHTML = '<div class="sel-popup-loading"><span class="spinner"></span>🤖 AI 正在批改…</div>';
+
+  if (!AI_CONFIG.apiKey) {
+    gradeEl.innerHTML = '<div class="sel-popup-error">⚠️ 请先在 ⚙️ 设置中配置 GLM API Key</div>';
+    return;
+  }
+
+  var prompt =
+    'You are an IGCSE Biology examiner. Grade the student answer.\n\n' +
+    'Question: ' + q.q_en + '\n' +
+    'Model Answer: ' + q.model_en + '\n' +
+    'Student Answer: ' + userAnswer + '\n\n' +
+    'Return in this format:\n' +
+    'SCORE: X/10\n' +
+    '✓ 做得好 (Strengths): ...\n' +
+    '✗ 需改进 (Weaknesses): ...\n' +
+    '💡 改进建议 (How to improve): ...\n' +
+    'Keep it concise (under 150 words). Use both English and Chinese.';
+
+  try {
+    var resp = await callGLM([
+      { role: 'system', content: 'You are an expert IGCSE Biology examiner who grades fairly and gives constructive feedback in both English and Chinese.' },
+      { role: 'user', content: prompt }
+    ]);
+    gradeEl.innerHTML = '<h6>🤖 AI 深度评分</h6>' + escapeHtml(resp);
+    // Save to notebook
+    mbAdd({
+      part: 'short-ai', term: q.keywords[0] || 'AI Grade',
+      category: 'ai-feedback', cn: '',
+      prompt: 'AI Grade for: ' + q.q_en.slice(0, 60),
+      userAnswer: userAnswer.slice(0, 100), correctAnswer: resp.slice(0, 200),
+      reason_en: 'AI scored this answer', reason_cn: 'AI 评分已保存',
+      key_en: resp.slice(0, 200), key_cn: ''
+    });
+  } catch(e) {
+    gradeEl.innerHTML = '<div class="sel-popup-error">评分失败: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+// R3: Jump to relevant Cornell section
+function jumpToCornellShort(i) {
+  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
+  var keyword = (q.keywords && q.keywords[0]) || '';
+  // Switch to Cornell tab
+  var cornellTab = document.querySelector('[data-tab="cornell"]');
+  if (cornellTab) { cornellTab.click(); }
+  setTimeout(function() {
+    // Search for keyword in Cornell content
+    var cornellEls = document.querySelectorAll('.cornell-main');
+    for (var j = 0; j < cornellEls.length; j++) {
+      var text = cornellEls[j].textContent.toLowerCase();
+      if (keyword && text.indexOf(keyword.toLowerCase()) !== -1) {
+        cornellEls[j].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        cornellEls[j].style.transition = 'background .3s';
+        cornellEls[j].style.background = '#fef3c7';
+        setTimeout(function(el) { return function() { el.style.background = ''; }; }(cornellEls[j]), 2000);
+        return;
+      }
+    }
+    // Fallback: scroll to first Cornell section
+    if (cornellEls.length > 0) cornellEls[0].scrollIntoView({ behavior: 'smooth' });
+  }, 300);
 }
 
 function resetCloze(i) {
