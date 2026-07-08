@@ -131,21 +131,61 @@
   - `/api/grade` — 主观题评分（R3）
   - `/api/rag/query` — RAG 问答（R8b）
   - `/api/rag/upload` — 上传补充资料（R9）
+- **AI 引擎**: 智谱 GLM-4.6V（Coding Plan，4000 次/月）
+  - 文本理解：GLM-4.6 或 GLM-4-Flash（免费）
+  - 视觉理解：GLM-4.6V-Flash（免费）或 Coding Plan 额度
+  - 后期可切换至 GPT-4o（vision-mcp 支持热切换，改 3 行配置即可）
 - **RAG 组件**:
   - 课文 PDF + 补充资料 → 向量数据库（ChromaDB / FAISS）
   - 浏览器内嵌聊天窗口，学生可随时提问
   - 回答附带来源引用（哪页课文/哪段）
 - **部署方案**: 后端部署到 Vercel/Railway/本地，前端通过 fetch 调用
 
-### R9 · 补充资料上传 + 动态扩展
+### R9 · 补充资料上传 + 视觉解析
 **优先级**: P2
 
-- 学生/老师可上传补充资料（PDF/Word/图片 OCR）
+- 学生/老师可上传补充资料（PDF/Word/图片）
+- **视觉解析方案**（2026-07-08 确定）：
+  - OCR 层：macos-vision-mcp（本地，免费，省 97% token）
+  - 视觉理解层：GLM-4.6V via vision-mcp（@haisto/vision-mcp）
+    - 生物插图理解：GLM-4.6V 原生中文优势
+    - 几何辅助线分析：GLM-4.1V-Thinking（思考链模式）
+    - 物理示意图理解：GLM-4.6V VQA 能力
+  - 后期升级路径：切换 OPENAI_MODEL 为 gpt-4o 即可
 - 上传后：
-  1. 文本提取 → 入向量数据库
-  2. 自动识别新术语 → 建议加入词条库
+  1. 文本提取（macos-vision OCR）→ 入向量数据库
+  2. 图片理解（GLM-4.6V）→ 自动识别新术语 → 建议加入词条库
   3. 自动识别与课文相关的段落 → 建议补充到对应 Part
 - 需要审核流程：AI 建议 → 用户确认 → 入库
+
+### R12 · MCP 工具链（2026-07-08 新增）
+**优先级**: P1
+
+已配置的 MCP 工具链：
+
+| MCP | 用途 | 状态 |
+|-----|------|------|
+| Playwright MCP | 浏览器自动化测试、截图、Console 检查 | ✅ 已配置 |
+| vision-mcp (haisto) | 多模态视觉理解（GLM-4.6V / GPT-4o 可切换） | 待配置 |
+| macos-vision-mcp | 本地 OCR + 文档结构提取 | 待配置 |
+
+vision-mcp 配置（GLM 方案）：
+```json
+{
+  "mcpServers": {
+    "vision": {
+      "command": "npx",
+      "args": ["-y", "@haisto/vision-mcp"],
+      "env": {
+        "MODEL_PROVIDER": "openai",
+        "OPENAI_API_KEY": "智谱API-Key",
+        "OPENAI_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
+        "OPENAI_MODEL": "glm-4.6v-flash"
+      }
+    }
+  }
+}
+```
 
 ### R10 · 需求文档化 + PM Skill 迭代
 **优先级**: P0（本文档）
