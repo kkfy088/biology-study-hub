@@ -333,6 +333,22 @@
     padding:8px 14px; margin:10px 0; font-size:13.5px; color:#1e40af;
     font-family:-apple-system,PingFang SC,sans-serif; line-height:1.7;
   }
+  .cornell-main .cn-figure {
+    margin:16px 0; text-align:center;
+  }
+  .cornell-main .cn-figure img {
+    max-width:100%; border-radius:10px; border:2px solid #e2e8f0;
+    cursor:pointer; transition:transform .15s, box-shadow .15s;
+  }
+  .cornell-main .cn-figure img:hover {
+    transform:scale(1.02); box-shadow:0 8px 24px rgba(0,0,0,.12);
+  }
+  .cornell-main .cn-figure-caption {
+    font-size:13px; color:#475569; margin-top:8px; line-height:1.7;
+    font-family:-apple-system,PingFang SC,sans-serif; text-align:left;
+    background:#f8fafc; padding:10px 14px; border-radius:8px; border-left:3px solid #818cf8;
+  }
+  .cornell-main .cn-figure-caption b { color:#1e40af; }
   .cornell-main mark.user-hl {
     background:#fef9c3; padding:1px 3px; border-radius:2px; cursor:pointer;
     border-bottom:2px solid #f59e0b;
@@ -762,6 +778,43 @@
     opacity:0; transition:opacity .3s, bottom .3s; pointer-events:none;
   }
   .sel-popup-toast.visible { opacity:1; bottom:100px; }
+
+  /* ── R14a: Image Lightbox ── */
+  .lightbox-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:3000;
+    display:none; align-items:center; justify-content:center; flex-direction:column;
+    cursor:zoom-out; animation:fadeIn .2s;
+  }
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  .lightbox-overlay.active { display:flex; }
+  .lightbox-img {
+    max-width:90vw; max-height:75vh; border-radius:12px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5); cursor:grab;
+    transition:transform .2s;
+  }
+  .lightbox-img:active { cursor:grabbing; }
+  .lightbox-caption {
+    color:white; font-size:15px; margin-top:16px; text-align:center;
+    max-width:600px; line-height:1.6;
+  }
+  .lightbox-caption .cn { color:#93c5fd; font-size:14px; margin-top:6px; }
+  .lightbox-actions { margin-top:12px; display:flex; gap:10px; }
+  .lightbox-actions button {
+    padding:8px 16px; border:1px solid rgba(255,255,255,.3);
+    border-radius:8px; background:rgba(255,255,255,.1); color:white;
+    cursor:pointer; font-size:13px; backdrop-filter:blur(4px);
+    transition:background .2s;
+  }
+  .lightbox-actions button:hover { background:rgba(255,255,255,.25); }
+  .lightbox-close {
+    position:absolute; top:20px; right:30px; color:white;
+    font-size:32px; cursor:pointer; opacity:.7; transition:opacity .2s;
+    background:none; border:none;
+  }
+  .lightbox-close:hover { opacity:1; }
+  .vocab-fig { cursor:pointer; }
+  .vocab-fig img { transition:transform .15s; }
+  .vocab-fig:hover img { transform:scale(1.03); }
   .sel-popup-explain {
     margin-top:8px; padding:10px 12px; background:#f8fafc; border-radius:8px;
     font-size:13px; line-height:1.7; color:var(--text); border-left:3px solid #818cf8;
@@ -851,6 +904,38 @@
   .kf-score-display.high { background:#d1fae5; color:#065f46; }
   .kf-score-display.mid { background:#fef9c3; color:#92400e; }
   .kf-score-display.low { background:#fee2e2; color:#991b1b; }
+
+  /* ── R6/R14c: Knowledge Frame — image-based fill ── */
+  .kf-img-quiz {
+    background:#f8fafc; border-radius:12px; padding:16px 20px;
+    border:1px solid #e2e8f0; margin-top:16px;
+  }
+  .kf-img-quiz-title {
+    font-size:16px; font-weight:700; color:#be185d;
+    margin-bottom:10px; display:flex; align-items:center; gap:8px;
+  }
+  .kf-img-quiz-layout {
+    display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;
+  }
+  .kf-img-container {
+    flex:0 0 300px; text-align:center;
+  }
+  .kf-img-container img {
+    max-width:100%; border-radius:10px; border:2px solid #e2e8f0;
+    cursor:pointer;
+  }
+  .kf-img-questions {
+    flex:1; min-width:200px;
+  }
+  .kf-img-q {
+    display:flex; align-items:center; gap:6px; padding:5px 0;
+    font-size:14px; line-height:1.7;
+  }
+  .kf-img-q .label {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:24px; height:24px; border-radius:50%; background:#fce7f3;
+    color:#be185d; font-weight:700; font-size:12px; flex-shrink:0;
+  }
 
   /* ── Print ── */
   @media print {
@@ -1043,6 +1128,17 @@
 <!-- ═════════ R1/R2: SELECTION POPUP ═════════ -->
 <div id="sel-popup" class="sel-popup"></div>
 <div id="sel-toast" class="sel-popup-toast">✓ 已加入笔记本</div>
+
+<!-- ═════════ R14a: IMAGE LIGHTBOX ═════════ -->
+<div id="lightbox" class="lightbox-overlay" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox(event,true)">&times;</button>
+  <img id="lightbox-img" class="lightbox-img" onclick="event.stopPropagation()">
+  <div id="lightbox-caption" class="lightbox-caption"></div>
+  <div class="lightbox-actions">
+    <button onclick="event.stopPropagation(); aiExplainImage();">🤖 AI 解释图片</button>
+    <button onclick="event.stopPropagation(); addToNotebookFromLightbox();">➕ 加入笔记本</button>
+  </div>
+</div>
 
 <!-- ═════════ R1/R2: SETTINGS PANEL ═════════ -->
 <button class="settings-toggle" id="settings-toggle" title="AI 设置">⚙️</button>
@@ -1263,6 +1359,7 @@ var CORNELL_SECTIONS = [
       "Typical sizes": "Animal cell ≈ 25 μm; Plant cell ≈ 60 μm (0.06 mm)."
     },
     main_html: '<div class="cn-intro">本节介绍细胞的基本结构和显微镜的使用。重点掌握：动植物细胞的共同点和差异，以及放大倍数的计算。</div>' +
+      '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig01_microscope.png\', \'Light Microscope 光学显微镜\', \'放大倍数 = 物镜 × 目镜\')"><img src="diagrams/u2_fig01_microscope.png" alt="Light microscope"><div class="cn-figure-caption">🔬 <b>光学显微镜 Light Microscope</b>：利用可见光穿过标本，经过透镜组放大成像。常用放大倍数约 400 倍。需要染色（stain）增加对比度——动物细胞用亚甲基蓝（methylene blue），植物细胞用碘液（iodine）。</div></div>' +
       "<p>All living organisms are made up of units called <b>cells</b>（细胞）. Cells are too small to see with the naked eye, so a <b>light microscope</b>（光学显微镜） is used: visible light passes through a specimen and a series of lenses magnify the image. A useful magnification of about <b>400 times</b> can be achieved. Contrast is improved by using <b>dyes or stains</b>（染色剂） — methylene blue for animal cells (the nucleus shows up well), iodine solution for plant cells.</p>" +
       '<div class="cn-callout">💡 记忆技巧：动物细胞用亚甲基蓝染色看细胞核；植物细胞用碘液染色。放大倍数 = 像长 ÷ 实长。</div>' +
       "<p>Although cells specialise, they share three features in common: a <b>cell surface membrane</b>（细胞膜） surrounding the cytoplasm, <b>cytoplasm</b>（细胞质） containing water and dissolved substances, and a <b>nucleus</b>（细胞核） containing genetic material (DNA). Plant cells have three additional features: a <b>cellulose cell wall</b>（纤维素细胞壁）, a large permanent <b>vacuole</b>（液泡）, and may contain <b>chloroplasts</b>（叶绿体）.</p>" +
@@ -1285,6 +1382,8 @@ var CORNELL_SECTIONS = [
       "Specialised cells": "Red blood cell, muscle cell, ciliated cell, nerve cell (animal); root hair cell, xylem vessel, palisade cell (plant)."
     },
     main_html: '<div class="cn-intro">本节讲解细胞组织层级和特化细胞。重点掌握：从细胞到生物体的层级关系，以及红细胞、根毛细胞等特化细胞如何适应其功能。</div>' +
+      '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig03_organisation_hierarchy.png\', \'Organisation Hierarchy 组织层级\', \'细胞 → 组织 → 器官 → 器官系统 → 生物体\')"><img src="diagrams/u2_fig03_organisation_hierarchy.png" alt="Organisation hierarchy"><div class="cn-figure-caption">🧬 <b>组织层级 Organisation Hierarchy</b>：从微观到宏观的层级关系。细胞（cell）是最基本单位 → 相似细胞组成组织（tissue）→ 不同组织组成器官（organ）→ 多个器官组成器官系统（organ system）→ 构成完整生物体（organism）。每一级执行更复杂的功能。</div></div>' +
+      '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig02_liver_palissade.png\', \'Specialised Cells 特化细胞\', \'红细胞 vs 根毛细胞\')"><img src="diagrams/u2_fig02_liver_palissade.png" alt="Specialised cells"><div class="cn-figure-caption">🔬 <b>特化细胞对比 Specialised Cells</b>：左侧红细胞（red blood cell）——无核、含血红蛋白、双凹圆盘状，适应运氧。右侧栅栏/根毛细胞——根毛细胞有长突起增大表面积，适应吸收水分和矿物质。结构决定功能！</div></div>' +
       "<p>Large organisms are <b>multicellular</b>（多细胞）. Different cell types have particular structures designed to help them carry out different tasks — they have become <b>specialised</b>（特化）. Examples: the <b>red blood cell</b>（红细胞） transports oxygen (filled with haemoglobin, no nucleus, flexible to squeeze through narrow vessels); the <b>root hair cell</b>（根毛细胞） has a long extension increasing surface area for absorbing water and minerals; the <b>xylem vessel</b>（木质部导管） has no cytoplasm and no end wall so it forms a continuous tube, strengthened with <b>lignin</b>（木质素）.</p>" +
       '<div class="cn-callout">💡 红细胞：无核 + 富含血红蛋白 → 运氧效率高。根毛细胞：突起增大表面积 → 吸水吸矿快。</div>' +
       "<p>Cells with similar structures and functions are massed together into <b>tissues</b>（组织）. Animal tissues include <b>epithelium</b>（上皮组织） (lines tubes & covers surfaces), <b>connective tissue</b> / <b>blood</b>（结缔组织/血液） (transports & defends), <b>muscle tissue</b>（肌肉组织） (contracts), <b>nervous tissue</b>（神经组织） (transmits impulses). Plant tissues include <b>epidermis</b>（表皮）, <b>mesophyll</b>（叶肉） (photosynthesis), <b>vascular tissue</b>（维管组织） (transport).</p>" +
@@ -1306,6 +1405,8 @@ var CORNELL_SECTIONS = [
       "Surface area : volume ratio": "Smaller objects have a larger ratio → faster diffusion to the centre."
     },
     main_html: '<div class="cn-intro">本节讲解扩散作用——物质进出细胞的主要方式。重点：扩散是被动过程（不耗能），方向是从高浓度到低浓度，速度受距离、表面积和浓度梯度影响。</div>' +
+      '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig04_membrane_diffusion.png\', \'Membrane & Diffusion 细胞膜与扩散\', \'半透性膜只让小分子通过\')"><img src="diagrams/u2_fig04_membrane_diffusion.png" alt="Membrane diffusion"><div class="cn-figure-caption">🌀 <b>扩散示意图 Diffusion Diagram</b>：粒子从高浓度区域（左侧密集）向低浓度区域（右侧稀疏）净移动，直到均匀分布（平衡 equilibrium）。半透性膜（partially permeable membrane）允许水和小分子（如葡萄糖）通过，但阻止大分子（如蛋白质）通过。整个过程不需要能量（passive 被动运输）。</div></div>' +
+      '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig05_surface_area_diffusion.png\', \'Surface Area Experiment 表面积实验\', \'小方块扩散更快\')"><img src="diagrams/u2_fig05_surface_area_diffusion.png" alt="Surface area diffusion"><div class="cn-figure-caption">🧪 <b>表面积与体积比实验 SA:Vol Experiment</b>：将不同大小的紫色凝胶方块放入酸中，记录变橙色的速度。小方块（高 SA:Vol 比）更快变橙 → 扩散效率更高。这就是为什么大生物需要特化的交换面（如肺泡、小肠绒毛）——增大表面积加速扩散。</div></div>' +
       "<p>The cell cytoplasm is surrounded by a <b>cell surface membrane</b>（细胞膜） that regulates what passes in and out. Not all particles can cross it — sometimes they are too big, or have the wrong charge, or the membrane's chemistry blocks them. A <b>partially permeable membrane</b>（半透性膜） lets some particles (e.g. water, glucose) through but blocks others (e.g. protein).</p>" +
       "<p><b>Diffusion</b>（扩散） is the main process by which substances move over short distances in living organisms. <b>Particles</b>（粒子） (molecules, atoms, ions) in a liquid or gas move randomly, colliding and changing direction. They collide more often when crowded together (high concentration), so the <b>net movement</b>（净移动） is from a region of higher concentration to a region of lower concentration — down a <b>concentration gradient</b>（浓度梯度） — until <b>equilibrium</b>（平衡） is reached. Diffusion is <b>passive</b>（被动的） — it costs the organism no energy.</p>" +
       '<div class="cn-callout">💡 核心概念：高浓度 → 低浓度（顺梯度）。不耗能（被动）。达到平衡时净移动停止。</div>' +
@@ -1331,6 +1432,10 @@ var CORNELL_SECTIONS = [
       "Endo/exocytosis": "Bulk transport of large particles — endocytosis (in), exocytosis (out). Phagocytosis = 'cell eating'."
     },
     main_html: '<div class="cn-intro">本节讲解渗透和主动运输。重点：渗透是水的扩散（从高水势到低水势）；动植物细胞在不同溶液中的变化（考试必考）；主动运输逆梯度耗能。</div>' +
+      '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig06_osmosis_diagram.png\', \'Osmosis Diagram 渗透示意图\', \'水从高水势流向低水势\')"><img src="diagrams/u2_fig06_osmosis_diagram.png" alt="Osmosis diagram"><div class="cn-figure-caption">💧 <b>渗透示意图 Osmosis Diagram</b>：水分子通过半透性膜，从水势较高的一侧（纯水/稀溶液）向水势较低的一侧（浓溶液）净移动。半透膜允许水分子通过，但阻止大溶质分子通过。移动持续到两侧水势相等（equilibrium 平衡）。</div></div>' +
+      '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig07_plant_cell_osmosis.png\', \'Plant Cell Osmosis 植物细胞渗透\', \'turgid vs plasmolysed\')"><img src="diagrams/u2_fig07_plant_cell_osmosis.png" alt="Plant cell osmosis"><div class="cn-figure-caption">🌿 <b>植物细胞在不同溶液中 Plant Cell in Solutions</b>：① 低渗溶液（hypotonic）→ 细胞吸水 → 坚挺（turgid）——细胞壁防止胀破。② 等渗（isotonic）→ 水分平衡 → 正常。③ 高渗（hypertonic）→ 细胞失水 → 萎蔫（flaccid）→ 质壁分离（plasmolysis）——细胞膜脱离细胞壁。🔑 细胞壁是植物细胞不胀破的关键！</div></div>' +
+      '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig08_animal_cell_osmosis.png\', \'Animal Cell Osmosis 动物细胞渗透\', \'haemolysis vs crenated\')"><img src="diagrams/u2_fig08_animal_cell_osmosis.png" alt="Animal cell osmosis"><div class="cn-figure-caption">🩸 <b>动物细胞（红细胞）在不同溶液中 Animal Cell in Solutions</b>：① 低渗（hypotonic）→ 吸水 → 胀破/溶血（haemolysis）——没有细胞壁保护！② 等渗（isotonic）→ 正常。③ 高渗（hypertonic）→ 失水 → 皱缩（crenated）。🔑 对比记忆：植物细胞低渗不破（有壁），动物细胞低渗会破（无壁）！</div></div>' +
+      '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig09_active_transport.png\', \'Active Transport 主动运输\', \'逆浓度梯度耗能\')"><img src="diagrams/u2_fig09_active_transport.png" alt="Active transport"><div class="cn-figure-caption">⚡ <b>主动运输 Active Transport</b>：与扩散/渗透不同，主动运输是<b>逆浓度梯度</b>（低→高）移动物质，需要<b>能量</b>（来自呼吸作用 respiration）和<b>载体蛋白</b>（carrier proteins）。例子：根毛细胞吸收土壤中浓度很低的矿质离子；小肠上皮细胞吸收葡萄糖（即使肠道浓度已低于血液）。载体蛋白有特异性——只运输特定分子。</div></div>' +
       "<p><b>Osmosis</b>（渗透作用） is a special case of diffusion — it is the diffusion of <b>water molecules</b>（水分子）. Living cells are surrounded by a partially permeable membrane, and the cytoplasm and surroundings are both <b>aqueous solutions</b>（水溶液） (water = solvent, dissolved substances = solute). Because talking about water 'concentration' is confusing, biologists use the term <b>water potential</b>（水势）: pure water has the highest water potential; adding solute lowers it. A dilute solution = high water potential; a concentrated solution = low water potential.</p>" +
       '<div class="cn-callout">💡 水势口诀：纯水最高；加溶质降低。稀溶液 = 高水势；浓溶液 = 低水势。水总是从高水势流向低水势。</div>' +
       "<p><b>Osmosis = the net movement of water molecules from a region of higher water potential to a region of lower water potential, down a water potential gradient, through a partially permeable membrane.</b> It continues until water equilibrium is reached.</p>" +
@@ -2002,6 +2107,125 @@ function selAddNote(text, btn) {
   setTimeout(function() { toast.classList.remove('visible'); }, 2000);
 }
 
+// ═════════════════════════════════════════════════════════════
+//  R14a: IMAGE LIGHTBOX — click to enlarge
+// ═════════════════════════════════════════════════════════════
+var lightboxState = { src:'', term:'', cn:'', scale:1, dragging:false, startX:0, startY:0, offsetX:0, offsetY:0 };
+
+function openLightbox(src, term, cn) {
+  lightboxState.src = src;
+  lightboxState.term = term || '';
+  lightboxState.cn = cn || '';
+  lightboxState.scale = 1;
+  lightboxState.offsetX = 0;
+  lightboxState.offsetY = 0;
+  var overlay = document.getElementById('lightbox');
+  var img = document.getElementById('lightbox-img');
+  var caption = document.getElementById('lightbox-caption');
+  img.src = src;
+  img.style.transform = 'scale(1) translate(0,0)';
+  caption.innerHTML = '<div>' + (term || '') + '</div>' + (cn ? '<div class="cn">' + cn + '</div>' : '');
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(e, force) {
+  if (force || e.target === e.currentTarget) {
+    var overlay = document.getElementById('lightbox');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+// Zoom with wheel
+document.addEventListener('DOMContentLoaded', function() {
+  var img = document.getElementById('lightbox-img');
+  if (!img) return;
+  img.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    lightboxState.scale = Math.max(0.5, Math.min(4, lightboxState.scale + (e.deltaY > 0 ? -0.15 : 0.15)));
+    img.style.transform = 'scale(' + lightboxState.scale + ') translate(' + lightboxState.offsetX + 'px,' + lightboxState.offsetY + 'px)';
+  });
+  // Drag to pan
+  img.addEventListener('mousedown', function(e) {
+    if (lightboxState.scale > 1) {
+      lightboxState.dragging = true;
+      lightboxState.startX = e.clientX - lightboxState.offsetX;
+      lightboxState.startY = e.clientY - lightboxState.offsetY;
+    }
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (lightboxState.dragging) {
+      lightboxState.offsetX = e.clientX - lightboxState.startX;
+      lightboxState.offsetY = e.clientY - lightboxState.startY;
+      img.style.transform = 'scale(' + lightboxState.scale + ') translate(' + lightboxState.offsetX + 'px,' + lightboxState.offsetY + 'px)';
+    }
+  });
+  document.addEventListener('mouseup', function() { lightboxState.dragging = false; });
+  // ESC to close
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox(null, true);
+  });
+});
+
+async function aiExplainImage() {
+  var caption = document.getElementById('lightbox-caption');
+  if (!AI_CONFIG.apiKey) {
+    caption.innerHTML += '<div class="cn" style="margin-top:10px;color:#fca5a5;">⚠️ 请先在 ⚙️ 设置中配置 API Key</div>';
+    return;
+  }
+  caption.innerHTML += '<div class="cn" style="margin-top:10px;color:#93c5fd;">🤖 AI 正在分析图片...</div>';
+  try {
+    // Convert image to base64
+    var img = document.getElementById('lightbox-img');
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    ctx.drawImage(img, 0, 0);
+    var dataUrl = canvas.toDataURL('image/png');
+    var base64 = dataUrl.split(',')[1];
+    var resp = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + AI_CONFIG.apiKey },
+      body: JSON.stringify({
+        model:'glm-4v-flash',
+        messages:[{
+          role:'user',
+          content:[
+            { type:'image_url', image_url:{ url: base64 } },
+            { type:'text', text:'请用中文详细解释这张生物图：1）图中展示了什么结构/过程 2）标注各部分名称和功能 3）这个知识点在考试中常考什么。术语用"英文（中文）"格式。' }
+          ]
+        }],
+        max_tokens:600
+      })
+    });
+    var data = await resp.json();
+    var explanation = data.choices[0].message.content;
+    caption.innerHTML = '<div>' + lightboxState.term + '</div>' +
+      '<div class="cn" style="margin-top:10px;text-align:left;background:rgba(255,255,255,.1);padding:12px;border-radius:8px;white-space:pre-wrap;max-height:300px;overflow-y:auto;">' + explanation + '</div>';
+  } catch(err) {
+    caption.innerHTML += '<div class="cn" style="color:#fca5a5;">⚠️ AI 解析失败: ' + err.message + '</div>';
+  }
+}
+
+function addToNotebookFromLightbox() {
+  mbAdd({
+    part:'collection', term: lightboxState.term,
+    category:'star', cn: lightboxState.cn,
+    prompt:'🖼️ 图片收藏: ' + lightboxState.term,
+    userAnswer:'', correctAnswer:'',
+    reason_en:'Image collected', reason_cn:'图片收藏',
+    key_en: lightboxState.term, key_cn: lightboxState.cn,
+    imgSrc: lightboxState.src,
+    timestamp: Date.now()
+  });
+  closeLightbox(null, true);
+  var toast = document.getElementById('sel-toast');
+  toast.classList.add('visible');
+  setTimeout(function() { toast.classList.remove('visible'); }, 2000);
+}
+
 // Deep lookup via GLM API
 async function selDeepLookup(word) {
   var explainEl = document.getElementById('sel-explain');
@@ -2209,7 +2433,7 @@ function generateMistakeSheetHTML(items) {
 function renderVocab() {
   var grid = document.getElementById('vocab-grid');
   grid.innerHTML = VOCAB.map(function(v) {
-    var figHTML = v.fig ? '<div class="vocab-fig"><img src="diagrams/' + v.fig + '" alt="' + v.term + '" loading="lazy"><div class="vocab-fig-caption">' + (v.figCaption || v.term) + '</div></div>' : '';
+    var figHTML = v.fig ? '<div class="vocab-fig" onclick="openLightbox(\'diagrams/' + v.fig + '\', \'' + v.term.replace(/'/g,"\\'") + '\', \'' + (v.cn||'').replace(/'/g,"\\'") + '\')"><img src="diagrams/' + v.fig + '" alt="' + v.term + '" loading="lazy"><div class="vocab-fig-caption">' + (v.figCaption || v.term) + ' 🔍</div></div>' : '';
     return '<div class="vocab-card cat-' + v.cat + '" data-term="' + v.term.toLowerCase() + '">' +
       '<div class="vocab-card-head">' +
         '<span class="vocab-term">' + v.term + '</span>' +
@@ -2957,6 +3181,67 @@ function renderKnowledgeFrame() {
     html += '</div>';
   });
   html += '</div>';
+
+  // R14c: Image-based "看图说话" quizzes
+  html += '<div style="margin-top:24px;padding:12px;background:linear-gradient(135deg,#fce7f3,#fbcfe8);border-radius:10px;font-size:15px;font-weight:700;color:#be185d;">🖼️ 看图说话 · Image-Based Recall — 看图填出标注部位的名称</div>';
+
+  var IMG_QUIZZES = [
+    {
+      img: 'diagrams/u2_fig07_plant_cell_osmosis.png',
+      title: 'Plant Cell in Different Solutions 植物细胞在不同溶液中',
+      questions: [
+        { label:'1', before:'细胞吸水后变得', answer:'turgid', hint:'坚挺' },
+        { label:'2', before:'细胞失水后膜壁分离叫', answer:'plasmolysis', hint:'质壁分离' },
+        { label:'3', before:'防止细胞胀破的结构是', answer:'cell wall', hint:'细胞壁' },
+      ]
+    },
+    {
+      img: 'diagrams/u2_fig08_animal_cell_osmosis.png',
+      title: 'Animal Cell (RBC) in Different Solutions 动物细胞在不同溶液中',
+      questions: [
+        { label:'1', before:'低渗溶液中红细胞会', answer:'burst', hint:'胀破' },
+        { label:'2', before:'胀破的专业术语是', answer:'haemolysis', hint:'溶血' },
+        { label:'3', before:'高渗溶液中细胞会', answer:'crenated', hint:'皱缩' },
+      ]
+    },
+    {
+      img: 'diagrams/u2_fig09_active_transport.png',
+      title: 'Active Transport 主动运输',
+      questions: [
+        { label:'1', before:'运输方向是', answer:'against', hint:'逆梯度' },
+        { label:'2', before:'需要的能量来自', answer:'respiration', hint:'呼吸作用' },
+        { label:'3', before:'膜上的运输蛋白叫', answer:'carrier protein', hint:'载体蛋白' },
+      ]
+    },
+    {
+      img: 'diagrams/u2_fig03_organisation_hierarchy.png',
+      title: 'Levels of Organisation 组织层级',
+      questions: [
+        { label:'1', before:'最基本的结构单位是', answer:'cell', hint:'细胞' },
+        { label:'2', before:'相似细胞组合成', answer:'tissue', hint:'组织' },
+        { label:'3', before:'不同组织组合成', answer:'organ', hint:'器官' },
+      ]
+    }
+  ];
+
+  IMG_QUIZZES.forEach(function(quiz, qi) {
+    html += '<div class="kf-img-quiz">';
+    html += '<div class="kf-img-quiz-title"><span class="icon">📷</span>' + quiz.title + '</div>';
+    html += '<div class="kf-img-quiz-layout">';
+    html += '<div class="kf-img-container"><img src="' + quiz.img + '" alt="' + quiz.title + '" onclick="openLightbox(\'' + quiz.img + '\', \'' + quiz.title.replace(/'/g,"\\'") + '\', \'点击放大查看\')"></div>';
+    html += '<div class="kf-img-questions">';
+    quiz.questions.forEach(function(q, qi2) {
+      var blankId = 'kf-img-' + qi + '-' + qi2;
+      html += '<div class="kf-img-q">';
+      html += '<span class="label">' + q.label + '</span>';
+      html += '<span>' + q.before + '</span>';
+      html += '<input type="text" class="kf-blank" id="' + blankId + '" data-answer="' + q.answer.toLowerCase() + '" placeholder="_____" autocomplete="off" style="min-width:80px;">';
+      html += '<span class="kf-hint">' + q.hint + '</span>';
+      html += '</div>';
+    });
+    html += '</div></div></div>';
+  });
+
   html += '<div class="kf-actions">';
   html += '<button class="sel-popup-btn primary" onclick="submitKnowledgeFrame()">✓ 提交判分</button>';
   html += '<button class="sel-popup-btn" onclick="resetKnowledgeFrame()">🔄 重新填写</button>';
