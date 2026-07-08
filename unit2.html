@@ -815,6 +815,81 @@
   .vocab-fig { cursor:pointer; }
   .vocab-fig img { transition:transform .15s; }
   .vocab-fig:hover img { transform:scale(1.03); }
+
+  /* ── R8: RAG Chat Window ── */
+  .rag-toggle {
+    position:fixed; bottom:180px; right:24px; z-index:900;
+    width:52px; height:52px; border-radius:50%; border:none;
+    background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:white;
+    font-size:22px; cursor:pointer; box-shadow:0 4px 16px rgba(59,130,246,.4);
+    transition:transform .2s;
+  }
+  .rag-toggle:hover { transform:scale(1.1); }
+  .rag-panel {
+    position:fixed; bottom:24px; right:24px; width:380px; max-width:calc(100vw - 48px);
+    height:520px; max-height:calc(100vh - 48px); z-index:999;
+    background:white; border-radius:16px; box-shadow:0 12px 48px rgba(0,0,0,.2);
+    display:none; flex-direction:column; overflow:hidden;
+    border:1px solid var(--border);
+  }
+  .rag-panel.open { display:flex; animation:ragSlideIn .25s; }
+  @keyframes ragSlideIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
+  .rag-header {
+    padding:14px 18px; background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+    color:white; display:flex; align-items:center; justify-content:space-between;
+  }
+  .rag-title { font-size:16px; font-weight:700; }
+  .rag-close { background:none; border:none; color:white; font-size:24px; cursor:pointer; opacity:.8; }
+  .rag-close:hover { opacity:1; }
+  .rag-messages {
+    flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;
+  }
+  .rag-msg { max-width:85%; display:flex; }
+  .rag-msg.user { align-self:flex-end; }
+  .rag-msg.user .rag-msg-content {
+    background:linear-gradient(135deg,#3b82f6,#2563eb); color:white;
+    padding:10px 14px; border-radius:14px 14px 4px 14px;
+    font-size:14px; line-height:1.6;
+  }
+  .rag-msg.assistant { align-self:flex-start; }
+  .rag-msg.assistant .rag-msg-content {
+    background:#f1f5f9; color:var(--text);
+    padding:10px 14px; border-radius:14px 14px 14px 4px;
+    font-size:14px; line-height:1.7;
+  }
+  .rag-msg.loading .rag-msg-content {
+    color:var(--text-light); font-style:italic;
+  }
+  .rag-msg.loading .rag-msg-content::after {
+    content:''; display:inline-block; width:4px; height:14px;
+    background:#94a3b8; margin-left:4px; animation:blink 1s infinite;
+  }
+  @keyframes blink { 50%{opacity:0;} }
+  .rag-sources {
+    padding:0 16px; font-size:11px; color:var(--text-light);
+    max-height:60px; overflow-y:auto;
+  }
+  .rag-sources .source-chip {
+    display:inline-block; background:#e0e7ff; color:#3730a3;
+    padding:2px 8px; border-radius:4px; margin:2px; font-size:10px;
+  }
+  .rag-input-area {
+    padding:12px 16px; border-top:1px solid var(--border);
+    display:flex; gap:8px; background:white;
+  }
+  .rag-input {
+    flex:1; padding:10px 14px; border:1.5px solid #e2e8f0;
+    border-radius:24px; font-size:14px; outline:none;
+  }
+  .rag-input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px #dbeafe; }
+  .rag-send {
+    width:40px; height:40px; border-radius:50%; border:none;
+    background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:white;
+    font-size:16px; cursor:pointer; flex-shrink:0;
+    transition:transform .15s;
+  }
+  .rag-send:hover { transform:scale(1.08); }
+  .rag-send:disabled { opacity:.5; cursor:default; }
   .sel-popup-explain {
     margin-top:8px; padding:10px 12px; background:#f8fafc; border-radius:8px;
     font-size:13px; line-height:1.7; color:var(--text); border-left:3px solid #818cf8;
@@ -1140,8 +1215,25 @@
   </div>
 </div>
 
-<!-- ═════════ R1/R2: SETTINGS PANEL ═════════ -->
+<!-- ═════════ R8: RAG CHAT WINDOW ═════════ -->
+<div id="rag-panel" class="rag-panel">
+  <div class="rag-header">
+    <div class="rag-title">💬 AI 学习助手</div>
+    <button class="rag-close" onclick="toggleRAG(false)">×</button>
+  </div>
+  <div class="rag-messages" id="rag-messages">
+    <div class="rag-msg assistant">
+      <div class="rag-msg-content">你好！我是你的生物学习助手 🧬 可以问我任何关于细胞、扩散、渗透、主动运输的问题。试试：<br>• "什么是渗透作用？"<br>• "植物细胞和动物细胞在渗透时有什么区别？"<br>• "主动运输需要什么条件？"</div>
+    </div>
+  </div>
+  <div class="rag-sources" id="rag-sources"></div>
+  <div class="rag-input-area">
+    <input type="text" id="rag-input" class="rag-input" placeholder="输入你的问题..." autocomplete="off">
+    <button class="rag-send" id="rag-send" onclick="sendRAGQuery()">➤</button>
+  </div>
+</div>
 <button class="settings-toggle" id="settings-toggle" title="AI 设置">⚙️</button>
+<button class="rag-toggle" id="rag-toggle" title="RAG 问答">💬</button>
 <div class="settings-panel" id="settings-panel">
   <h4>⚙️ AI 引擎设置</h4>
   <label>GLM API Key</label>
@@ -3295,6 +3387,98 @@ function submitKnowledgeFrame() {
 
 function resetKnowledgeFrame() {
   renderKnowledgeFrame();
+}
+
+// ═════════════════════════════════════════════════════════════
+//  R8: RAG CHAT — AI 学习助手
+// ═════════════════════════════════════════════════════════════
+
+// Backend API base URL — change to your Vercel deployment
+var API_BASE = window.location.hostname === 'localhost' || window.location.protocol === 'file:'
+  ? 'https://biology-study-hub.vercel.app'  // Replace with your Vercel URL
+  : '';  // Same origin on Vercel
+
+function toggleRAG(open) {
+  var panel = document.getElementById('rag-panel');
+  if (open === undefined) panel.classList.toggle('open');
+  else if (open) panel.classList.add('open');
+  else panel.classList.remove('open');
+  if (panel.classList.contains('open')) {
+    setTimeout(function() { document.getElementById('rag-input').focus(); }, 300);
+  }
+}
+
+document.getElementById('rag-toggle').addEventListener('click', function() { toggleRAG(); });
+
+document.getElementById('rag-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendRAGQuery();
+  }
+});
+
+async function sendRAGQuery() {
+  var input = document.getElementById('rag-input');
+  var question = input.value.trim();
+  if (!question) return;
+
+  var messages = document.getElementById('rag-messages');
+  var sourcesEl = document.getElementById('rag-sources');
+  var sendBtn = document.getElementById('rag-send');
+
+  // Add user message
+  messages.insertAdjacentHTML('beforeend',
+    '<div class="rag-msg user"><div class="rag-msg-content">' + question.replace(/</g,'&lt;') + '</div></div>');
+  input.value = '';
+  sendBtn.disabled = true;
+
+  // Add loading indicator
+  var loadingId = 'rag-loading-' + Date.now();
+  messages.insertAdjacentHTML('beforeend',
+    '<div class="rag-msg assistant loading" id="' + loadingId + '"><div class="rag-msg-content">思考中</div></div>');
+  messages.scrollTop = messages.scrollHeight;
+
+  try {
+    var resp = await fetch(API_BASE + '/api/rag/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: question })
+    });
+
+    if (!resp.ok) throw new Error('API error: ' + resp.status);
+    var data = await resp.json();
+
+    // Remove loading
+    var loadingEl = document.getElementById(loadingId);
+    if (loadingEl) loadingEl.remove();
+
+    // Add answer
+    var answerHtml = (data.answer || data.error || 'Sorry, something went wrong.').replace(/\n/g, '<br>');
+    messages.insertAdjacentHTML('beforeend',
+      '<div class="rag-msg assistant"><div class="rag-msg-content">' + answerHtml + '</div></div>');
+
+    // Show sources
+    if (data.sources && data.sources.length > 0) {
+      var sourcesHtml = '📚 来源: ' + data.sources.map(function(s) {
+        return '<span class="source-chip">' + (s.unit || '') + ' ' + (s.section || '') + '</span>';
+      }).join('');
+      sourcesEl.innerHTML = sourcesHtml;
+    } else {
+      sourcesEl.innerHTML = '';
+    }
+
+    if (data.note) {
+      sourcesEl.innerHTML += '<div style="margin-top:4px;color:#f59e0b;">⚠️ ' + data.note + '</div>';
+    }
+  } catch (err) {
+    var loadingEl2 = document.getElementById(loadingId);
+    if (loadingEl2) loadingEl2.remove();
+    messages.insertAdjacentHTML('beforeend',
+      '<div class="rag-msg assistant"><div class="rag-msg-content">⚠️ 连接失败: ' + err.message + '<br><br>可能原因：<br>• 后端服务未启动<br>• API Key 未配置<br><br>请检查 Vercel 部署和环境变量。</div></div>');
+  }
+
+  sendBtn.disabled = false;
+  messages.scrollTop = messages.scrollHeight;
 }
 
 // ═════════════════════════════════════════════════════════════

@@ -140,35 +140,42 @@
   - **所见即所得打印**: 打印预览 = 笔记本面板的排版样式，直接 Ctrl+P 输出
   - **PDF 导出**: 保留已有 jsPDF 导出功能
 
-### R8 · 前后端分离架构 + RAG（v2 选型确定 2026-07-09）
+### R8 · 前后端分离架构 + RAG（v3 最终选型 2026-07-09）
 **优先级**: P2（架构层，支撑 R1-R3, R9）
 
-- **前端**: 纯静态 HTML/JS，部署到 GitHub Pages
-- **后端**: 轻量 API 服务（Python FastAPI），提供：
-  - `/api/lookup` — 划词查词/翻译（R1）
-  - `/api/explain` — 长句解释（R2）
-  - `/api/grade` — 主观题评分（R3）
-  - `/api/rag/query` — RAG 问答（R8b）
-  - `/api/rag/upload` — 上传补充资料（R9）
-- **AI 引擎**: 智谱 GLM 全家桶（Coding Plan，4000 次/月）
-  - 文本理解：GLM-4.6 或 GLM-4-Flash（免费）
-  - 视觉理解：GLM-4.6V-Flash（免费）或 Coding Plan 额度
-  - **Embedding**: 智谱 embedding-3（中英双语，与 LLM 同生态）
-  - 后期可切换至 GPT-4o（vision-mcp 支持热切换）
-- **RAG 架构**（2026-07-09 确定 — GLM 全家桶方案）:
+- **部署方案**: Vercel（前端 + API Routes）+ Supabase（数据库 + 向量存储 + Auth）
+  - 费用：**$0**（两者免费档均够用）
+  - 部署流程：`git push` → Vercel 自动构建部署
+- **前端**: 纯静态 HTML/JS（现有），部署到 Vercel
+- **后端**: Vercel API Routes（Node.js Serverless Functions）
+  - `/api/lookup` — 划词查词/翻译（DeepSeek）
+  - `/api/explain` — 长句解释（DeepSeek）
+  - `/api/grade` — 主观题评分（DeepSeek）
+  - `/api/rag/query` — RAG 问答（Supabase 向量检索 + DeepSeek 生成）
+  - `/api/rag/upload` — 上传补充资料（浏览器端 pdf.js 解析 + 智谱 embedding）
+  - `/api/vision` — 图片理解（GLM-4V）
+- **大模型分工**:
+  | 任务类型 | 模型 | 原因 |
+  |---------|------|------|
+  | 文本理解/生成 | **DeepSeek-V3** | ¥1/百万 token，便宜 |
+  | 深度推理评分 | **DeepSeek-R1** | ¥4/百万 token |
+  | 视觉/看图 | **GLM-4.6V-Flash** | 免费（Coding Plan） |
+  | Embedding | **智谱 embedding-3** | DeepSeek 无嵌入模型 |
+- **API Key 管理**: 全部存 Vercel 环境变量，前端不接触 Key
+- **RAG 架构**（v3 — Supabase pgvector）:
   ```
-  课文/资料 → GLM embedding-3 → ChromaDB（向量存储）
-                                      ↓
-  学生提问 → GLM embedding-3 → 相似度检索 → Top-K 段落
-                                      ↓
-                GLM-4.6 生成回答（附来源引用）
+  课文/资料 → 浏览器 pdf.js 提取文本 → 智谱 embedding-3 → Supabase pgvector
+                                                                      ↓
+  学生提问 → 智谱 embedding-3 → Supabase 余弦相似度 Top-K=5 → DeepSeek 生成回答
   ```
-  - **向量数据库**: ChromaDB（轻量，Python 原生，本地或 Railway 部署）
-  - **Embedding 模型**: 智谱 embedding-3（中英双语优势，API 调用）
-  - **检索策略**: Top-K=5，余弦相似度，可调阈值
-  - **回答生成**: GLM-4.6 + 课文上下文，附来源页码/段落引用
+  - **向量数据库**: Supabase pgvector（云端、免费、支持 SQL 混合检索）
+  - **Embedding 模型**: 智谱 embedding-3
+  - **回答生成**: DeepSeek-V3 + 课文上下文，附来源引用
   - 浏览器内嵌聊天窗口，学生可随时提问
-- **部署方案**: 后端部署到 Railway/本地，前端通过 fetch 调用
+- **为什么不用 FastAPI + ChromaDB + Railway**:
+  - Supabase 一个服务替代 ChromaDB + 数据库 + Auth + Storage
+  - Vercel 免费 + 全球 CDN，Railway 美国节点国内慢
+  - Serverless 冷启动 ~1s 对 AI 场景影响可忽略
 
 ### R9 · 补充资料上传 + 视觉解析
 **优先级**: P2
