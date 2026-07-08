@@ -302,12 +302,17 @@
     content:'▸'; position:absolute; left:2px; color:var(--primary); font-weight:bold; font-size:10px;
   }
   .cornell-main {
-    padding:24px 26px; font-size:14.5px; line-height:1.95; color:var(--text);
+    padding:24px 26px; font-size:15.5px; line-height:2.0; color:var(--text);
   }
-  .cornell-main p { margin-bottom:12px; }
+  .cornell-main p { margin-bottom:14px; }
   .cornell-main h4 {
-    font-size:16px; font-weight:800; color:var(--primary-dark);
-    margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid var(--primary-light);
+    font-size:20px; font-weight:800; color:var(--primary-dark);
+    margin-bottom:6px; padding-bottom:6px; border-bottom:2px solid var(--primary-light);
+  }
+  .cornell-main .cn-brief {
+    font-size:13px; color:var(--accent-dark); background:linear-gradient(135deg,#fffbeb,#fef3c7);
+    padding:6px 12px; border-radius:6px; margin-bottom:14px; line-height:1.6;
+    font-family:-apple-system,PingFang SC,sans-serif; border-left:3px solid #f59e0b;
   }
   .cornell-main .term-inline { white-space:normal; display:inline; }
   .cornell-main mark.user-hl {
@@ -475,7 +480,7 @@
   }
   .mistake-book.open { transform:translateX(0); }
   .mistake-book-head {
-    background:linear-gradient(135deg, #7c2d12, #dc2626); color:white;
+    background:linear-gradient(135deg, #4f46e5, #7c3aed); color:white;
     padding:18px 22px; display:flex; align-items:center; gap:10px;
   }
   .mistake-book-head h3 { font-size:18px; font-weight:800; flex:1; }
@@ -485,12 +490,12 @@
   }
   .mistake-book-close:hover { background:rgba(255,255,255,.3); }
   .mistake-book-stats {
-    background:#fef2f2; padding:12px 22px; display:flex; gap:18px; flex-wrap:wrap;
-    border-bottom:1px solid #fecaca; font-size:12.5px;
+    background:#eef2ff; padding:12px 22px; display:flex; gap:18px; flex-wrap:wrap;
+    border-bottom:1px solid #c7d2fe; font-size:12.5px;
   }
   .mb-stat { text-align:center; }
-  .mb-stat-num { font-size:22px; font-weight:900; color:#dc2626; line-height:1; }
-  .mb-stat-lbl { font-size:10px; color:#7c2d12; text-transform:uppercase; letter-spacing:.5px; }
+  .mb-stat-num { font-size:22px; font-weight:900; color:#4f46e5; line-height:1; }
+  .mb-stat-lbl { font-size:10px; color:#3730a3; text-transform:uppercase; letter-spacing:.5px; }
   .mistake-book-toolbar {
     padding:10px 16px; background:#fef9c3; border-bottom:1px solid #fde68a;
     display:flex; gap:8px; flex-wrap:wrap; align-items:center;
@@ -540,18 +545,41 @@
 
   .mb-toggle {
     position:fixed; right:20px; bottom:20px; z-index:999;
-    width:56px; height:56px; border-radius:50%; cursor:pointer;
-    background:linear-gradient(135deg, #dc2626, #b91c1c); color:white;
-    border:none; font-size:24px; box-shadow:0 6px 20px rgba(220,38,38,.4);
+    width:60px; height:60px; border-radius:50%; cursor:pointer;
+    background:linear-gradient(135deg, #4f46e5, #7c3aed); color:white;
+    border:none; font-size:26px; box-shadow:0 6px 20px rgba(79,70,229,.4);
     display:flex; align-items:center; justify-content:center; transition:all .2s;
   }
   .mb-toggle:hover { transform:scale(1.1); }
   .mb-toggle .badge {
-    position:absolute; top:-2px; right:-2px; min-width:20px; height:20px;
-    background:#fbbf24; color:#7c2d12; border-radius:10px; font-size:11px;
+    position:absolute; top:-2px; right:-2px; min-width:22px; height:22px;
+    background:#fbbf24; color:#3730a3; border-radius:11px; font-size:12px;
     font-weight:800; display:flex; align-items:center; justify-content:center;
     padding:0 5px; border:2px solid white;
   }
+
+  /* ── R5: Sticky Sidebar Navigation ── */
+  .sidebar-nav {
+    position:fixed; left:14px; top:50%; transform:translateY(-50%); z-index:900;
+    display:flex; flex-direction:column; gap:4px;
+    background:rgba(255,255,255,.92); backdrop-filter:blur(8px);
+    border-radius:14px; padding:10px 8px; box-shadow:0 4px 16px rgba(0,0,0,.08);
+    border:1px solid var(--border);
+  }
+  .sidebar-nav a {
+    display:flex; align-items:center; gap:8px; padding:8px 10px;
+    border-radius:8px; font-size:11px; font-weight:600; color:var(--text-secondary);
+    text-decoration:none; transition:all .2s; white-space:nowrap;
+  }
+  .sidebar-nav a .dot {
+    width:8px; height:8px; border-radius:50%; background:#cbd5e1; transition:all .2s;
+  }
+  .sidebar-nav a .label { opacity:0; max-width:0; overflow:hidden; transition:all .2s; }
+  .sidebar-nav a:hover { background:var(--primary-light); color:var(--primary); }
+  .sidebar-nav a:hover .label { opacity:1; max-width:120px; }
+  .sidebar-nav a.active { background:linear-gradient(135deg,#4f46e5,#7c3aed); color:white; }
+  .sidebar-nav a.active .dot { background:#fbbf24; transform:scale(1.3); }
+  .sidebar-nav a.active .label { opacity:1; max-width:120px; }
 
   /* ── Pronunciation Widget (reused from unit1) ── */
   .speak-btn {
@@ -676,6 +704,15 @@
   </div>
 </nav>
 
+<!-- ═════════ R5: SIDEBAR NAV ═════════ -->
+<nav class="sidebar-nav" id="sidebar-nav">
+  <a href="#part1" data-part="1"><span class="dot"></span><span class="label">① Vocab</span></a>
+  <a href="#part2" data-part="2"><span class="dot"></span><span class="label">② Match</span></a>
+  <a href="#part3" data-part="3"><span class="dot"></span><span class="label">③ CN→EN</span></a>
+  <a href="#part4" data-part="4"><span class="dot"></span><span class="label">④ Cornell</span></a>
+  <a href="#part5" data-part="5"><span class="dot"></span><span class="label">⑤ Cloze</span></a>
+</nav>
+
 <!-- ═════════ HEADER ═════════ -->
 <header class="header">
   <div class="header-badge">🔬 Unit TS2 · Cell Biology</div>
@@ -685,7 +722,7 @@
     <span>🎯 IGCSE 0610 Aligned</span>
     <span>📖 Bilingual EN/中文</span>
     <span>📝 5-Part Study System</span>
-    <span>📒 Mistake Book + PDF Export</span>
+    <span>📒 笔记本 + PDF Export</span>
   </div>
 </header>
 
@@ -723,7 +760,7 @@
     <div class="section-icon" style="background:var(--accent-light);color:var(--accent)">②</div>
     <div>
       <div class="section-title">Part 2 · 词条意思搭配 Vocabulary Matching <span class="cn-soft">英译配词</span></div>
-      <div class="section-desc">Read the full English definition, choose the correct term. Score + refresh. Every wrong answer → 错题本.</div>
+      <div class="section-desc">Read the full English definition, choose the correct term. Score + refresh. Every wrong answer → 笔记本.</div>
     </div>
   </div>
   <div id="matching-quiz" class="matching-quiz"></div>
@@ -805,18 +842,18 @@
 </footer>
 
 <!-- ═════════ MISTAKE BOOK FLOATING BUTTON ═════════ -->
-<button id="mb-toggle" class="mb-toggle" title="Open mistake book">
+<button id="mb-toggle" class="mb-toggle" title="打开笔记本 Notebook">
   📒<span class="badge" id="mb-badge" style="display:none;">0</span>
 </button>
 
-<!-- ═════════ MISTAKE BOOK PANEL ═════════ -->
+<!-- ═════════ NOTEBOOK PANEL ═════════ -->
 <aside id="mistake-book" class="mistake-book">
   <div class="mistake-book-head">
-    <h3>📒 错题本 Mistake Book</h3>
+    <h3>📒 笔记本 Notebook</h3>
     <button class="mistake-book-close" id="mb-close" title="Close">×</button>
   </div>
   <div class="mistake-book-stats">
-    <div class="mb-stat"><div class="mb-stat-num" id="mb-stat-total">0</div><div class="mb-stat-lbl">Total Mistakes</div></div>
+    <div class="mb-stat"><div class="mb-stat-num" id="mb-stat-total">0</div><div class="mb-stat-lbl">Total Entries</div></div>
     <div class="mb-stat"><div class="mb-stat-num" id="mb-stat-unique">0</div><div class="mb-stat-lbl">Unique Terms</div></div>
     <div class="mb-stat"><div class="mb-stat-num" id="mb-stat-worst">0×</div><div class="mb-stat-lbl">Most Missed</div></div>
   </div>
@@ -983,6 +1020,7 @@ var CORNELL_SECTIONS = [
   {
     tag: "2.1",
     title: "Organisms are made up of cells",
+    cn_brief: "细胞的基本结构 — 所有生物都由细胞构成；动植物细胞的共同点和差异；显微镜和放大倍数。",
     cue: {
       "Light microscope": "Magnifies ~400×; needs dyes/stains (methylene blue for animal, iodine for plant) to improve contrast.",
       "Magnification formula": "Magnification = Measured length (image) ÷ Actual length.  Units must match.",
@@ -1001,6 +1039,7 @@ var CORNELL_SECTIONS = [
   {
     tag: "2.2",
     title: "The organisation of living organisms",
+    cn_brief: "生物的组织层级 — 细胞→组织→器官→器官系统→生物体；特化细胞如何分工协作。",
     cue: {
       "Levels (small → large)": "Cell → tissue → organ → organ system → organism.",
       "Tissue": "A group of similar cells working together to perform a shared function.",
@@ -1018,6 +1057,7 @@ var CORNELL_SECTIONS = [
   {
     tag: "2.3",
     title: "Movement in and out of cells: diffusion",
+    cn_brief: "扩散作用 — 粒子从高浓度向低浓度的净移动；影响扩散速度的因素（距离、表面积、浓度梯度）。",
     cue: {
       "Diffusion (definition)": "Net movement of particles from high to low concentration (down a gradient) due to random motion.",
       "Partially permeable membrane": "Lets some particles through, blocks others (e.g. permeable to water & glucose, not protein).",
@@ -1036,6 +1076,7 @@ var CORNELL_SECTIONS = [
   {
     tag: "2.4",
     title: "Movement in and out of cells: osmosis & active transport",
+    cn_brief: "渗透与主动运输 — 水分子顺水势梯度的净移动；动植物细胞在不同溶液中的变化；逆梯度运输耗能。",
     cue: {
       "Osmosis (definition)": "Net movement of WATER from high water potential to low water potential through a partially permeable membrane.",
       "Water potential": "Tendency of water to move. Pure water = highest. Adding solute lowers it. (= dilute = high; concentrated = low).",
@@ -1858,6 +1899,7 @@ function renderCornell() {
       '<div class="cornell-main">' +
         '<span class="cornell-section-tag">📖 Section ' + sec.tag + '</span>' +
         '<h4>' + sec.title + '</h4>' +
+        (sec.cn_brief ? '<div class="cn-brief">📌 ' + sec.cn_brief + '</div>' : '') +
         sec.main_html +
       '</div>' +
       '<div class="cornell-summary">' +
@@ -2159,6 +2201,32 @@ function buildTermRegex() {
   TERM_REGEX = new RegExp('\\b(' + escaped.join('|') + ')\\b', 'gi');
 }
 
+// ═════════════════════════════════════════════════════════════
+//  R5: SIDEBAR NAV — Scroll-based active highlighting
+// ═════════════════════════════════════════════════════════════
+function initSidebarNav() {
+  var links = document.querySelectorAll('.sidebar-nav a');
+  var sections = [];
+  links.forEach(function(link) {
+    var part = link.getAttribute('data-part');
+    var sec = document.getElementById('part' + part);
+    if (sec) sections.push({ el: sec, link: link });
+  });
+
+  function updateActive() {
+    var scrollY = window.scrollY + 120;
+    var current = null;
+    sections.forEach(function(s) {
+      if (s.el.offsetTop <= scrollY) current = s;
+    });
+    links.forEach(function(l) { l.classList.remove('active'); });
+    if (current) current.link.classList.add('active');
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+}
+
 function init() {
   mbLoad();
   buildTermRegex();
@@ -2169,6 +2237,7 @@ function init() {
   renderCloze();
   renderSyllabus();
   mbRender();
+  initSidebarNav();
   // enhance terms in card bodies and callouts
   document.querySelectorAll('.card-body, .callout-body').forEach(function(el){ walkAndEnhance(el); });
 }
