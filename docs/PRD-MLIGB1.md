@@ -140,25 +140,35 @@
   - **所见即所得打印**: 打印预览 = 笔记本面板的排版样式，直接 Ctrl+P 输出
   - **PDF 导出**: 保留已有 jsPDF 导出功能
 
-### R8 · 前后端分离架构 + RAG
+### R8 · 前后端分离架构 + RAG（v2 选型确定 2026-07-09）
 **优先级**: P2（架构层，支撑 R1-R3, R9）
 
 - **前端**: 纯静态 HTML/JS，部署到 GitHub Pages
-- **后端**: 轻量 API 服务（Python FastAPI / Node.js），提供：
+- **后端**: 轻量 API 服务（Python FastAPI），提供：
   - `/api/lookup` — 划词查词/翻译（R1）
   - `/api/explain` — 长句解释（R2）
   - `/api/grade` — 主观题评分（R3）
   - `/api/rag/query` — RAG 问答（R8b）
   - `/api/rag/upload` — 上传补充资料（R9）
-- **AI 引擎**: 智谱 GLM-4.6V（Coding Plan，4000 次/月）
+- **AI 引擎**: 智谱 GLM 全家桶（Coding Plan，4000 次/月）
   - 文本理解：GLM-4.6 或 GLM-4-Flash（免费）
   - 视觉理解：GLM-4.6V-Flash（免费）或 Coding Plan 额度
-  - 后期可切换至 GPT-4o（vision-mcp 支持热切换，改 3 行配置即可）
-- **RAG 组件**:
-  - 课文 PDF + 补充资料 → 向量数据库（ChromaDB / FAISS）
+  - **Embedding**: 智谱 embedding-3（中英双语，与 LLM 同生态）
+  - 后期可切换至 GPT-4o（vision-mcp 支持热切换）
+- **RAG 架构**（2026-07-09 确定 — GLM 全家桶方案）:
+  ```
+  课文/资料 → GLM embedding-3 → ChromaDB（向量存储）
+                                      ↓
+  学生提问 → GLM embedding-3 → 相似度检索 → Top-K 段落
+                                      ↓
+                GLM-4.6 生成回答（附来源引用）
+  ```
+  - **向量数据库**: ChromaDB（轻量，Python 原生，本地或 Railway 部署）
+  - **Embedding 模型**: 智谱 embedding-3（中英双语优势，API 调用）
+  - **检索策略**: Top-K=5，余弦相似度，可调阈值
+  - **回答生成**: GLM-4.6 + 课文上下文，附来源页码/段落引用
   - 浏览器内嵌聊天窗口，学生可随时提问
-  - 回答附带来源引用（哪页课文/哪段）
-- **部署方案**: 后端部署到 Vercel/Railway/本地，前端通过 fetch 调用
+- **部署方案**: 后端部署到 Railway/本地，前端通过 fetch 调用
 
 ### R9 · 补充资料上传 + 视觉解析
 **优先级**: P2

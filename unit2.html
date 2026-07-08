@@ -2198,7 +2198,7 @@ function generateMistakeSheetHTML(items) {
 function renderVocab() {
   var grid = document.getElementById('vocab-grid');
   grid.innerHTML = VOCAB.map(function(v) {
-    var figHTML = v.fig ? '<div class="vocab-fig"><img src="' + v.fig + '" alt="' + v.term + '" loading="lazy"><div class="vocab-fig-caption">' + (v.figCaption || v.term) + '</div></div>' : '';
+    var figHTML = v.fig ? '<div class="vocab-fig"><img src="diagrams/' + v.fig + '" alt="' + v.term + '" loading="lazy"><div class="vocab-fig-caption">' + (v.figCaption || v.term) + '</div></div>' : '';
     return '<div class="vocab-card cat-' + v.cat + '" data-term="' + v.term.toLowerCase() + '">' +
       '<div class="vocab-card-head">' +
         '<span class="vocab-term">' + v.term + '</span>' +
