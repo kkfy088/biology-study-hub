@@ -218,6 +218,24 @@ vision-mcp 配置（GLM 方案）：
 - 所有开发在 `MLIGB1` 分支进行
 - 完成后合入 `main`
 
+### R13 · 核心方法论 Landing Page + 注册组件（2026-07-09 新增）
+**优先级**: P3（排期最后）
+
+- **Landing Page**: 将 5-Part + 知识框架学习方法论整理成一个独立页面
+  - 视觉风格：大气、炫酷、DIO（参考 Apple/Linear/Vercel 的 landing page）
+  - 内容：
+    - Hero 区：项目名称 + Slogan + CTA
+    - 方法论展示：5-Part 学习系统（Vocab → Match → CN→EN → Cornell → Cloze + Knowledge Frame）
+    - 功能亮点：划词查词、AI 评分、笔记本、RAG 问答
+    - 数据展示：词条数、知识点覆盖、用户反馈
+    - Footer：关于我们、联系方式
+  - 技术：纯前端，CSS 动画 + 响应式布局
+- **Google 邮箱快速注册组件**:
+  - 使用 Google Identity Services (GIS) 实现一键登录
+  - 登录后保存用户数据到 localStorage（离线模式）
+  - 后期可扩展为云端同步
+  - 注册按钮放在 Landing Page + unit2 页面右上角
+
 ---
 
 ## 4. 技术架构
