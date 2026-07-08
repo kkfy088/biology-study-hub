@@ -799,6 +799,59 @@
   .settings-panel .status.ok { background:#dcfce7; color:#166534; }
   .settings-panel .status.off { background:#fef2f2; color:#991b1b; }
 
+  /* ── R6: Knowledge Frame (知识框架填空) ── */
+  .kf-container {
+    background:white; border-radius:var(--radius); padding:28px 32px;
+    box-shadow:var(--shadow); border:1px solid var(--border); margin:18px 0;
+  }
+  .kf-intro {
+    font-size:14px; color:#1e40af; background:#eff6ff; border-radius:8px;
+    padding:10px 14px; margin-bottom:20px; font-family:-apple-system,PingFang SC,sans-serif;
+    border-left:4px solid #3b82f6; line-height:1.7;
+  }
+  .kf-tree { display:flex; flex-direction:column; gap:16px; }
+  .kf-branch {
+    background:#f8fafc; border-radius:12px; padding:16px 20px;
+    border:1px solid #e2e8f0;
+  }
+  .kf-branch-title {
+    font-size:16px; font-weight:700; color:var(--primary-dark);
+    margin-bottom:10px; display:flex; align-items:center; gap:8px;
+  }
+  .kf-branch-title .icon { font-size:20px; }
+  .kf-row {
+    display:flex; align-items:center; gap:8px; padding:6px 0;
+    font-size:15px; line-height:1.8; flex-wrap:wrap;
+  }
+  .kf-label { color:var(--text); }
+  .kf-blank {
+    display:inline-block; min-width:100px; padding:3px 10px; margin:0 4px;
+    border:1.5px solid #c7d2fe; border-radius:6px; background:white;
+    font-size:14px; font-family:inherit; outline:none; transition:all .2s;
+  }
+  .kf-blank:focus { border-color:#818cf8; box-shadow:0 0 0 3px #e0e7ff; }
+  .kf-blank.correct {
+    background:#d1fae5; border-color:#10b981; color:#065f46; font-weight:600;
+  }
+  .kf-blank.wrong {
+    background:#fee2e2; border-color:#ef4444; color:#991b1b;
+  }
+  .kf-blank:disabled { cursor:default; }
+  .kf-hint {
+    font-size:12px; color:var(--text-light); margin-left:4px; font-style:italic;
+  }
+  .kf-actions {
+    margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  }
+  .kf-score-display {
+    font-size:18px; font-weight:800; padding:8px 16px; border-radius:8px;
+    display:none;
+  }
+  .kf-score-display.visible { display:inline-block; }
+  .kf-score-display.high { background:#d1fae5; color:#065f46; }
+  .kf-score-display.mid { background:#fef9c3; color:#92400e; }
+  .kf-score-display.low { background:#fee2e2; color:#991b1b; }
+
   /* ── Print ── */
   @media print {
     body { background:white; font-size:12pt; }
@@ -841,6 +894,7 @@
   <a href="#part3" data-part="3"><span class="dot"></span><span class="label">③ CN→EN</span></a>
   <a href="#part4" data-part="4"><span class="dot"></span><span class="label">④ Cornell</span></a>
   <a href="#part5" data-part="5"><span class="dot"></span><span class="label">⑤ Cloze</span></a>
+  <a href="#part6" data-part="6"><span class="dot"></span><span class="label">⑥ Frame</span></a>
 </nav>
 
 <!-- ═════════ HEADER ═════════ -->
@@ -865,6 +919,7 @@
   <a href="#part3" class="toc-link">③ 中译英 CN→EN</a>
   <a href="#part4" class="toc-link">④ 原文朗读 Cornell</a>
   <a href="#part5" class="toc-link">⑤ 课文填空 Cloze</a>
+  <a href="#part6" class="toc-link">⑥ 知识框架 Frame</a>
   <a href="#syllabus" class="toc-link">📋 Syllabus</a>
 </nav>
 
@@ -943,6 +998,20 @@
     </div>
   </div>
   <div id="cloze-quiz"></div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- PART 6: KNOWLEDGE FRAME (R6)                                    -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section class="section" id="part6">
+  <div class="section-header">
+    <div class="section-icon" style="background:#fce7f3;color:#be185d">⑥</div>
+    <div>
+      <div class="section-title">Part 6 · 知识框架 Knowledge Frame <span class="cn-soft">填空 + 自测</span></div>
+      <div class="section-desc">Fill in the blanks to build your own knowledge map. Auto-graded with hints. Wrong answers → 笔记本.</div>
+    </div>
+  </div>
+  <div class="kf-container" id="kf-container"></div>
 </section>
 
 <!-- ════════════════════════════════════════════════════════════ -->
@@ -2804,6 +2873,135 @@ function buildTermRegex() {
 }
 
 // ═════════════════════════════════════════════════════════════
+//  R6: KNOWLEDGE FRAME — 知识框架填空
+// ═════════════════════════════════════════════════════════════
+var KNOWLEDGE_FRAME = [
+  {
+    icon: '🔬', title: 'Cell Structure 细胞结构', cn: '细胞各部分的功能',
+    rows: [
+      { before: 'Cell surface membrane →', answer: 'controls', hint: '控制物质进出', after: 'entry/exit of substances' },
+      { before: 'Cytoplasm →', answer: 'ribosomes', hint: '蛋白质合成', after: '+ mitochondria (respiration)' },
+      { before: 'Nucleus →', answer: 'DNA', hint: '遗传物质', after: 'chromosomes (genetic instructions)' },
+      { before: 'Chloroplast →', answer: 'photosynthesis', hint: '光合作用', after: '(plant cells only)' },
+      { before: 'Cell wall →', answer: 'cellulose', hint: '纤维素', after: '(plant: support & shape)' },
+      { before: 'Vacuole →', answer: 'turgor', hint: '膨压', after: 'pressure (large in plant cells)' }
+    ]
+  },
+  {
+    icon: '🧬', title: 'Cell Organisation 细胞组织层级', cn: '从微观到宏观',
+    rows: [
+      { before: '', answer: 'cell', hint: '细胞', after: '→ tissue → organ → organ system → organism' },
+      { before: 'Red blood cell →', answer: 'oxygen', hint: '运输氧气', after: 'transport (no nucleus, haemoglobin)' },
+      { before: 'Root hair cell →', answer: 'surface area', hint: '增大表面积', after: '(absorb water + minerals)' },
+      { before: 'Xylem →', answer: 'lignin', hint: '木质素', after: 'strengthened, no end wall (continuous tube)' }
+    ]
+  },
+  {
+    icon: '🌀', title: 'Diffusion 扩散作用', cn: '粒子从高到低',
+    rows: [
+      { before: 'Direction: from', answer: 'high', hint: '高浓度', after: '→ low concentration' },
+      { before: 'It is a', answer: 'passive', hint: '被动', after: 'process (no energy needed)' },
+      { before: 'Examples: gas exchange in', answer: 'lungs', hint: '肺', after: '; absorption in small intestine' },
+      { before: 'Speed up: thin membrane (short', answer: 'distance', hint: '距离', after: '), large surface area, steep gradient' }
+    ]
+  },
+  {
+    icon: '💧', title: 'Osmosis 渗透作用', cn: '水的净移动',
+    rows: [
+      { before: 'Osmosis = diffusion of', answer: 'water', hint: '水分子', after: 'molecules through partially permeable membrane' },
+      { before: 'Pure water =', answer: 'highest', hint: '最高水势', after: 'water potential' },
+      { before: 'Plant cell in pure water →', answer: 'turgid', hint: '坚挺', after: '(firm, does NOT burst)' },
+      { before: 'Animal cell in pure water →', answer: 'burst', hint: '胀破', after: '(haemolysis — no cell wall!)' },
+      { before: 'Plant cell in concentrated solution →', answer: 'plasmolysed', hint: '质壁分离', after: '(membrane pulls away from wall)' }
+    ]
+  },
+  {
+    icon: '⚡', title: 'Active Transport 主动运输', cn: '逆梯度耗能',
+    rows: [
+      { before: 'Direction:', answer: 'against', hint: '逆', after: 'concentration gradient (low → high)' },
+      { before: 'Needs energy from', answer: 'respiration', hint: '呼吸作用', after: '(ATP)' },
+      { before: 'Uses', answer: 'carrier proteins', hint: '载体蛋白', after: 'in the membrane (specific)' },
+      { before: 'Example: mineral uptake by', answer: 'roots', hint: '根', after: '(even when soil concentration is low)' }
+    ]
+  }
+];
+
+function renderKnowledgeFrame() {
+  var container = document.getElementById('kf-container');
+  if (!container) return;
+  var html = '<div class="kf-intro">💡 填入正确的英文术语来构建你的知识地图。提交后自动判分，错误的词会加入笔记本。</div>';
+  html += '<div class="kf-tree">';
+  KNOWLEDGE_FRAME.forEach(function(branch, bi) {
+    html += '<div class="kf-branch">';
+    html += '<div class="kf-branch-title"><span class="icon">' + branch.icon + '</span>' + branch.title + ' <span style="font-size:12px;color:#92400e;font-weight:400;">' + branch.cn + '</span></div>';
+    branch.rows.forEach(function(row, ri) {
+      var blankId = 'kf-' + bi + '-' + ri;
+      html += '<div class="kf-row">';
+      if (row.before) html += '<span class="kf-label">' + row.before + '</span> ';
+      html += '<input type="text" class="kf-blank" id="' + blankId + '" data-answer="' + row.answer.toLowerCase() + '" placeholder="_____" autocomplete="off">';
+      if (row.after) html += '<span class="kf-label">' + row.after + '</span>';
+      html += '<span class="kf-hint">' + row.hint + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<div class="kf-actions">';
+  html += '<button class="sel-popup-btn primary" onclick="submitKnowledgeFrame()">✓ 提交判分</button>';
+  html += '<button class="sel-popup-btn" onclick="resetKnowledgeFrame()">🔄 重新填写</button>';
+  html += '<div class="kf-score-display" id="kf-score"></div>';
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function submitKnowledgeFrame() {
+  var blanks = document.querySelectorAll('.kf-blank');
+  var total = 0, correct = 0;
+  var wrongAnswers = [];
+  blanks.forEach(function(blank) {
+    total++;
+    var userVal = blank.value.trim().toLowerCase();
+    var answer = blank.getAttribute('data-answer');
+    // Exact + partial match
+    var isCorrect = userVal === answer || (answer.indexOf(userVal) !== -1 && userVal.length >= answer.length * 0.6);
+    if (isCorrect) {
+      blank.classList.add('correct');
+      blank.classList.remove('wrong');
+      correct++;
+    } else {
+      blank.classList.add('wrong');
+      blank.classList.remove('correct');
+      if (userVal) wrongAnswers.push({ user: userVal, correct: answer });
+      blank.value = userVal + ' → ' + answer;
+    }
+    blank.disabled = true;
+  });
+  var pct = total > 0 ? Math.round(correct / total * 100) : 0;
+  var scoreEl = document.getElementById('kf-score');
+  var cls = pct >= 80 ? 'high' : (pct >= 50 ? 'mid' : 'low');
+  scoreEl.className = 'kf-score-display visible ' + cls;
+  scoreEl.textContent = 'Score: ' + correct + '/' + total + ' (' + pct + '%)';
+
+  // Send wrong answers to notebook
+  wrongAnswers.forEach(function(wa) {
+    mbAdd({
+      part: 'knowledge-frame', term: wa.correct,
+      category: 'frame', cn: '',
+      prompt: '知识框架填空: 正确答案是 ' + wa.correct,
+      userAnswer: wa.user, correctAnswer: wa.correct,
+      reason_en: 'Frame: wrote "' + wa.user + '", should be "' + wa.correct + '"',
+      reason_cn: '填空错误：写了 "' + wa.user + '"，应为 "' + wa.correct + '"',
+      key_en: wa.correct, key_cn: '',
+      timestamp: Date.now()
+    });
+  });
+}
+
+function resetKnowledgeFrame() {
+  renderKnowledgeFrame();
+}
+
+// ═════════════════════════════════════════════════════════════
 //  R5: SIDEBAR NAV — Scroll-based active highlighting
 // ═════════════════════════════════════════════════════════════
 function initSidebarNav() {
@@ -2837,6 +3035,7 @@ function init() {
   renderCnEn();
   renderCornell();
   renderCloze();
+  renderKnowledgeFrame();
   renderSyllabus();
   mbRender();
   initSidebarNav();
