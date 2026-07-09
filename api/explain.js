@@ -1,14 +1,13 @@
-import { callDeepSeek, jsonResponse, CORS_HEADERS } from './_lib.js';
+import { callDeepSeek, setCORS, json } from './_lib.js';
 
-export const config = { runtime: 'edge' };
-
-export default async function handler(req) {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
-  if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405);
+export default async function handler(req, res) {
+  setCORS(res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return json(res, { error: 'Method not allowed' }, 405);
 
   try {
-    const { text } = await req.json();
-    if (!text) return jsonResponse({ error: 'Missing text' }, 400);
+    const { text } = req.body;
+    if (!text) return json(res, { error: 'Missing text' }, 400);
 
     const prompt = `你是一个生物学英语教师。请分析以下句子并返回 JSON：
 句子: "${text}"
@@ -28,8 +27,8 @@ export default async function handler(req) {
       { temperature: 0.2, response_format: { type: 'json_object' } }
     );
 
-    return jsonResponse(JSON.parse(result));
+    return json(res, JSON.parse(result));
   } catch (err) {
-    return jsonResponse({ error: err.message }, 500);
+    return json(res, { error: err.message }, 500);
   }
 }

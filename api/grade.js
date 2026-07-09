@@ -1,14 +1,13 @@
-import { callDeepSeek, jsonResponse, CORS_HEADERS } from './_lib.js';
+import { callDeepSeek, setCORS, json } from './_lib.js';
 
-export const config = { runtime: 'edge' };
-
-export default async function handler(req) {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
-  if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405);
+export default async function handler(req, res) {
+  setCORS(res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return json(res, { error: 'Method not allowed' }, 405);
 
   try {
-    const { question, studentAnswer, correctAnswer, keyPoints } = await req.json();
-    if (!question || !studentAnswer) return jsonResponse({ error: 'Missing fields' }, 400);
+    const { question, studentAnswer, correctAnswer, keyPoints } = req.body;
+    if (!question || !studentAnswer) return json(res, { error: 'Missing fields' }, 400);
 
     const prompt = `你是一个严格的生物学阅卷老师。请评分以下主观题：
 
@@ -33,8 +32,8 @@ export default async function handler(req) {
       { model: 'deepseek-reasoner', temperature: 0.1, response_format: { type: 'json_object' } }
     );
 
-    return jsonResponse(JSON.parse(result));
+    return json(res, JSON.parse(result));
   } catch (err) {
-    return jsonResponse({ error: err.message }, 500);
+    return json(res, { error: err.message }, 500);
   }
 }

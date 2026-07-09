@@ -1,14 +1,13 @@
-import { callDeepSeek, getEmbedding, jsonResponse, CORS_HEADERS } from '../_lib.js';
+import { callDeepSeek, getEmbedding, setCORS, json } from '../_lib.js';
 
-export const config = { runtime: 'edge' };
-
-export default async function handler(req) {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
-  if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405);
+export default async function handler(req, res) {
+  setCORS(res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return json(res, { error: 'Method not allowed' }, 405);
 
   try {
-    const { question, unit } = await req.json();
-    if (!question) return jsonResponse({ error: 'Missing question' }, 400);
+    const { question, unit } = req.body;
+    if (!question) return json(res, { error: 'Missing question' }, 400);
 
     // 1. Embed the question
     const queryEmbedding = await getEmbedding(question);
@@ -17,43 +16,49 @@ export default async function handler(req) {
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
-    let searchResp;
-    try {
-      const matchCount = 5;
-      const rpcBody = {
-        query_embedding: queryEmbedding,
-        match_count: matchCount,
-      };
-      if (unit) rpcBody.filter_unit = unit;
+    let matches = [];
 
-      searchResp = await fetch(`${supabaseUrl}/rest/v1/rpc/match_documents`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
-        },
-        body: JSON.stringify(rpcBody),
-      });
+    if (supabaseUrl && supabaseKey) {
+      try {
+        const rpcBody = {
+          query_embedding: queryEmbedding,
+          match_count: 5,
+        };
+        if (unit) rpcBody.filter_unit = unit;
 
-      if (!searchResp.ok) throw new Error(`Supabase search failed: ${searchResp.status}`);
-    } catch (dbErr) {
-      // Fallback: no Supabase configured, use DeepSeek directly
+        const searchResp = await fetch(`${supabaseUrl}/rest/v1/rpc/match_documents`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+          },
+          body: JSON.stringify(rpcBody),
+        });
+
+        if (searchResp.ok) {
+          matches = await searchResp.json();
+        }
+      } catch (dbErr) {
+        // Fall through to fallback
+      }
+    }
+
+    // 3. If no matches, fallback to direct DeepSeek
+    if (!matches || matches.length === 0) {
       const fallbackAnswer = await callDeepSeek([
         { role: 'system', content: '你是一个生物学老师，用中英双语回答学生的问题。术语用"英文（中文）"格式。' },
         { role: 'user', content: question }
       ], { temperature: 0.3 });
 
-      return jsonResponse({
+      return json(res, {
         answer: fallbackAnswer,
         sources: [],
-        note: 'RAG 数据库未配置，使用通用回答。请配置 Supabase 后启用课文检索。'
+        note: 'RAG 数据库为空或未配置，使用通用回答。导入课文数据后可启用精准检索。'
       });
     }
 
-    const matches = await searchResp.json();
-
-    // 3. Build context from matches
+    // 4. Build context from matches
     const context = matches.map((m, i) =>
       `[${i + 1}] Unit: ${m.unit}, Section: ${m.section || 'N/A'}, Page: ${m.page || 'N/A'}\n${m.content}`
     ).join('\n\n');
@@ -65,7 +70,7 @@ export default async function handler(req) {
       text: m.content.slice(0, 150) + '...'
     }));
 
-    // 4. Generate answer with DeepSeek
+    // 5. Generate answer with DeepSeek
     const answer = await callDeepSeek([
       {
         role: 'system',
@@ -82,8 +87,8 @@ ${context}`
       { role: 'user', content: question }
     ], { temperature: 0.3, max_tokens: 1000 });
 
-    return jsonResponse({ answer, sources });
+    return json(res, { answer, sources });
   } catch (err) {
-    return jsonResponse({ error: err.message }, 500);
+    return json(res, { error: err.message }, 500);
   }
 }
