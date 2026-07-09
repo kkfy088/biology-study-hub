@@ -3393,10 +3393,12 @@ function resetKnowledgeFrame() {
 //  R8: RAG CHAT — AI 学习助手
 // ═════════════════════════════════════════════════════════════
 
-// Backend API base URL — change to your Vercel deployment
-var API_BASE = window.location.hostname === 'localhost' || window.location.protocol === 'file:'
-  ? 'https://biology-study-hub.vercel.app'  // Replace with your Vercel URL
-  : '';  // Same origin on Vercel
+// Backend API base URL — auto-detect based on host
+// Vercel deployment: same origin; GitHub Pages/local: point to Vercel API
+var VERCEL_API_URL = 'https://biology-study-hub.vercel.app'; // TODO: Replace with your actual Vercel URL
+var API_BASE = window.location.hostname.includes('vercel.app')
+  ? ''  // Same origin on Vercel
+  : VERCEL_API_URL;  // GitHub Pages / localhost / file://
 
 function toggleRAG(open) {
   var panel = document.getElementById('rag-panel');
