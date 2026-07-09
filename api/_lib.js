@@ -131,13 +131,13 @@ export async function callDeepSeek(messages, options = {}) {
 
 /**
  * Get embedding vector via Zhipu standard API (1024-dim)
- * Note: Coding Plan doesn't include embedding quota,
- * so we use the standard API endpoint (/paas/v4 instead of /coding/paas/v4).
- * Requires Zhipu account balance for standard API usage.
+ * Uses separate ZHIPU_EMBED_KEY (standard API) instead of Coding Plan key.
+ * Coding Plan endpoint has no embedding quota.
  */
 export async function getEmbedding(text) {
-  const apiKey = process.env.ZHIPU_API_KEY;
-  if (!apiKey) throw new Error('ZHIPU_API_KEY not configured');
+  // Fall back to ZHIPU_API_KEY if ZHIPU_EMBED_KEY not set
+  const apiKey = process.env.ZHIPU_EMBED_KEY || process.env.ZHIPU_API_KEY;
+  if (!apiKey) throw new Error('ZHIPU_EMBED_KEY or ZHIPU_API_KEY not configured');
 
   const resp = await fetch(ZHIPU_EMBED_URL, {
     method: 'POST',
