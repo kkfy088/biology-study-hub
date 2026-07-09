@@ -2318,70 +2318,87 @@ function addToNotebookFromLightbox() {
   setTimeout(function() { toast.classList.remove('visible'); }, 2000);
 }
 
-// Deep lookup via GLM API
+// Deep lookup via backend API
 async function selDeepLookup(word) {
   var explainEl = document.getElementById('sel-explain');
   if (!explainEl) return;
   explainEl.className = 'sel-popup-explain visible';
   explainEl.innerHTML = '<div class="sel-popup-loading"><span class="spinner"></span>正在查询…</div>';
 
-  if (!AI_CONFIG.apiKey) {
-    explainEl.innerHTML = '<div class="sel-popup-error">⚠️ 请先在 ⚙️ 设置中配置 API Key</div>';
-    return;
-  }
-
   try {
-    var resp = await callGLM([
-      { role: 'system', content: 'You are a biology dictionary for IGCSE students. Given a word/phrase, return: IPA pronunciation, Chinese meaning (中文释义), and a simple English definition. Format: IPA: /.../ | CN: ... | EN: ...' },
-      { role: 'user', content: 'Look up: "' + word + '"' }
-    ]);
-    explainEl.innerHTML = formatLookupResult(resp, word);
+    var resp = await fetch(API_BASE + '/api/lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ word: word })
+    });
+    if (!resp.ok) throw new Error('API error: ' + resp.status);
+    var data = await resp.json();
+    var html = '<h6>🔍 深度查询</h6>';
+    html += '<div style="margin:4px 0;"><strong>IPA:</strong> ' + (data.ipa || '') + '</div>';
+    html += '<div style="margin:4px 0;"><strong>中文:</strong> ' + (data.cn || '') + '</div>';
+    html += '<div style="margin:4px 0;"><strong>EN:</strong> ' + (data.def_en || '') + '</div>';
+    html += '<div style="margin:4px 0;"><strong>释义:</strong> ' + (data.def_cn || '') + '</div>';
+    if (data.examples && data.examples.length) {
+      html += '<div style="margin:4px 0;"><strong>例句:</strong><br>' + data.examples.map(function(e){return '• ' + escapeHtml(e);}).join('<br>') + '</div>';
+    }
+    explainEl.innerHTML = html;
   } catch(e) {
     explainEl.innerHTML = '<div class="sel-popup-error">查询失败: ' + escapeHtml(e.message) + '</div>';
   }
 }
 
-// Lookup for sentence words
+// Lookup for sentence words via backend API
 async function selLookup(text) {
   var explainEl = document.getElementById('sel-explain');
   if (!explainEl) return;
   explainEl.className = 'sel-popup-explain visible';
   explainEl.innerHTML = '<div class="sel-popup-loading"><span class="spinner"></span>正在查询关键词…</div>';
 
-  if (!AI_CONFIG.apiKey) {
-    explainEl.innerHTML = '<div class="sel-popup-error">⚠️ 请先在 ⚙️ 设置中配置 API Key</div>';
-    return;
-  }
-
   try {
-    var resp = await callGLM([
-      { role: 'system', content: 'You are a biology tutor. Given a sentence, extract key biology terms and provide their Chinese meanings. Return as a list: term — 释义' },
-      { role: 'user', content: 'Extract key terms from: "' + text + '"' }
-    ]);
-    explainEl.innerHTML = '<h6>🔍 关键词</h6>' + escapeHtml(resp);
+    var resp = await fetch(API_BASE + '/api/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: text })
+    });
+    if (!resp.ok) throw new Error('API error: ' + resp.status);
+    var data = await resp.json();
+    var html = '<h6>🔍 句子分析</h6>';
+    html += '<div style="margin:4px 0;"><strong>翻译:</strong> ' + (data.translation || '') + '</div>';
+    html += '<div style="margin:4px 0;"><strong>结构:</strong> ' + (data.structure || '') + '</div>';
+    html += '<div style="margin:4px 0;"><strong>解释:</strong> ' + (data.explanation || '') + '</div>';
+    explainEl.innerHTML = html;
   } catch(e) {
     explainEl.innerHTML = '<div class="sel-popup-error">查询失败: ' + escapeHtml(e.message) + '</div>';
   }
 }
 
-// Explain long sentence
+// Explain long sentence via backend API
 async function selExplain(text) {
   var explainEl = document.getElementById('sel-explain');
   if (!explainEl) return;
   explainEl.className = 'sel-popup-explain visible';
   explainEl.innerHTML = '<div class="sel-popup-loading"><span class="spinner"></span>正在分析句子结构…</div>';
 
-  if (!AI_CONFIG.apiKey) {
-    explainEl.innerHTML = '<div class="sel-popup-error">⚠️ 请先在 ⚙️ 设置中配置 API Key</div>';
-    return;
-  }
-
   try {
-    var resp = await callGLM([
-      { role: 'system', content: 'You are an English teacher for Chinese students studying IGCSE Biology. Given a long English sentence: 1) Translate it to Chinese (中文翻译). 2) Identify the main clause structure (主谓宾). 3) Explain why the sentence is written this way (语法解释, in Chinese). Keep it concise.' },
-      { role: 'user', content: 'Explain this sentence: "' + text + '"' }
-    ]);
-    explainEl.innerHTML = '<h6>💡 句子解释</h6>' + escapeHtml(resp);
+    var resp = await fetch(API_BASE + '/api/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: text })
+    });
+    if (!resp.ok) throw new Error('API error: ' + resp.status);
+    var data = await resp.json();
+    var html = '<h6>💡 句子解释</h6>';
+    html += '<div style="margin:4px 0;"><strong>翻译:</strong> ' + (data.translation || '') + '</div>';
+    html += '<div style="margin:4px 0;"><strong>结构:</strong> ' + (data.structure || '') + '</div>';
+    if (data.key_terms && data.key_terms.length) {
+      html += '<div style="margin:4px 0;"><strong>术语:</strong><br>';
+      data.key_terms.forEach(function(t){
+        html += '• ' + t.term + ' (' + (t.cn||'') + ') — ' + (t.role||'') + '<br>';
+      });
+      html += '</div>';
+    }
+    html += '<div style="margin:4px 0;"><strong>解释:</strong> ' + (data.explanation || '') + '</div>';
+    explainEl.innerHTML = html;
   } catch(e) {
     explainEl.innerHTML = '<div class="sel-popup-error">分析失败: ' + escapeHtml(e.message) + '</div>';
   }
@@ -3051,7 +3068,7 @@ async function aiGradeShort(i, userAnswer) {
   gradeEl.className = 'sel-popup-explain visible';
   gradeEl.innerHTML = '<div class="sel-popup-loading"><span class="spinner"></span>🤖 AI 正在批改…</div>';
 
-  if (!AI_CONFIG.apiKey) {
+  if (!AI_CONFIG.apiKey && !window.location.hostname.includes('vercel.app')) {
     gradeEl.innerHTML = '<div class="sel-popup-error">⚠️ 请先在 ⚙️ 设置中配置 GLM API Key</div>';
     return;
   }
