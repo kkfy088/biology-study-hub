@@ -50,8 +50,11 @@ export async function callGLM(messages, options = {}) {
   };
 
   // Enable maximum thinking effort by default
+  // GLM-5.2 supports reasoning_effort, other models use thinking.enabled
   if (options.thinking !== false) {
     body.thinking = { type: 'enabled' };
+    // GLM-5.2 专属：reasoning_effort = max
+    body.reasoning_effort = 'max';
   }
 
   if (options.response_format) {
