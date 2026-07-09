@@ -1,13 +1,13 @@
 // ============================================================
 // AI Gateway — Central model routing for Biology Study Hub
 // ============================================================
-// Model assignments (verified 2026-07-09):
-//   Text tasks  → GLM-5.2      (flagship text, 1M context)
-//   Vision      → GLM-5V-Turbo  (multimodal vision)
-//   MCP/Agent   → GLM-4.6       (tool calling)
+// Model assignments (verified 2026-07-09 via bigmodel.cn docs):
+//   Text tasks  → glm-5.2      (flagship text, thinking: max)
+//   Vision      → glm-5v-turbo  (multimodal vision)
 //   Embedding   → embedding-3   (1024-dim vectors)
-//   DeepSeek    → deepseek-v4-pro (backup reasoning)
-// Effort: maximum thinking enabled by default
+//   DeepSeek    → deepseek-chat (backup text reasoning)
+// reasoning_effort: max (GLM-5.2 exclusive)
+// Endpoint: /api/coding/paas/v4 (Coding Plan)
 // ============================================================
 
 const ZHIPU_CHAT_URL = 'https://open.bigmodel.cn/api/coding/paas/v4/chat/completions';
@@ -20,7 +20,7 @@ export const MODELS = {
   VISION: 'glm-5v-turbo',
   MCP: 'glm-4.6',
   EMBEDDING: 'embedding-3',
-  DEEPSEEK: 'deepseek-v4-pro',
+  DEEPSEEK: 'deepseek-chat',
 };
 
 export function setCORS(res) {
@@ -33,10 +33,24 @@ export function json(res, data, status = 200) {
   res.status(status).json(data);
 }
 
+// Backward-compatible exports for older API routes
+export const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+  });
+}
+
 /**
  * Call GLM (Zhipu) — unified gateway for all GLM models
  * @param {Array} messages - chat messages
- * @param {Object} options - { model, max_tokens, temperature, thinking }
+ * @param {Object} options - { model, max_tokens, temperature, thinking, reasoning_effort }
  */
 export async function callGLM(messages, options = {}) {
   const apiKey = process.env.ZHIPU_API_KEY;
@@ -50,11 +64,10 @@ export async function callGLM(messages, options = {}) {
   };
 
   // Enable maximum thinking effort by default
-  // GLM-5.2 supports reasoning_effort, other models use thinking.enabled
+  // GLM-5.2: reasoning_effort controls depth (max | high | medium | low | none)
   if (options.thinking !== false) {
     body.thinking = { type: 'enabled' };
-    // GLM-5.2 专属：reasoning_effort = max
-    body.reasoning_effort = 'max';
+    body.reasoning_effort = options.reasoning_effort || 'max';
   }
 
   if (options.response_format) {
@@ -80,7 +93,7 @@ export async function callGLM(messages, options = {}) {
 }
 
 /**
- * Call DeepSeek V4-Pro — maximum reasoning effort
+ * Call DeepSeek — backup text reasoning
  */
 export async function callDeepSeek(messages, options = {}) {
   const apiKey = process.env.DEEPSEEK_API_KEY;
@@ -92,11 +105,6 @@ export async function callDeepSeek(messages, options = {}) {
     max_tokens: options.max_tokens || 2000,
     temperature: options.temperature ?? 0.3,
   };
-
-  // Enable maximum thinking effort
-  if (options.thinking !== false) {
-    body.thinking = { type: 'think_max' };
-  }
 
   if (options.response_format) {
     body.response_format = options.response_format;
@@ -150,7 +158,7 @@ export async function getEmbedding(text) {
 }
 
 /**
- * Convenience: vision call via GLM-5V-Turbo
+ * Convenience: vision call via GLM-5V-Turbo with thinking enabled
  */
 export async function callVision(imageBase64, prompt, options = {}) {
   return callGLM(
@@ -161,6 +169,6 @@ export async function callVision(imageBase64, prompt, options = {}) {
         { type: 'text', text: prompt || 'Describe this image in detail.' }
       ]
     }],
-    { model: MODELS.VISION, max_tokens: options.max_tokens || 1500, thinking: true }
+    { model: MODELS.VISION, max_tokens: options.max_tokens || 1500, thinking: true, reasoning_effort: 'max' }
   );
 }
