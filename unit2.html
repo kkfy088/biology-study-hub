@@ -2116,7 +2116,7 @@ function showSelPopup(text, x, y) {
     var cn = getCN(word);
     if (ipa) { document.getElementById('sel-ipa').innerHTML = '/' + ipa + '/'; }
     if (cn) { document.getElementById('sel-cn').innerHTML = cn; }
-    if (!ipa && !cn && AI_CONFIG.apiKey) {
+    if (!ipa && !cn) {
       // Auto deep lookup if no built-in entry
       selDeepLookup(word);
     } else if (!ipa && !cn) {
@@ -2262,13 +2262,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function aiExplainImage() {
   var caption = document.getElementById('lightbox-caption');
-  if (!AI_CONFIG.apiKey) {
-    caption.innerHTML += '<div class="cn" style="margin-top:10px;color:#fca5a5;">⚠️ 请先在 ⚙️ 设置中配置 API Key</div>';
-    return;
-  }
   caption.innerHTML += '<div class="cn" style="margin-top:10px;color:#93c5fd;">🤖 AI 正在分析图片...</div>';
   try {
-    // Convert image to base64
     var img = document.getElementById('lightbox-img');
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
@@ -2276,24 +2271,14 @@ async function aiExplainImage() {
     canvas.height = img.naturalHeight;
     ctx.drawImage(img, 0, 0);
     var dataUrl = canvas.toDataURL('image/png');
-    var base64 = dataUrl.split(',')[1];
-    var resp = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+    var resp = await fetch(API_BASE + '/api/vision', {
       method:'POST',
-      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + AI_CONFIG.apiKey },
-      body: JSON.stringify({
-        model:'glm-4v-flash',
-        messages:[{
-          role:'user',
-          content:[
-            { type:'image_url', image_url:{ url: base64 } },
-            { type:'text', text:'请用中文详细解释这张生物图：1）图中展示了什么结构/过程 2）标注各部分名称和功能 3）这个知识点在考试中常考什么。术语用"英文（中文）"格式。' }
-          ]
-        }],
-        max_tokens:600
-      })
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ image: dataUrl })
     });
+    if (!resp.ok) throw new Error('API ' + resp.status);
     var data = await resp.json();
-    var explanation = data.choices[0].message.content;
+    var explanation = data.description || data.error || '无返回';
     caption.innerHTML = '<div>' + lightboxState.term + '</div>' +
       '<div class="cn" style="margin-top:10px;text-align:left;background:rgba(255,255,255,.1);padding:12px;border-radius:8px;white-space:pre-wrap;max-height:300px;overflow-y:auto;">' + explanation + '</div>';
   } catch(err) {
@@ -3068,37 +3053,40 @@ async function aiGradeShort(i, userAnswer) {
   gradeEl.className = 'sel-popup-explain visible';
   gradeEl.innerHTML = '<div class="sel-popup-loading"><span class="spinner"></span>🤖 AI 正在批改…</div>';
 
-  if (!AI_CONFIG.apiKey && !window.location.hostname.includes('vercel.app')) {
-    gradeEl.innerHTML = '<div class="sel-popup-error">⚠️ 请先在 ⚙️ 设置中配置 GLM API Key</div>';
-    return;
-  }
-
-  var prompt =
-    'You are an IGCSE Biology examiner. Grade the student answer.\n\n' +
-    'Question: ' + q.q_en + '\n' +
-    'Model Answer: ' + q.model_en + '\n' +
-    'Student Answer: ' + userAnswer + '\n\n' +
-    'Return in this format:\n' +
-    'SCORE: X/10\n' +
-    '✓ 做得好 (Strengths): ...\n' +
-    '✗ 需改进 (Weaknesses): ...\n' +
-    '💡 改进建议 (How to improve): ...\n' +
-    'Keep it concise (under 150 words). Use both English and Chinese.';
-
   try {
-    var resp = await callGLM([
-      { role: 'system', content: 'You are an expert IGCSE Biology examiner who grades fairly and gives constructive feedback in both English and Chinese.' },
-      { role: 'user', content: prompt }
-    ]);
-    gradeEl.innerHTML = '<h6>🤖 AI 深度评分</h6>' + escapeHtml(resp);
-    // Save to notebook
+    var resp = await fetch(API_BASE + '/api/grade', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question: q.q_en,
+        studentAnswer: userAnswer,
+        correctAnswer: q.model_en,
+        keyPoints: q.keywords
+      })
+    });
+    if (!resp.ok) throw new Error('API ' + resp.status);
+    var data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    var html = '<h6>🤖 AI 深度评分</h6>';
+    html += '<div style="font-size:18px;margin:6px 0;"><strong>得分:</strong> ' + (data.score != null ? data.score + '/10' : 'N/A') + '</div>';
+    html += '<div style="margin:4px 0;"><strong>反馈:</strong> ' + escapeHtml(data.feedback_cn || '') + '</div>';
+    if (data.correct_points && data.correct_points.length) {
+      html += '<div style="margin:4px 0;color:#86efac;">✓ ' + data.correct_points.map(escapeHtml).join('、') + '</div>';
+    }
+    if (data.missing_points && data.missing_points.length) {
+      html += '<div style="margin:4px 0;color:#fca5a5;">✗ ' + data.missing_points.map(escapeHtml).join('、') + '</div>';
+    }
+    if (data.improvements && data.improvements.length) {
+      html += '<div style="margin:4px 0;color:#93c5fd;">💡 ' + data.improvements.map(escapeHtml).join('、') + '</div>';
+    }
+    gradeEl.innerHTML = html;
     mbAdd({
       part: 'short-ai', term: q.keywords[0] || 'AI Grade',
       category: 'ai-feedback', cn: '',
       prompt: 'AI Grade for: ' + q.q_en.slice(0, 60),
-      userAnswer: userAnswer.slice(0, 100), correctAnswer: resp.slice(0, 200),
+      userAnswer: userAnswer.slice(0, 100), correctAnswer: ('Score: ' + data.score + '/10 ' + (data.feedback_cn||'')).slice(0, 200),
       reason_en: 'AI scored this answer', reason_cn: 'AI 评分已保存',
-      key_en: resp.slice(0, 200), key_cn: ''
+      key_en: (data.feedback_cn||'').slice(0, 200), key_cn: ''
     });
   } catch(e) {
     gradeEl.innerHTML = '<div class="sel-popup-error">评分失败: ' + escapeHtml(e.message) + '</div>';
