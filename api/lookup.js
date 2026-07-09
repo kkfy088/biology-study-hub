@@ -1,4 +1,4 @@
-import { callDeepSeek, setCORS, json } from './_lib.js';
+import { callGLM, setCORS, json, MODELS } from './_lib.js';
 
 export default async function handler(req, res) {
   setCORS(res);
@@ -19,9 +19,9 @@ export default async function handler(req, res) {
 }
 只返回 JSON，不要其他文字。`;
 
-    const result = await callDeepSeek(
+    const result = await callGLM(
       [{ role: 'user', content: prompt }],
-      { temperature: 0.1, response_format: { type: 'json_object' } }
+      { model: MODELS.TEXT, temperature: 0.1, thinking: false, response_format: { type: 'json_object' } }
     );
 
     return json(res, JSON.parse(result));
