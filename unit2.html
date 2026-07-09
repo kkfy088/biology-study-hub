@@ -844,6 +844,104 @@
     transition:transform .2s;
   }
   .rag-toggle:hover { transform:scale(1.1); }
+
+  /* ═══ R9 v2: Upload UI ═══ */
+  .upload-toggle {
+    position:fixed; bottom:120px; right:24px; z-index:900;
+    width:52px; height:52px; border-radius:50%; border:none;
+    background:linear-gradient(135deg,#10b981,#059669); color:white;
+    font-size:22px; cursor:pointer; box-shadow:0 4px 16px rgba(16,185,129,.4);
+    transition:transform .2s;
+  }
+  .upload-toggle:hover { transform:scale(1.1); }
+  .upload-modal {
+    position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.5);
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .upload-modal.open { display:flex; }
+  .upload-modal-content {
+    background:white; border-radius:16px; width:600px; max-width:100%;
+    max-height:85vh; overflow:hidden; display:flex; flex-direction:column;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .upload-modal-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 24px; border-bottom:1px solid #e2e8f0;
+  }
+  .upload-modal-header h3 { margin:0; font-size:18px; }
+  .upload-close {
+    background:none; border:none; font-size:24px; cursor:pointer;
+    color:#94a3b8; line-height:1; padding:4px;
+  }
+  .upload-close:hover { color:#475569; }
+  .upload-drop-zone {
+    margin:20px; border:2px dashed #cbd5e1; border-radius:12px;
+    padding:48px 24px; text-align:center; cursor:pointer;
+    transition:border-color .2s, background .2s;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:200px;
+  }
+  .upload-drop-zone:hover { border-color:#10b981; background:#f0fdf4; }
+  .upload-icon { font-size:48px; margin-bottom:12px; }
+  .upload-link { color:#10b981; font-weight:600; text-decoration:underline; }
+  .upload-processing { text-align:center; padding:24px; }
+  .upload-processing p { margin:8px 0; }
+  .upload-spinner {
+    width:40px; height:40px; border:4px solid #e2e8f0;
+    border-top-color:#10b981; border-radius:50%; margin:0 auto;
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .upload-review {
+    flex:1; overflow-y:auto; padding:0 20px 20px;
+  }
+  .review-header { margin-bottom:16px; }
+  .review-header h4 { margin:0 0 4px; font-size:16px; }
+  .review-tabs {
+    display:flex; gap:4px; margin-bottom:16px;
+    border-bottom:2px solid #e2e8f0;
+  }
+  .review-tab {
+    padding:8px 16px; border:none; background:none; cursor:pointer;
+    font-size:13px; color:#64748b; border-bottom:2px solid transparent;
+    margin-bottom:-2px; transition:all .2s;
+  }
+  .review-tab.active { color:#10b981; border-bottom-color:#10b981; font-weight:600; }
+  .review-content { max-height:350px; overflow-y:auto; }
+  .review-item {
+    display:flex; gap:12px; padding:12px; margin-bottom:8px;
+    background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;
+  }
+  .review-check { flex-shrink:0; padding-top:2px; }
+  .review-check input[type=checkbox] { width:18px; height:18px; accent-color:#10b981; }
+  .review-item-body { flex:1; }
+  .review-term { font-weight:700; font-size:14px; color:#1e293b; }
+  .review-ipa { font-weight:400; color:#64748b; font-size:12px; }
+  .review-def { font-size:13px; color:#475569; margin-top:4px; }
+  .review-def-cn { font-size:12px; color:#64748b; margin-top:2px; }
+  .review-cue { font-size:12px; color:#475569; margin-bottom:6px; }
+  .review-cue-item { padding:2px 0; }
+  .review-main { font-size:13px; color:#475569; line-height:1.5; }
+  .review-summary { font-size:12px; color:#64748b; margin-top:6px; }
+  .review-summary-cn { font-size:12px; color:#64748b; }
+  .review-section { font-size:11px; color:#10b981; font-weight:600; margin-bottom:4px; }
+  .review-doc-text { font-size:13px; color:#475569; line-height:1.5; }
+  .review-actions {
+    display:flex; gap:12px; justify-content:flex-end;
+    padding:16px 0; border-top:1px solid #e2e8f0; margin-top:12px;
+  }
+  .review-btn-cancel {
+    padding:8px 20px; border:1px solid #e2e8f0; border-radius:8px;
+    background:white; color:#64748b; cursor:pointer; font-size:13px;
+  }
+  .review-btn-cancel:hover { background:#f8fafc; }
+  .review-btn-confirm {
+    padding:8px 20px; border:none; border-radius:8px;
+    background:#10b981; color:white; cursor:pointer; font-size:13px; font-weight:600;
+  }
+  .review-btn-confirm:hover { background:#059669; }
+
   .rag-panel {
     position:fixed; bottom:24px; right:24px; width:380px; max-width:calc(100vw - 48px);
     height:520px; max-height:calc(100vh - 48px); z-index:999;
@@ -1253,6 +1351,27 @@
 </div>
 <button class="settings-toggle" id="settings-toggle" title="AI 设置">⚙️</button>
 <button class="rag-toggle" id="rag-toggle" title="RAG 问答">💬</button>
+
+<!-- ═════════ R9 v2: UPLOAD BUTTON + MODAL ═════════ -->
+<button class="upload-toggle" onclick="toggleUpload()" title="上传补充资料">📎</button>
+<div class="upload-modal" id="upload-modal">
+  <div class="upload-modal-content">
+    <div class="upload-modal-header">
+      <h3>📎 上传补充资料</h3>
+      <button class="upload-close" onclick="toggleUpload(false)">×</button>
+    </div>
+    <div class="upload-drop-zone" id="upload-drop-zone"
+         onclick="document.getElementById('upload-file-input').click()"
+         ondrop="handleDrop(event)"
+         ondragover="handleDragOver(event)">
+      <div class="upload-icon">📎</div>
+      <p>拖拽文件到这里，或 <span class="upload-link">点击选择</span></p>
+      <p style="font-size:11px;color:#94a3b8;margin-top:4px;">支持 PDF, PNG, JPG, GIF, HEIC（最大 10MB）</p>
+      <input type="file" id="upload-file-input" accept=".pdf,.png,.jpg,.jpeg,.gif,.heic,.heif" style="display:none">
+    </div>
+    <div class="upload-review" id="upload-review" style="display:none;"></div>
+  </div>
+</div>
 <div class="settings-panel" id="settings-panel">
   <h4>⚙️ AI 引擎设置</h4>
   <label>GLM API Key</label>
@@ -3577,6 +3696,9 @@ function toggleRAG(open) {
 
 document.getElementById('rag-toggle').addEventListener('click', function() { toggleRAG(); });
 
+// R9: Attach file input listener
+document.getElementById('upload-file-input').addEventListener('change', handleFileSelect);
+
 document.getElementById('rag-input').addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
@@ -3646,6 +3768,281 @@ async function sendRAGQuery() {
 
   sendBtn.disabled = false;
   messages.scrollTop = messages.scrollHeight;
+}
+
+// ═════════════════════════════════════════════════════════════
+//  R9 v2: SUPPLEMENT UPLOAD — AI-powered content extraction
+// ═════════════════════════════════════════════════════════════
+
+function toggleUpload(open) {
+  var modal = document.getElementById('upload-modal');
+  if (open === undefined) modal.classList.toggle('open');
+  else if (open) modal.classList.add('open');
+  else modal.classList.remove('open');
+}
+
+function handleFileSelect(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  processUpload(file);
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  var file = event.dataTransfer.files[0];
+  if (!file) return;
+  processUpload(file);
+}
+
+function handleDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'copy';
+}
+
+async function processUpload(file) {
+  var maxSize = 10 * 1024 * 1024; // 10MB
+  if (file.size > maxSize) {
+    alert('File too large (max 10MB).');
+    return;
+  }
+
+  var allowed = ['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/heic', 'image/heif'];
+  var ext = file.name.split('.').pop().toLowerCase();
+  var extOK = ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'heic', 'heif'].includes(ext);
+
+  if (!allowed.includes(file.type) && !extOK) {
+    alert('Unsupported format. Please upload PDF, PNG, JPG, GIF, or HEIC.');
+    return;
+  }
+
+  // Show processing
+  var area = document.getElementById('upload-drop-zone');
+  area.innerHTML = '<div class="upload-processing"><div class="upload-spinner"></div><p>AI 正在识别资料...</p><p style="font-size:11px;color:#94a3b8;">GLM-5V-Turbo 视觉识别 + GLM-5.2 结构化解析</p></div>';
+
+  try {
+    // Convert to base64
+    var base64 = await fileToBase64(file);
+
+    // Call parse API
+    var resp = await fetch(API_BASE + '/api/rag/parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: base64, fileName: file.name })
+    });
+
+    if (!resp.ok) throw new Error('Parse API error: ' + resp.status);
+    var data = await resp.json();
+
+    if (data.error) throw new Error(data.error);
+
+    // Show review panel
+    showReviewPanel(data, file.name);
+  } catch (err) {
+    area.innerHTML = '<p style="color:#ef4444;">⚠️ 识别失败: ' + err.message + '</p><p style="font-size:12px;margin-top:8px;">请重试或检查网络连接。</p>';
+    console.error('Upload error:', err);
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(e) { resolve(e.target.result); };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+var reviewData = null;
+var reviewFileName = '';
+
+function showReviewPanel(data, fileName) {
+  reviewData = data;
+  reviewFileName = fileName;
+
+  var area = document.getElementById('upload-drop-zone');
+  area.style.display = 'none';
+
+  var panel = document.getElementById('upload-review');
+  panel.style.display = 'block';
+  panel.innerHTML = buildReviewHTML(data, fileName);
+
+  // Activate first tab
+  switchReviewTab('vocabulary');
+}
+
+function buildReviewHTML(data, fileName) {
+  var vocabCount = (data.vocabulary || []).length;
+  var cornellCount = (data.cornell_sections || []).length;
+  var docCount = (data.documents || []).length;
+
+  return '<div class="review-header">' +
+    '<h4>📄 ' + fileName.replace(/</g, '&lt;') + '</h4>' +
+    '<p style="font-size:12px;color:#64748b;">AI 识别完成，请审核并选择要导入的内容</p>' +
+    '</div>' +
+    '<div class="review-tabs">' +
+      '<button class="review-tab active" data-tab="vocabulary" onclick="switchReviewTab(\'vocabulary\')">词条 (' + vocabCount + ')</button>' +
+      '<button class="review-tab" data-tab="cornell" onclick="switchReviewTab(\'cornell\')">Cornell (' + cornellCount + ')</button>' +
+      '<button class="review-tab" data-tab="documents" onclick="switchReviewTab(\'documents\')">知识库 (' + docCount + ')</button>' +
+    '</div>' +
+    '<div id="review-content" class="review-content"></div>' +
+    '<div class="review-actions">' +
+      '<button class="review-btn-cancel" onclick="resetUpload()">取消</button>' +
+      '<button class="review-btn-confirm" onclick="confirmImport()">✅ 确认导入</button>' +
+    '</div>';
+}
+
+function switchReviewTab(tab) {
+  // Update tab buttons
+  document.querySelectorAll('.review-tab').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+
+  var content = document.getElementById('review-content');
+  if (!reviewData) return;
+
+  if (tab === 'vocabulary') {
+    var vocab = reviewData.vocabulary || [];
+    if (vocab.length === 0) {
+      content.innerHTML = '<p style="padding:20px;text-align:center;color:#94a3b8;">未识别到词条</p>';
+      return;
+    }
+    content.innerHTML = vocab.map(function(v, i) {
+      return '<div class="review-item">' +
+        '<label class="review-check"><input type="checkbox" data-type="vocab" data-idx="' + i + '" checked></label>' +
+        '<div class="review-item-body">' +
+          '<div class="review-term">' + (v.term || '?').replace(/</g, '&lt;') + ' <span class="review-ipa">' + (v.ipa || '') + '</span></div>' +
+          '<div class="review-def">' + (v.definition_en || '').replace(/</g, '&lt;') + '</div>' +
+          '<div class="review-def-cn">' + (v.definition_cn || '').replace(/</g, '&lt;') + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  if (tab === 'cornell') {
+    var cornell = reviewData.cornell_sections || [];
+    if (cornell.length === 0) {
+      content.innerHTML = '<p style="padding:20px;text-align:center;color:#94a3b8;">未识别到 Cornell 笔记</p>';
+      return;
+    }
+    content.innerHTML = cornell.map(function(c, i) {
+      var cues = Object.keys(c.cue || {}).map(function(k) {
+        return '<div class="review-cue-item"><b>' + k.replace(/</g, '&lt;') + '</b>: ' + c.cue[k].replace(/</g, '&lt;') + '</div>';
+      }).join('');
+      return '<div class="review-item">' +
+        '<label class="review-check"><input type="checkbox" data-type="cornell" data-idx="' + i + '" checked></label>' +
+        '<div class="review-item-body">' +
+          '<div class="review-cue">' + cues + '</div>' +
+          '<div class="review-main">' + (c.main_text || '').replace(/</g, '&lt;') + '</div>' +
+          '<div class="review-summary"><b>EN:</b> ' + (c.summary_en || '').replace(/</g, '&lt;') + '</div>' +
+          '<div class="review-summary-cn"><b>中:</b> ' + (c.summary_cn || '').replace(/</g, '&lt;') + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  if (tab === 'documents') {
+    var docs = reviewData.documents || [];
+    if (docs.length === 0) {
+      content.innerHTML = '<p style="padding:20px;text-align:center;color:#94a3b8;">未识别到知识库内容</p>';
+      return;
+    }
+    content.innerHTML = docs.map(function(d, i) {
+      return '<div class="review-item">' +
+        '<label class="review-check"><input type="checkbox" data-type="doc" data-idx="' + i + '" checked></label>' +
+        '<div class="review-item-body">' +
+          '<div class="review-section">📍 ' + (d.section || 'Unknown').replace(/</g, '&lt;') + '</div>' +
+          '<div class="review-doc-text">' + (d.text || '').replace(/</g, '&lt;') + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+}
+
+async function confirmImport() {
+  var selected = { vocab: [], cornell: [], docs: [] };
+
+  document.querySelectorAll('#review-content input[type=checkbox]:checked').forEach(function(cb) {
+    var type = cb.dataset.type;
+    var idx = parseInt(cb.dataset.idx);
+    if (type === 'vocab') selected.vocab.push(reviewData.vocabulary[idx]);
+    if (type === 'cornell') selected.cornell.push(reviewData.cornell_sections[idx]);
+    if (type === 'doc') selected.docs.push(reviewData.documents[idx]);
+  });
+
+  var total = selected.vocab.length + selected.cornell.length + selected.docs.length;
+  if (total === 0) {
+    alert('Please select at least one item to import.');
+    return;
+  }
+
+  // Show importing state
+  var actionsEl = document.querySelector('.review-actions');
+  actionsEl.innerHTML = '<div class="upload-processing"><div class="upload-spinner"></div><p>正在导入 ' + total + ' 项内容...</p></div>';
+
+  try {
+    // Build chunks for RAG upload
+    var chunks = [];
+
+    // Add documents as chunks
+    selected.docs.forEach(function(d) {
+      chunks.push({ text: d.text, section: d.section });
+    });
+
+    // Add cornell main text as chunks
+    selected.cornell.forEach(function(c) {
+      chunks.push({ text: c.main_text, section: 'Cornell' });
+      if (c.summary_en) chunks.push({ text: c.summary_en, section: 'Summary' });
+    });
+
+    // Add vocabulary definitions as chunks
+    selected.vocab.forEach(function(v) {
+      chunks.push({ text: v.term + ': ' + (v.definition_en || ''), section: 'Vocabulary' });
+    });
+
+    var resp = null;
+    if (chunks.length > 0) {
+      resp = await fetch(API_BASE + '/api/rag/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chunks: chunks,
+          source: reviewFileName,
+          unit: 'supplement'
+        })
+      });
+    }
+
+    var result = resp ? await resp.json() : {};
+
+    // Show success
+    actionsEl.innerHTML = '<div style="text-align:center;padding:20px;">' +
+      '<div style="font-size:48px;">✅</div>' +
+      '<p style="margin-top:12px;font-weight:600;">导入成功！</p>' +
+      '<p style="font-size:13px;color:#64748b;">' +
+        '词条 ' + selected.vocab.length + ' · Cornell ' + selected.cornell.length + ' · 知识库 ' + (result.chunks_indexed || 0) + ' 段' +
+      '</p>' +
+      '<button class="review-btn-confirm" style="margin-top:16px;" onclick="resetUpload()">完成</button>' +
+    '</div>';
+
+  } catch (err) {
+    actionsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#ef4444;">⚠️ 导入失败: ' + err.message + '</div>';
+  }
+}
+
+function resetUpload() {
+  reviewData = null;
+  var panel = document.getElementById('upload-review');
+  panel.style.display = 'none';
+  panel.innerHTML = '';
+  var area = document.getElementById('upload-drop-zone');
+  area.style.display = 'flex';
+  area.innerHTML = '<div class="upload-icon">📎</div>' +
+    '<p>拖拽文件到这里，或 <span class="upload-link">点击选择</span></p>' +
+    '<p style="font-size:11px;color:#94a3b8;margin-top:4px;">支持 PDF, PNG, JPG, GIF, HEIC（最大 10MB）</p>' +
+    '<input type="file" id="upload-file-input" accept=".pdf,.png,.jpg,.jpeg,.gif,.heic,.heif" style="display:none">';
+  // Re-attach event listener
+  var fileInput = document.getElementById('upload-file-input');
+  if (fileInput) fileInput.addEventListener('change', handleFileSelect);
 }
 
 // ═════════════════════════════════════════════════════════════
