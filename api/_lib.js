@@ -158,6 +158,6 @@ export async function callVision(imageBase64, prompt, options = {}) {
         { type: 'text', text: prompt || 'Describe this image in detail.' }
       ]
     }],
-    { model: MODELS.VISION, max_tokens: options.max_tokens || 1500, thinking: false }
+    { model: MODELS.VISION, max_tokens: options.max_tokens || 1500, thinking: true }
   );
 }
