@@ -337,6 +337,26 @@ vision-mcp 配置（GLM 方案）：
   - 确认后自动添加到对应 Part
 - **原格式保留**: HEIC/HEIF 照片不做格式转换，原样存储到 Supabase Storage
 
+### R-TTS · 语音合成升级（2026-07-09 新增）
+**优先级**: P1
+
+**问题**: 当前 TTS 链路（Edge-TTS 本地代理 → StreamElements → Web Speech）质量差。本地代理需手动运行，StreamElements 不稳定，Web Speech 声音机械。
+
+**目标**: 替换为高质量的云端神经语音 TTS。
+
+- **方案**: Edge TTS Browser — 纯浏览器端 WebSocket 直连微软 Edge TTS 服务
+  - 完全免费，无需 API key，无需后端
+  - 语音选择: `en-US-JennyNeural`（默认）、`en-US-GuyNeural`、`en-GB-SoniaNeural`
+  - 通过 WebSocket 接收音频流，前端播放 MP3
+  - 与 Edge 浏览器内置的"大声朗读"功能使用同一引擎
+- **架构**:
+  ```
+  前端 🔊 → WebSocket → speech.platform.bing.com → MP3 音频流 → 前端 <audio> 播放
+  ```
+- **降级链**: Edge TTS Browser → StreamElements → Web Speech API
+- **适用范围**: 词条朗读、句子朗读、Cornell 段落朗读
+- **无需环境变量**
+
 ---
 
 ## 4. 技术架构

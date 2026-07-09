@@ -1704,47 +1704,115 @@ function stopAudio() {
 }
 function isOnline() { return navigator.onLine !== false; }
 
+/**
+ * R-TTS: Edge TTS Browser — free, high-quality neural TTS via WebSocket
+ * No API key, no backend. Falls back to StreamElements → Web Speech.
+ */
+var edgeTTSConnected = false;
+
+function speakEdgeTTSBrowser(text, voice) {
+  voice = voice || 'en-US-JennyNeural';
+  return new Promise(function(resolve, reject) {
+    try {
+      var wsUrl = 'wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4';
+      var ws = new WebSocket(wsUrl);
+      var audioChunks = [];
+      var audioFormat = 'audio-24khz-48kbitrate-mono-mp3';
+
+      ws.binaryType = 'arraybuffer';
+      var resolved = false;
+
+      ws.onopen = function() {
+        // Send config message
+        var configMsg = 'X-TOKEN:' + '\r\n' +
+          'Content-Type:application/json; charset=utf-8\r\n' +
+          'Path:speech.config\r\n\r\n' +
+          JSON.stringify({
+            context: { synthesis: { audio: { metadataOptions: { sentenceBoundaryEnabled: false, wordBoundaryEnabled: false } } } }
+          });
+        ws.send(configMsg);
+
+        // Send SSML message
+        var ssml = '<speak version=\'1.0\' xmlns=\'http://www.w3.org/2001/10/synthesis\' xml:lang=\'en-US\'>' +
+          '<voice name=\'' + voice + '\'>' +
+          text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') +
+          '</voice></speak>';
+        var ssmlMsg = ssml + '\r\nPath:ssml\r\n';
+        // Edge TTS uses binary header format
+        var ssmlHeader = 'X-RequestId:' + generateUUID() + '\r\n' +
+          'Content-Type:application/ssml+xml\r\n' +
+          'X-Timestamp:' + new Date().toISOString() + '\r\n' +
+          'Path:ssml\r\n\r\n';
+        ws.send(ssmlHeader + ssml);
+
+        edgeTTSConnected = true;
+      };
+
+      ws.onmessage = function(event) {
+        if (event.data instanceof ArrayBuffer) {
+          // Binary data: audio chunk (first 2 bytes are header length)
+          var headerLen = new DataView(event.data, 0, 2).getInt16(0);
+          var audioData = event.data.slice(2 + headerLen);
+          if (audioData.byteLength > 0) audioChunks.push(audioData);
+        } else {
+          // Text data: check for turn end
+          if (event.data.indexOf('Path:turn.end') !== -1) {
+            ws.close();
+            if (audioChunks.length > 0 && !resolved) {
+              resolved = true;
+              var blob = new Blob(audioChunks, { type: 'audio/mpeg' });
+              var url = URL.createObjectURL(blob);
+              var audio = new Audio(url);
+              audio.volume = 1.0;
+              ttsLocked = true; currentAudio = audio;
+              audio.play().then(function() {
+                audio.onended = function() { ttsLocked = false; URL.revokeObjectURL(url); };
+                resolve(true);
+              }).catch(function(e) { ttsLocked = false; reject(e); });
+            } else if (!resolved) {
+              resolved = true;
+              reject(new Error('No audio received'));
+            }
+          }
+        }
+      };
+
+      ws.onerror = function(err) {
+        edgeTTSConnected = false;
+        if (!resolved) { resolved = true; reject(new Error('WebSocket error')); }
+      };
+
+      // Timeout: 5 seconds
+      setTimeout(function() {
+        if (!resolved) {
+          resolved = true;
+          try { ws.close(); } catch(e){}
+          reject(new Error('TTS timeout'));
+        }
+      }, 5000);
+    } catch(e) {
+      reject(e);
+    }
+  });
+}
+
+function generateUUID() {
+  return 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace(/x/g, function() {
+    return Math.floor(Math.random() * 16).toString(16);
+  });
+}
+
 function speakWord(word) {
   stopAudio();
   if (!isOnline()) { speakWebSpeech(word); return; }
-  // Priority 1: Edge-TTS local proxy (best quality)
-  if (TTS_PROXY_ONLINE !== false) {
-    speakEdgeTTS(word, 2500).then(function(ok) {
-      if (ok) return;
-      // Edge failed → fall back to SE
-      return speakStreamElements(word, 1500).then(function(){}, function(){
-        speakWebSpeech(word);
-      });
-    }).catch(function(){ speakWebSpeech(word); });
-    return;
-  }
-  // Proxy offline → SE → Web Speech
-  speakStreamElements(word, 1500).then(function(ok){
-    if (!ok) speakWebSpeech(word);
-  }).catch(function(){ speakWebSpeech(word); });
-}
-
-function speakEdgeTTS(word, timeoutMs) {
-  timeoutMs = timeoutMs || 2500;
-  return new Promise(function(resolve, reject) {
-    var url = TTS_PROXY + '?text=' + encodeURIComponent(word) + '&voice=' + TTS_VOICE + '&rate=-5%25';
-    var audio = new Audio(url);
-    audio.volume = 1.0;
-    var settled = false;
-    audio.addEventListener('canplaythrough', function() {
-      if (settled || ttsLocked) { resolve(true); return; }
-      settled = true; ttsLocked = true; currentAudio = audio;
-      audio.play().then(function() { resolve(true); }).catch(function(e) { ttsLocked = false; reject(e); });
-    }, { once:true });
-    audio.addEventListener('error', function() {
-      if (settled) return; settled = true;
-      TTS_PROXY_ONLINE = false;  // mark proxy as down, skip next time
-      resolve(false);
-    }, { once:true });
-    setTimeout(function() {
-      if (!settled) { settled = true; TTS_PROXY_ONLINE = false; resolve(false); }
-    }, timeoutMs);
-    audio.load();
+  // Priority 1: Edge TTS Browser (best quality, no key needed)
+  speakEdgeTTSBrowser(word, TTS_VOICE).then(function(ok) {
+    if (ok) return;
+  }).catch(function() {
+    // Edge failed → StreamElements → Web Speech
+    speakStreamElements(word, 1500).then(function(seOk) {
+      if (!seOk) speakWebSpeech(word);
+    }).catch(function() { speakWebSpeech(word); });
   });
 }
 
