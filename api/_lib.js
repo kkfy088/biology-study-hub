@@ -82,6 +82,7 @@ export async function getEmbedding(text) {
     body: JSON.stringify({
       model: 'embedding-3',
       input: text,
+      dimensions: 1024,
     }),
   });
 
