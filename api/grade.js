@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
     const result = await callGLM(
       [{ role: 'user', content: prompt }],
-      { model: MODELS.TEXT, temperature: 0.1, response_format: { type: 'json_object' } }
+      { model: MODELS.TEXT, temperature: 0.1, thinking: true, reasoning_effort: 'high', response_format: { type: 'json_object' } }
     );
 
     return json(res, JSON.parse(result));
