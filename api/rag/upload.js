@@ -47,7 +47,10 @@ export default async function handler(req, res) {
         });
 
         if (insertResp.ok) indexed++;
-        else errors.push(`Chunk ${i}: insert failed`);
+        else {
+          const errText = await insertResp.text();
+          errors.push(`Chunk ${i}: insert failed (${insertResp.status}) ${errText.slice(0, 200)}`);
+        }
       } catch (err) {
         errors.push(`Chunk ${i}: ${err.message}`);
       }
