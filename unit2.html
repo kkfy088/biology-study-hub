@@ -280,7 +280,7 @@
 
   /* ── Cornell Notes (Part 4) — v2 wider, richer typography ── */
   .cornell-block {
-    display:grid; grid-template-columns:160px 1fr; gap:0;
+    display:grid; grid-template-columns:190px 1fr; gap:0;
     background:white; border-radius:var(--radius); overflow:hidden;
     box-shadow:var(--shadow); border:1px solid var(--border); margin:18px 0;
     max-width:none;
@@ -302,6 +302,25 @@
   .cornell-cue li::before {
     content:'▸'; position:absolute; left:2px; color:var(--primary); font-weight:bold; font-size:10px;
   }
+  /* Bilingual cue items */
+  .cornell-cue .cue-list { margin:0; padding:0; }
+  .cornell-cue .cue-item {
+    font-size:12.5px; font-weight:700; color:var(--primary-dark);
+    margin-top:12px; margin-bottom:2px;
+    padding:6px 8px; border-radius:6px;
+    transition:all .3s ease; cursor:default;
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .cornell-cue .cue-item:first-of-type { margin-top:6px; }
+  .cornell-cue .cue-item .cue-en { font-size:12.5px; font-weight:700; }
+  .cornell-cue .cue-item .cue-cn { font-size:11px; font-weight:400; color:var(--text-light); }
+  .cornell-cue .cue-item.cue-active {
+    background:linear-gradient(135deg, #dbeafe, #bfdbfe);
+    box-shadow:0 1px 4px rgba(59,130,246,.25);
+    transform:translateX(4px);
+  }
+  .cornell-cue .cue-item.cue-active .cue-cn { color:#1e40af; }
+  .cornell-cue dd { margin:0 0 4px 0; font-size:11.5px; color:var(--text-secondary); padding-left:8px; }
   .cornell-main {
     padding:28px 32px; font-size:16px; line-height:2.0; color:var(--text);
   }
@@ -1444,11 +1463,11 @@ var CORNELL_SECTIONS = [
     title: "Organisms are made up of cells",
     cn_brief: "Cell structure basics — all organisms are made of cells; animal vs plant cell differences; microscopy and magnification.",
     cue: {
-      "Light microscope": "Magnifies ~400×; needs dyes/stains (methylene blue for animal, iodine for plant) to improve contrast.",
-      "Magnification formula": "Magnification = Measured length (image) ÷ Actual length.  Units must match.",
-      "3 features ALL cells share": "Cell surface membrane, cytoplasm, nucleus (or DNA region).",
-      "3 EXTRA features in plant cells": "Cellulose cell wall, large permanent vacuole, chloroplasts.",
-      "Typical sizes": "Animal cell ≈ 25 μm; Plant cell ≈ 60 μm (0.06 mm)."
+      "Light microscope 光学显微镜": "Magnifies ~400×; needs dyes/stains (methylene blue for animal, iodine for plant) to improve contrast.",
+      "Magnification formula 放大倍数": "Magnification = Measured length (image) ÷ Actual length.  Units must match.",
+      "3 features ALL cells share 所有细胞共有": "Cell surface membrane, cytoplasm, nucleus (or DNA region).",
+      "3 EXTRA features in plant cells 植物细胞特有": "Cellulose cell wall, large permanent vacuole, chloroplasts.",
+      "Typical sizes 典型大小": "Animal cell ≈ 25 μm; Plant cell ≈ 60 μm (0.06 mm)."
     },
     main_html: '<div class="cn-intro">This section introduces cell structure and microscopy. Key points: common features and differences between animal and plant cells, and how to calculate magnification.</div>' +
       '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig01_microscope.png\', \'Light Microscope\', \'Magnification = objective × eyepiece\')"><img src="diagrams/u2_fig01_microscope.png" alt="Light microscope"><div class="cn-figure-caption">🔬 <b>Light Microscope</b>: Uses visible light passing through a specimen, magnified by a series of lenses. Useful magnification ~400×. Stains improve contrast — methylene blue for animal cells (nucleus shows up well), iodine solution for plant cells.</div></div>' +
@@ -1467,11 +1486,11 @@ var CORNELL_SECTIONS = [
     title: "The organisation of living organisms",
     cn_brief: "Levels of organisation — cell → tissue → organ → organ system → organism; specialised cells and division of labour.",
     cue: {
-      "Levels (small → large)": "Cell → tissue → organ → organ system → organism.",
-      "Tissue": "A group of similar cells working together to perform a shared function.",
-      "Organ": "A group of different tissues working together to perform a particular function.",
-      "Organ system": "Several organs working together to perform a body function.",
-      "Specialised cells": "Red blood cell, muscle cell, ciliated cell, nerve cell (animal); root hair cell, xylem vessel, palisade cell (plant)."
+      "Levels (small → large) 层级": "Cell → tissue → organ → organ system → organism.",
+      "Tissue 组织": "A group of similar cells working together to perform a shared function.",
+      "Organ 器官": "A group of different tissues working together to perform a particular function.",
+      "Organ system 器官系统": "Several organs working together to perform a body function.",
+      "Specialised cells 特化细胞": "Red blood cell, muscle cell, ciliated cell, nerve cell (animal); root hair cell, xylem vessel, palisade cell (plant)."
     },
     main_html: '<div class="cn-intro">This section covers cell organisation hierarchy and specialised cells. Key points: the levels from cell to organism, and how specialised cells like red blood cells and root hair cells are adapted to their functions.</div>' +
       '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig03_organisation_hierarchy.png\', \'Organisation Hierarchy\', \'cell → tissue → organ → organ system → organism\')"><img src="diagrams/u2_fig03_organisation_hierarchy.png" alt="Organisation hierarchy"><div class="cn-figure-caption">🧬 <b>Organisation Hierarchy</b>: From microscopic to macroscopic. Cell (basic unit) → similar cells form tissue → different tissues form organ → organs form organ system → complete organism. Each level performs increasingly complex functions.</div></div>' +
@@ -1490,11 +1509,11 @@ var CORNELL_SECTIONS = [
     title: "Movement in and out of cells: diffusion",
     cn_brief: "Diffusion — net movement of particles from high to low concentration; factors affecting diffusion rate (distance, surface area, concentration gradient).",
     cue: {
-      "Diffusion (definition)": "Net movement of particles from high to low concentration (down a gradient) due to random motion.",
-      "Partially permeable membrane": "Lets some particles through, blocks others (e.g. permeable to water & glucose, not protein).",
-      "Concentration gradient": "A 'slope' from high concentration to low concentration; particles move down it.",
-      "Adaptations for fast diffusion": "Short distance, large surface area, steep & maintained gradient.",
-      "Surface area : volume ratio": "Smaller objects have a larger ratio → faster diffusion to the centre."
+      "Diffusion 扩散": "Net movement of particles from high to low concentration (down a gradient) due to random motion.",
+      "Partially permeable membrane 半透性膜": "Lets some particles through, blocks others (e.g. permeable to water & glucose, not protein).",
+      "Concentration gradient 浓度梯度": "A 'slope' from high concentration to low concentration; particles move down it.",
+      "Adaptations for fast diffusion 加速扩散": "Short distance, large surface area, steep & maintained gradient.",
+      "SA : Vol ratio 表面积/体积比": "Smaller objects have a larger ratio → faster diffusion to the centre."
     },
     main_html: '<div class="cn-intro">This section explains diffusion — the main way substances move in and out of cells. Key points: diffusion is passive (no energy), moves from high to low concentration, and its rate depends on distance, surface area, and concentration gradient.</div>' +
       '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig04_membrane_diffusion.png\', \'Membrane & Diffusion\', \'partially permeable membrane only lets small molecules through\')"><img src="diagrams/u2_fig04_membrane_diffusion.png" alt="Membrane diffusion"><div class="cn-figure-caption">🌀 <b>Diffusion Diagram</b>: Particles move from a region of high concentration (left, crowded) to low concentration (right, sparse), until evenly distributed (equilibrium). A partially permeable membrane allows water and small molecules (e.g. glucose) through, but blocks large molecules (e.g. protein). The entire process requires no energy (passive transport).</div></div>' +
@@ -1514,14 +1533,14 @@ var CORNELL_SECTIONS = [
     title: "Movement in and out of cells: osmosis & active transport",
     cn_brief: "Osmosis & active transport — net movement of water down a water potential gradient; plant/animal cell responses; energy-requiring movement against gradients.",
     cue: {
-      "Osmosis (definition)": "Net movement of WATER from high water potential to low water potential through a partially permeable membrane.",
-      "Water potential": "Tendency of water to move. Pure water = highest. Adding solute lowers it. (= dilute = high; concentrated = low).",
-      "Plant cell in hypotonic": "Takes in water → becomes turgid (firm, healthy). Cell wall prevents bursting.",
-      "Plant cell in hypertonic": "Loses water → flaccid → plasmolysis (membrane pulls away from wall).",
-      "Animal cell in hypotonic": "Takes in water → swells → bursts (haemolysis) — no wall to stop it.",
-      "Animal cell in hypertonic": "Loses water → shrinks → crenated.",
-      "Active transport": "Movement AGAINST a gradient, using energy from respiration, via carrier proteins.",
-      "Endo/exocytosis": "Bulk transport of large particles — endocytosis (in), exocytosis (out). Phagocytosis = 'cell eating'."
+      "Osmosis 渗透": "Net movement of WATER from high water potential to low water potential through a partially permeable membrane.",
+      "Water potential 水势": "Pure water = highest; adding solute lowers it. Dilute = high; concentrated = low.",
+      "Plant cell — hypotonic 植物细胞·低渗": "Takes in water → turgid (firm). Cell wall prevents bursting.",
+      "Plant cell — hypertonic 植物细胞·高渗": "Loses water → flaccid → plasmolysis (membrane pulls away from wall).",
+      "Animal cell — hypotonic 动物细胞·低渗": "Takes in water → swells → bursts (haemolysis) — no wall.",
+      "Animal cell — hypertonic 动物细胞·高渗": "Loses water → shrinks → crenated.",
+      "Active transport 主动运输": "Movement AGAINST a gradient, using energy from respiration, via carrier proteins.",
+      "Endo/exocytosis 胞吞/胞吐": "Bulk transport — endocytosis (in), exocytosis (out). Phagocytosis = 'cell eating'."
     },
     main_html: '<div class="cn-intro">This section covers osmosis and active transport. Key points: osmosis is the diffusion of water (high → low water potential); how plant and animal cells respond to different solutions (exam favourite); active transport moves substances against a gradient using energy.</div>' +
       '<div class="cn-figure" onclick="openLightbox(\'diagrams/u2_fig06_osmosis_diagram.png\', \'Osmosis Diagram\', \'water moves from high to low water potential\')"><img src="diagrams/u2_fig06_osmosis_diagram.png" alt="Osmosis diagram"><div class="cn-figure-caption">💧 <b>Osmosis Diagram</b>: Water molecules pass through a partially permeable membrane, moving from the side with higher water potential (pure water / dilute solution) to the side with lower water potential (concentrated solution). The membrane allows water through but blocks large solute molecules. Movement continues until water potential is equal on both sides (equilibrium).</div></div>' +
@@ -2810,12 +2829,20 @@ function renderCornell() {
   var container = document.getElementById('cornell-container');
   container.innerHTML = CORNELL_SECTIONS.map(function(sec, idx) {
     var cueHTML = '';
-    // cue is a {term: explanation} map → render as Key-Terms list
+    // cue is a {term: explanation} map → render as bilingual cue list with scroll-spy
     var cueKeys = Object.keys(sec.cue || {});
     if (cueKeys.length) {
       cueHTML += '<h5>🔑 Cue · 关键记忆点</h5><dl class="cue-list">';
-      cueKeys.forEach(function(k){
-        cueHTML += '<dt>' + k + '</dt><dd>' + sec.cue[k] + '</dd>';
+      cueKeys.forEach(function(k, ci){
+        // Split bilingual key: "English 中文"
+        var parts = k.split(' ');
+        var enTerm = parts[0];
+        var cnTerm = parts.length > 1 ? parts.slice(1).join(' ') : '';
+        cueHTML += '<dt class="cue-item" data-cue-idx="' + ci + '">' + 
+          '<span class="cue-en">' + enTerm + '</span>' +
+          (cnTerm ? '<span class="cue-cn">' + cnTerm + '</span>' : '') +
+          '</dt>';
+        cueHTML += '<dd data-cue-idx="' + ci + '">' + sec.cue[k] + '</dd>';
       });
       cueHTML += '</dl>';
     }
@@ -2840,6 +2867,71 @@ function renderCornell() {
   }).join('');
   // enhance terms
   container.querySelectorAll('.cornell-main').forEach(function(el){ walkAndEnhance(el); });
+  // init scroll-spy for cue highlighting
+  initCornellScrollSpy();
+}
+
+// Scroll-spy: highlight cue items as user scrolls through main text
+function initCornellScrollSpy() {
+  var blocks = document.querySelectorAll('.cornell-block');
+  if (!blocks.length) return;
+
+  blocks.forEach(function(block) {
+    var cueItems = block.querySelectorAll('.cue-item');
+    var mainParagraphs = block.querySelectorAll('.cornell-main p, .cornell-main .cn-callout, .cornell-main .cn-figure');
+    if (!cueItems.length || !mainParagraphs.length) return;
+
+    // Map cue items to paragraphs proportionally
+    var cueCount = cueItems.length;
+    var paraCount = mainParagraphs.length;
+
+    cueItems.forEach(function(item, ci) {
+      // Each cue item corresponds to a range of paragraphs
+      var startIdx = Math.floor(ci * paraCount / cueCount);
+      var endIdx = Math.floor((ci + 1) * paraCount / cueCount);
+      item._paraStart = startIdx;
+      item._paraEnd = endIdx;
+    });
+  });
+
+  // Throttled scroll listener
+  var ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      requestAnimationFrame(function() {
+        updateCueHighlight();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+}
+
+function updateCueHighlight() {
+  var blocks = document.querySelectorAll('.cornell-block');
+  var scrollPos = window.scrollY + window.innerHeight * 0.35; // 35% from top
+
+  blocks.forEach(function(block) {
+    var rect = block.getBoundingClientRect();
+    var blockTop = rect.top + window.scrollY;
+    var blockBottom = blockTop + rect.height;
+    var cueItems = block.querySelectorAll('.cue-item');
+
+    if (scrollPos < blockTop || scrollPos > blockBottom) {
+      // Not in this block, remove highlights
+      cueItems.forEach(function(item) { item.classList.remove('cue-active'); });
+      return;
+    }
+
+    var cueCount = cueItems.length;
+    var progress = (scrollPos - blockTop) / rect.height; // 0 to 1
+    var activeIdx = Math.min(Math.floor(progress * cueCount), cueCount - 1);
+
+    cueItems.forEach(function(item, ci) {
+      if (ci === activeIdx) item.classList.add('cue-active');
+      else item.classList.remove('cue-active');
+    });
+  });
 }
 
 function addHighlight(si) {
