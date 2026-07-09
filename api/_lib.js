@@ -11,15 +11,15 @@
 // ============================================================
 
 const ZHIPU_CHAT_URL = 'https://open.bigmodel.cn/api/coding/paas/v4/chat/completions';
-const ZHIPU_EMBED_URL = 'https://open.bigmodel.cn/api/coding/paas/v4/embeddings';
-const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions';
+const DEEPSEEK_CHAT_URL = 'https://api.deepseek.com/chat/completions';
+const DEEPSEEK_EMBED_URL = 'https://api.deepseek.com/embeddings';
 
 // Model registry
 export const MODELS = {
   TEXT: 'glm-5.2',
   VISION: 'glm-5v-turbo',
   MCP: 'glm-4.6',
-  EMBEDDING: 'embedding-3',
+  EMBEDDING: 'deepseek-embedding',
   DEEPSEEK: 'deepseek-chat',
 };
 
@@ -110,7 +110,7 @@ export async function callDeepSeek(messages, options = {}) {
     body.response_format = options.response_format;
   }
 
-  const resp = await fetch(DEEPSEEK_URL, {
+  const resp = await fetch(DEEPSEEK_CHAT_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -129,13 +129,15 @@ export async function callDeepSeek(messages, options = {}) {
 }
 
 /**
- * Get embedding vector (1024-dim for embedding-3)
+ * Get embedding vector via DeepSeek (1024-dim)
+ * Note: GLM Coding Plan does not include embedding quota,
+ * so we use DeepSeek's embedding model instead.
  */
 export async function getEmbedding(text) {
-  const apiKey = process.env.ZHIPU_API_KEY;
-  if (!apiKey) throw new Error('ZHIPU_API_KEY not configured');
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) throw new Error('DEEPSEEK_API_KEY not configured');
 
-  const resp = await fetch(ZHIPU_EMBED_URL, {
+  const resp = await fetch(DEEPSEEK_EMBED_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -144,7 +146,6 @@ export async function getEmbedding(text) {
     body: JSON.stringify({
       model: MODELS.EMBEDDING,
       input: text,
-      dimensions: 1024,
     }),
   });
 
