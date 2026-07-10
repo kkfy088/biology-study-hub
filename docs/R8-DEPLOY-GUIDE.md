@@ -60,7 +60,8 @@ Project Settings → API
 | Key | Value | 说明 |
 |-----|-------|------|
 | `DEEPSEEK_API_KEY` | `sk-你的key` | 从 https://platform.deepseek.com 获取 |
-| `ZHIPU_API_KEY` | `你的智谱key` | 从 https://bigmodel.cn 控制台获取 |
+| `GLM_VISION_4_6V_FLASH_API_KEY` | `你的智谱视觉key` | glm-4.6v-flash，从 https://bigmodel.cn 控制台获取 |
+| `ZHIPU_EMBEDDING_API_KEY` | `你的智谱embedding key` | embedding-3，从 https://bigmodel.cn 控制台获取 |
 | `SUPABASE_URL` | `https://xxxxx.supabase.co` | Step 1 获取 |
 | `SUPABASE_SERVICE_KEY` | `eyJhbGciOi...` | Step 1 获取 |
 

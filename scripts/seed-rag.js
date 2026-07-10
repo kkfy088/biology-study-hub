@@ -2,7 +2,7 @@
 /**
  * Seed script: Extract Unit 2 text content → Embedding → Supabase documents table
  * Run: node scripts/seed-rag.js
- * Requires: DEEPSEEK_API_KEY or ZHIPU_API_KEY in .env (or hardcode below)
+ * Requires: DEEPSEEK_API_KEY, GLM_VISION_4_6V_FLASH_API_KEY, ZHIPU_EMBEDDING_API_KEY configured on Vercel
  */
 
 const VERCEL_API = 'https://biology-study-hub.vercel.app';

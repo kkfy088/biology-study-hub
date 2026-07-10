@@ -50,8 +50,8 @@ export function jsonResponse(data, status = 200) {
  * @param {Object} options - { model, max_tokens, temperature, thinking, reasoning_effort }
  */
 export async function callGLM(messages, options = {}) {
-  const apiKey = process.env.ZHIPU_API_KEY;
-  if (!apiKey) throw new Error('ZHIPU_API_KEY not configured');
+  const apiKey = process.env.GLM_VISION_4_6V_FLASH_API_KEY;
+  if (!apiKey) throw new Error('GLM_VISION_4_6V_FLASH_API_KEY not configured');
 
   const body = {
     model: options.model || MODELS.VISION,
