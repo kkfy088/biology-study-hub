@@ -4,7 +4,7 @@
 // Model assignments (updated 2026-07-10):
 //   Text tasks  → deepseek-chat   (primary, via DeepSeek API)
 //   Vision      → glm-4.6v-flash   (free tier, via GLM standard API)
-//   Embedding   → embedding-3      (2048-dim, via GLM standard API)
+//   Embedding   → embedding-3      (1024-dim, pgvector HNSW max 2000)
 // ============================================================
 
 const ZHIPU_CHAT_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
@@ -141,7 +141,7 @@ export async function getEmbedding(text) {
     body: JSON.stringify({
       model: MODELS.EMBEDDING,
       input: text,
-      dimensions: 2048,
+      dimensions: 1024,
     }),
   });
 
