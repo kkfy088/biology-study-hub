@@ -1017,33 +1017,6 @@
     letter-spacing:.5px; color:#6366f1; margin-bottom:4px; }
   .sel-popup-error { padding:12px 14px; color:#dc2626; font-size:13px; }
 
-  /* ── Settings Panel (API Key) ── */
-  .settings-toggle {
-    position:fixed; left:20px; bottom:20px; z-index:999;
-    width:44px; height:44px; border-radius:50%; cursor:pointer;
-    background:white; border:1px solid var(--border); font-size:20px;
-    box-shadow:0 4px 12px rgba(0,0,0,.08);
-    display:flex; align-items:center; justify-content:center; transition:all .2s;
-  }
-  .settings-toggle:hover { background:#f1f5f9; transform:scale(1.05); }
-  .settings-panel {
-    position:fixed; left:20px; bottom:72px; z-index:1001;
-    width:340px; background:white; border-radius:14px;
-    box-shadow:0 8px 32px rgba(0,0,0,.15); border:1px solid var(--border);
-    padding:18px; display:none;
-  }
-  .settings-panel.visible { display:block; }
-  .settings-panel h4 { font-size:15px; font-weight:800; margin-bottom:10px; color:var(--text); }
-  .settings-panel label { font-size:12px; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:4px; }
-  .settings-panel input {
-    width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px;
-    font-size:13px; margin-bottom:10px; font-family:monospace;
-  }
-  .settings-panel .hint { font-size:11px; color:var(--text-light); margin-top:-6px; margin-bottom:10px; }
-  .settings-panel .status { font-size:12px; padding:6px 10px; border-radius:6px; margin-top:6px; }
-  .settings-panel .status.ok { background:#dcfce7; color:#166534; }
-  .settings-panel .status.off { background:#fef2f2; color:#991b1b; }
-
   /* ── R6: Knowledge Frame (知识框架填空) ── */
   .kf-container {
     background:white; border-radius:var(--radius); padding:28px 32px;
@@ -1349,7 +1322,6 @@
     <button class="rag-send" id="rag-send" onclick="sendRAGQuery()">➤</button>
   </div>
 </div>
-<button class="settings-toggle" id="settings-toggle" title="AI 设置">⚙️</button>
 <button class="rag-toggle" id="rag-toggle" title="RAG 问答">💬</button>
 
 <!-- ═════════ R9 v2: UPLOAD BUTTON + MODAL ═════════ -->
@@ -1371,16 +1343,6 @@
     </div>
     <div class="upload-review" id="upload-review" style="display:none;"></div>
   </div>
-</div>
-<div class="settings-panel" id="settings-panel">
-  <h4>⚙️ AI 引擎设置</h4>
-  <label>GLM API Key</label>
-  <input type="password" id="ai-api-key" placeholder="粘贴你的智谱 API Key">
-  <div class="hint">从 bigmodel.cn 控制台获取。Key 保存在本地 localStorage。</div>
-  <label>模型</label>
-  <input type="text" id="ai-model" placeholder="glm-4.6v-flash" value="glm-4.6v-flash">
-  <button class="sel-popup-btn primary" onclick="saveAIConfig()">保存</button>
-  <div class="status off" id="ai-status">⚠️ 未配置 — 划词将使用内置词典</div>
 </div>
 
 <!-- ═════════ NOTEBOOK FLOATING BUTTON ═════════ -->
@@ -2205,53 +2167,14 @@ document.getElementById('mb-print').addEventListener('click', function() {
 
 /* ═════════════════════════════════════════════════════════════
    R1/R2: SELECTION POPUP — 划词查词 + 长句解释
-   Strategy: Built-in dict (instant) → GLM API (deep lookup/explain)
+   Strategy: Built-in dict (instant) → Backend API (deep lookup/explain)
    ═════════════════════════════════════════════════════════════ */
-var AI_CONFIG = {
-  apiKey: localStorage.getItem('glm_api_key') || '',
-  model: localStorage.getItem('glm_model') || 'glm-4.6v-flash',
-  baseUrl: 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
-};
 var selPopup = document.getElementById('sel-popup');
 var selTimer = null;
 
-// Init settings panel state
-(function initAIConfig() {
-  var keyInput = document.getElementById('ai-api-key');
-  var modelInput = document.getElementById('ai-model');
-  var statusEl = document.getElementById('ai-status');
-  if (AI_CONFIG.apiKey) { keyInput.value = AI_CONFIG.apiKey; }
-  if (AI_CONFIG.model) { modelInput.value = AI_CONFIG.model; }
-  updateAIStatus();
-
-  document.getElementById('settings-toggle').addEventListener('click', function() {
-    document.getElementById('settings-panel').classList.toggle('visible');
-  });
-})();
-
-function saveAIConfig() {
-  AI_CONFIG.apiKey = document.getElementById('ai-api-key').value.trim();
-  AI_CONFIG.model = document.getElementById('ai-model').value.trim() || 'glm-4.6v-flash';
-  localStorage.setItem('glm_api_key', AI_CONFIG.apiKey);
-  localStorage.setItem('glm_model', AI_CONFIG.model);
-  updateAIStatus();
-}
-
-function updateAIStatus() {
-  var el = document.getElementById('ai-status');
-  if (AI_CONFIG.apiKey) {
-    el.className = 'status ok';
-    el.textContent = '✅ 已连接 — 模型: ' + AI_CONFIG.model;
-  } else {
-    el.className = 'status off';
-    el.textContent = '⚠️ 未配置 — 划词将使用内置词典';
-  }
-}
-
 // Detect text selection
 document.addEventListener('mouseup', function(e) {
-  // Ignore clicks inside the popup or settings
-  if (selPopup.contains(e.target) || document.getElementById('settings-panel').contains(e.target)) return;
+  if (selPopup.contains(e.target)) return;
   clearTimeout(selTimer);
   selTimer = setTimeout(function() { handleSelection(e); }, 150);
 });
@@ -2339,7 +2262,7 @@ function hideSelPopup() {
 
 // Close popup on outside click
 document.addEventListener('mousedown', function(e) {
-  if (!selPopup.contains(e.target) && !e.target.closest('.settings-panel')) {
+  if (!selPopup.contains(e.target)) {
     if (window.getSelection().toString().trim() === '') hideSelPopup();
   }
 });
@@ -2593,46 +2516,6 @@ async function selExplain(text) {
   } catch(e) {
     explainEl.innerHTML = '<div class="sel-popup-error">分析失败: ' + escapeHtml(e.message) + '</div>';
   }
-}
-
-// GLM API call (OpenAI compatible)
-async function callGLM(messages) {
-  var resp = await fetch(AI_CONFIG.baseUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + AI_CONFIG.apiKey
-    },
-    body: JSON.stringify({
-      model: AI_CONFIG.model,
-      messages: messages,
-      max_tokens: 800,
-      temperature: 0.3
-    })
-  });
-  if (!resp.ok) {
-    var err = await resp.text();
-    throw new Error('API ' + resp.status + ': ' + err.slice(0, 100));
-  }
-  var data = await resp.json();
-  return data.choices[0].message.content.trim();
-}
-
-function formatLookupResult(text, word) {
-  // Try to parse "IPA: /.../ | CN: ... | EN: ..." format
-  var html = '';
-  var ipaMatch = text.match(/IPA:\s*\/[^\/]+\//);
-  var cnMatch = text.match(/CN:\s*(.+?)(\||$)/);
-  var enMatch = text.match(/EN:\s*(.+?)(\||$)/);
-  if (ipaMatch) { document.getElementById('sel-ipa').innerHTML = ipaMatch[0].replace('IPA: ', ''); }
-  if (cnMatch) {
-    document.getElementById('sel-cn').innerHTML = cnMatch[1].trim();
-    document.getElementById('sel-cn').style.display = 'block';
-  }
-  html += '<h6>📖 详细释义</h6>';
-  if (enMatch) html += escapeHtml(enMatch[1].trim()) + '<br>';
-  html += escapeHtml(text);
-  return html;
 }
 
 // Utility: escape HTML
