@@ -1,4 +1,4 @@
-import { callGLM, callDeepSeek, callVision, setCORS, json, MODELS } from '../_lib.js';
+import { callDeepSeek, callVision, setCORS, json } from '../_lib.js';
 
 /**
  * R9 v2: Parse uploaded file with GLM-5V-Turbo vision → GLM-5.2 structure
@@ -35,8 +35,8 @@ Return in this exact format:
       { max_tokens: 2000 }
     );
 
-    // Step 2: GLM-5.2 — structure the recognized content into JSON
-    const structureResult = await callGLM(
+    // Step 2: DeepSeek — structure the recognized content into JSON
+    const structureResult = await callDeepSeek(
       [
         {
           role: 'system',
@@ -72,7 +72,7 @@ Rules:
           content: `File: ${fileName || 'unknown'}\n\nVision recognition result:\n\n${visionResult}`
         }
       ],
-      { model: MODELS.TEXT, max_tokens: 2500, temperature: 0.1, thinking: false, response_format: { type: 'json_object' } }
+      { temperature: 0.1, response_format: { type: 'json_object' } }
     );
 
     // Parse the JSON

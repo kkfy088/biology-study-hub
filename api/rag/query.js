@@ -1,4 +1,4 @@
-import { callGLM, getEmbedding, setCORS, json, MODELS } from '../_lib.js';
+import { callDeepSeek, getEmbedding, setCORS, json } from '../_lib.js';
 
 export default async function handler(req, res) {
   setCORS(res);
@@ -46,10 +46,10 @@ export default async function handler(req, res) {
 
     // 3. If no matches, fallback to direct DeepSeek
     if (!matches || matches.length === 0) {
-      const fallbackAnswer = await callGLM([
+      const fallbackAnswer = await callDeepSeek([
         { role: 'system', content: '你是一个生物学老师，用中英双语回答学生的问题。术语用"英文（中文）"格式。' },
         { role: 'user', content: question }
-      ], { model: MODELS.TEXT, temperature: 0.3, thinking: false });
+      ], { temperature: 0.3 });
 
       return json(res, {
         answer: fallbackAnswer,
@@ -70,8 +70,8 @@ export default async function handler(req, res) {
       text: m.content.slice(0, 150) + '...'
     }));
 
-    // 5. Generate answer with GLM-5.2
-    const answer = await callGLM([
+    // 5. Generate answer with DeepSeek
+    const answer = await callDeepSeek([
       {
         role: 'system',
         content: `你是一个生物学老师。根据以下课文内容回答学生的问题。
@@ -85,7 +85,7 @@ export default async function handler(req, res) {
 ${context}`
       },
       { role: 'user', content: question }
-    ], { model: MODELS.TEXT, temperature: 0.3, max_tokens: 1000, thinking: false });
+    ], { temperature: 0.3, max_tokens: 1000 });
 
     return json(res, { answer, sources });
   } catch (err) {

@@ -24,7 +24,7 @@ create index if not exists documents_embedding_idx
 
 -- Match function for RAG queries
 create or replace function match_documents(
-  query_embedding vector(1024),
+  query_embedding vector(2048),
   match_count int default 5,
   filter_unit text default null
 )

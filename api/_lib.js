@@ -1,27 +1,22 @@
 // ============================================================
 // AI Gateway — Central model routing for Biology Study Hub
 // ============================================================
-// Model assignments (verified 2026-07-09 via bigmodel.cn docs):
-//   Text tasks  → glm-5.2      (flagship text, thinking: max)
-//   Vision      → glm-5v-turbo  (multimodal vision)
-//   Embedding   → embedding-3   (1024-dim vectors)
-//   DeepSeek    → deepseek-chat (backup text reasoning)
-// reasoning_effort: max (GLM-5.2 exclusive)
-// Endpoint: /api/coding/paas/v4 (Coding Plan)
+// Model assignments (updated 2026-07-10):
+//   Text tasks  → deepseek-chat   (primary, via DeepSeek API)
+//   Vision      → glm-4.6v-flash   (free tier, via GLM standard API)
+//   Embedding   → embedding-3      (2048-dim, via GLM standard API)
 // ============================================================
 
-const ZHIPU_CHAT_URL = 'https://open.bigmodel.cn/api/coding/paas/v4/chat/completions';
-// Embedding uses standard API (Coding Plan has no embedding quota)
+const ZHIPU_CHAT_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
 const ZHIPU_EMBED_URL = 'https://open.bigmodel.cn/api/paas/v4/embeddings';
 const DEEPSEEK_CHAT_URL = 'https://api.deepseek.com/chat/completions';
 
 // Model registry
 export const MODELS = {
-  TEXT: 'glm-5.2',
-  VISION: 'glm-5v-turbo',
-  MCP: 'glm-4.6',
+  TEXT: 'deepseek-chat',
+  VISION: 'glm-4.6v-flash',
+  VISION_PRO: 'glm-5v-turbo',
   EMBEDDING: 'embedding-3',
-  DEEPSEEK: 'deepseek-chat',
 };
 
 export function setCORS(res) {
@@ -49,7 +44,8 @@ export function jsonResponse(data, status = 200) {
 }
 
 /**
- * Call GLM (Zhipu) — unified gateway for all GLM models
+ * Call GLM (Zhipu) standard API — used for vision (glm-5v-turbo)
+ * Text tasks use callDeepSeek instead.
  * @param {Array} messages - chat messages
  * @param {Object} options - { model, max_tokens, temperature, thinking, reasoning_effort }
  */
@@ -58,15 +54,14 @@ export async function callGLM(messages, options = {}) {
   if (!apiKey) throw new Error('ZHIPU_API_KEY not configured');
 
   const body = {
-    model: options.model || MODELS.TEXT,
+    model: options.model || MODELS.VISION,
     messages,
     max_tokens: options.max_tokens || 2000,
     temperature: options.temperature ?? 0.3,
   };
 
-  // Enable maximum thinking effort by default
-  // GLM-5.2: reasoning_effort controls depth (max | high | medium | low | none)
-  if (options.thinking !== false) {
+  // Only enable thinking when explicitly requested (glm-5 series only)
+  if (options.thinking === true) {
     body.thinking = { type: 'enabled' };
     body.reasoning_effort = options.reasoning_effort || 'max';
   }
@@ -94,14 +89,14 @@ export async function callGLM(messages, options = {}) {
 }
 
 /**
- * Call DeepSeek — backup text reasoning
+ * Call DeepSeek — primary text reasoning
  */
 export async function callDeepSeek(messages, options = {}) {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) throw new Error('DEEPSEEK_API_KEY not configured');
 
   const body = {
-    model: options.model || MODELS.DEEPSEEK,
+    model: options.model || MODELS.TEXT,
     messages,
     max_tokens: options.max_tokens || 2000,
     temperature: options.temperature ?? 0.3,
@@ -130,14 +125,12 @@ export async function callDeepSeek(messages, options = {}) {
 }
 
 /**
- * Get embedding vector via Zhipu standard API (1024-dim)
- * Uses separate ZHIPU_EMBED_KEY (standard API) instead of Coding Plan key.
- * Coding Plan endpoint has no embedding quota.
+ * Get embedding vector via Zhipu standard API (2048-dim)
+ * Uses ZHIPU_EMBEDDING_API_KEY (dedicated embedding key/quota).
  */
 export async function getEmbedding(text) {
-  // Fall back to ZHIPU_API_KEY if ZHIPU_EMBED_KEY not set
-  const apiKey = process.env.ZHIPU_EMBED_KEY || process.env.ZHIPU_API_KEY;
-  if (!apiKey) throw new Error('ZHIPU_EMBED_KEY or ZHIPU_API_KEY not configured');
+  const apiKey = process.env.ZHIPU_EMBEDDING_API_KEY;
+  if (!apiKey) throw new Error('ZHIPU_EMBEDDING_API_KEY not configured');
 
   const resp = await fetch(ZHIPU_EMBED_URL, {
     method: 'POST',
@@ -148,7 +141,7 @@ export async function getEmbedding(text) {
     body: JSON.stringify({
       model: MODELS.EMBEDDING,
       input: text,
-      dimensions: 1024,
+      dimensions: 2048,
     }),
   });
 
@@ -162,7 +155,8 @@ export async function getEmbedding(text) {
 }
 
 /**
- * Convenience: vision call via GLM-5V-Turbo with thinking enabled
+ * Convenience: vision call via GLM-4.6V-Flash (free tier)
+ * Pass options.model = MODELS.VISION_PRO to use glm-5v-turbo instead.
  */
 export async function callVision(imageBase64, prompt, options = {}) {
   return callGLM(
@@ -173,6 +167,6 @@ export async function callVision(imageBase64, prompt, options = {}) {
         { type: 'text', text: prompt || 'Describe this image in detail.' }
       ]
     }],
-    { model: MODELS.VISION, max_tokens: options.max_tokens || 1500, thinking: true, reasoning_effort: 'max' }
+    { model: options.model || MODELS.VISION, max_tokens: options.max_tokens || 1500 }
   );
 }
