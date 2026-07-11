@@ -9,11 +9,23 @@ export default async function handler(req, res) {
     const { image, prompt } = req.body;
     if (!image) return json(res, { error: 'Missing image' }, 400);
 
-    const textPrompt = prompt || '请用中文详细解释这张生物图：1）图中展示了什么结构/过程 2）标注各部分名称和功能 3）考试常考点。术语用"英文（中文）"格式。';
+    const textPrompt = prompt || 'Describe this biology diagram in detail: 1) What structure or process does it show? 2) Label the key parts and their functions. 3) What are the common exam points? Use clear English.';
 
-    const result = await callVision(image, textPrompt, { max_tokens: 1000 });
-
-    return json(res, { description: result });
+    let lastErr;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const result = await callVision(image, textPrompt, { max_tokens: 1000 });
+        return json(res, { description: result });
+      } catch (err) {
+        lastErr = err;
+        if (err.message.includes('1305') || err.message.includes('429')) {
+          await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+          continue;
+        }
+        throw err;
+      }
+    }
+    return json(res, { error: 'GLM vision model is busy right now. Please try again in a moment. (Rate limited)' }, 429);
   } catch (err) {
     return json(res, { error: err.message }, 500);
   }

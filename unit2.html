@@ -277,6 +277,8 @@
   }
   .cloze-blank.filled { background:#d1fae5; border-bottom-color:var(--primary); color:#065f46; }
   .cloze-blank.wrong { background:#fee2e2; border-bottom-color:var(--danger); color:#991b1b; }
+  .cloze-hint { font-size:12px; color:var(--text-secondary); margin-top:4px; }
+  .cloze-hint.hidden { display:none; }
 
   /* ── Cornell Notes (Part 4) — v2 wider, richer typography ── */
   .cornell-block {
@@ -1300,8 +1302,8 @@
   <img id="lightbox-img" class="lightbox-img" onclick="event.stopPropagation()">
   <div id="lightbox-caption" class="lightbox-caption"></div>
   <div class="lightbox-actions">
-    <button onclick="event.stopPropagation(); aiExplainImage();">🤖 AI 解释图片</button>
-    <button onclick="event.stopPropagation(); addToNotebookFromLightbox();">➕ 加入笔记本</button>
+    <button onclick="event.stopPropagation(); aiExplainImage();">🤖 AI Explain</button>
+    <button onclick="event.stopPropagation(); addToNotebookFromLightbox();">➕ Add to Notebook</button>
   </div>
 </div>
 
@@ -2310,7 +2312,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function aiExplainImage() {
   var caption = document.getElementById('lightbox-caption');
-  caption.innerHTML += '<div class="cn" style="margin-top:10px;color:#93c5fd;">🤖 AI 正在分析图片...</div>';
+  caption.innerHTML += '<div class="cn" style="margin-top:10px;color:#93c5fd;">🤖 AI is analyzing the image...</div>';
   try {
     var img = document.getElementById('lightbox-img');
     var canvas = document.createElement('canvas');
@@ -2326,11 +2328,11 @@ async function aiExplainImage() {
     });
     if (!resp.ok) throw new Error('API ' + resp.status);
     var data = await resp.json();
-    var explanation = data.description || data.error || '无返回';
+    var explanation = data.description || data.error || 'No response';
     caption.innerHTML = '<div>' + lightboxState.term + '</div>' +
       '<div class="cn" style="margin-top:10px;text-align:left;background:rgba(255,255,255,.1);padding:12px;border-radius:8px;white-space:pre-wrap;max-height:300px;overflow-y:auto;">' + explanation + '</div>';
   } catch(err) {
-    caption.innerHTML += '<div class="cn" style="color:#fca5a5;">⚠️ AI 解析失败: ' + err.message + '</div>';
+    caption.innerHTML += '<div class="cn" style="color:#fca5a5;">⚠️ AI analysis failed: ' + err.message + '</div>';
   }
 }
 
@@ -2338,7 +2340,7 @@ function addToNotebookFromLightbox() {
   mbAdd({
     part:'collection', term: lightboxState.term,
     category:'star', cn: lightboxState.cn,
-    prompt:'🖼️ 图片收藏: ' + lightboxState.term,
+    prompt:'🖼️ Image saved: ' + lightboxState.term,
     userAnswer:'', correctAnswer:'',
     reason_en:'Image collected', reason_cn:'图片收藏',
     key_en: lightboxState.term, key_cn: lightboxState.cn,
@@ -2980,150 +2982,184 @@ function renderCloze() {
     '<span style="font-size:13px;color:var(--text-secondary);"><strong>' + allQ.length + ' questions</strong> · ' + CLOZE_POOL.length + ' cloze + ' + SHORT_POOL.length + ' short-answer</span>' +
     '<span class="quiz-score" id="cloze-score" style="margin-left:auto;">0 / 0</span>' +
   '</div>';
+  html += '<div style="margin:10px 0;display:flex;gap:8px;flex-wrap:wrap;">' +
+    '<button class="quiz-btn quiz-btn-submit" onclick="gradeAllCloze()" id="grade-all-btn">✓ Submit All &amp; Grade</button>' +
+    '<button class="quiz-btn quiz-btn-reset" onclick="renderCloze()">🔄 Reshuffle</button>' +
+  '</div>';
   html += allQ.map(function(q, i) {
     if (q.type === 'cloze') {
       return '<div class="quiz-q" data-qi="' + i + '">' +
-        '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">Fill in the blank</span> <span style="font-size:11px;color:var(--text-light);">[Cloze · 填空]</span></div>' +
-        '<div style="margin-top:8px;font-size:14px;line-height:1.8;">' + q.before + '<span class="cloze-blank">_____</span>' + q.after + '</div>' +
-        (q.hint ? '<div class="q-hint">💡 ' + q.hint + '</div>' : '') +
+        '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">Fill in the blank</span></div>' +
+        '<div style="margin-top:8px;font-size:14px;line-height:1.8;">' + q.before + '<span class="cloze-blank" id="cloze-blank-' + i + '">_____</span>' + q.after + '</div>' +
+        '<div class="cloze-hint hidden" id="cloze-hint-' + i + '">💡 ' + (q.hint||'') + '</div>' +
         '<div class="cloze-input-area">' +
-          '<div class="cloze-input-label">Your answer (the missing term)</div>' +
           '<input type="text" class="cloze-input" data-qi="' + i + '" placeholder="type the missing word...">' +
-          '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">' +
-            '<button class="quiz-btn quiz-btn-submit" onclick="submitCloze(' + i + ')">✓ Submit</button>' +
-            '<button class="quiz-btn quiz-btn-reset" onclick="resetCloze(' + i + ')">🔄 Retry</button>' +
-            '<button class="quiz-btn quiz-btn-reset" onclick="peekCloze(' + i + ')">👁️ Show Answer</button>' +
-          '</div>' +
         '</div>' +
-        '<div class="cloze-feedback"></div>' +
+        '<div class="cloze-feedback" id="cloze-feedback-' + i + '"></div>' +
       '</div>';
     } else {
       return '<div class="quiz-q" data-qi="' + i + '">' +
-        '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">' + q.q_en + '</span> <span style="font-size:11px;color:var(--text-light);">[Short Answer · 主观题]</span></div>' +
-        (q.q_cn ? '<div class="q-hint">📌 ' + q.q_cn + '</div>' : '') +
+        '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">' + q.q_en + '</span></div>' +
+        '<div class="cloze-hint hidden" id="cloze-hint-' + i + '">📌 ' + (q.q_cn||'') + '</div>' +
         '<div class="cloze-input-area">' +
-          '<div class="cloze-input-label">Your answer (full English sentence)</div>' +
           '<textarea class="cloze-textarea" data-qi="' + i + '" placeholder="Write your full English answer here..."></textarea>' +
-          '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">' +
-            '<button class="quiz-btn quiz-btn-submit" onclick="submitShort(' + i + ')">✓ Submit</button>' +
-            '<button class="quiz-btn quiz-btn-reset" onclick="resetShort(' + i + ')">🔄 Retry</button>' +
-            '<button class="quiz-btn quiz-btn-reset" onclick="peekShort(' + i + ')">👁️ Show Answer</button>' +
-          '</div>' +
         '</div>' +
-        '<div class="cloze-feedback"></div>' +
+        '<div class="cloze-feedback" id="cloze-feedback-' + i + '"></div>' +
       '</div>';
     }
   }).join('');
   container.innerHTML = html;
 }
 
-function submitCloze(i) {
-  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
-  var input = document.querySelector('#cloze-quiz .cloze-input[data-qi="' + i + '"]');
-  if (!input) { console.warn('submitCloze: no input for qi=' + i + ' (probably a short-answer question)'); return; }
-  var userVal = input.value.trim();
-  if (!userVal) { alert('Type an answer first!'); return; }
-  var userNorm = normalizeAnswer(userVal);
-  var ansNorm = normalizeAnswer(q.answer);
-  var correct = userNorm === ansNorm || (ansNorm.includes(userNorm) && userNorm.length >= 4);
-  var score = correct ? 100 : 0;
-  var fb = document.querySelector('#cloze-quiz .quiz-q[data-qi="' + i + '"] .cloze-feedback');
-  input.disabled = true;
+function gradeAllCloze() {
+  var allQ = CLOZE_POOL.concat(SHORT_POOL);
+  var totalCorrect = 0, totalAnswered = 0;
 
-  var scoreClass = score >= 80 ? 'score-high' : 'score-low';
-  var goodPoints = [], weakPoints = [], studyPoints = [];
-  if (correct) {
-    goodPoints.push('Correct term: <strong>' + q.answer + '</strong>');
-  } else {
-    weakPoints.push('You wrote: "' + userVal + '"');
-    weakPoints.push('Correct answer: <strong>' + q.answer + '</strong>');
-  }
-  studyPoints.push('The full sentence: <em>' + q.before + ' <strong>' + q.answer + '</strong> ' + q.after + '</em>');
+  allQ.forEach(function(q, i) {
+    var hintEl = document.getElementById('cloze-hint-' + i);
+    var fb = document.getElementById('cloze-feedback-' + i);
+    if (hintEl) hintEl.classList.remove('hidden');
 
-  fb.innerHTML =
-    '<span class="fb-score ' + scoreClass + '">Score: ' + score + '%</span>' +
-    '<div class="feedback-panel">' +
-      '<div class="feedback-card fb-good"><div class="fb-title">✓ 做得好</div><ul class="fb-list"><li>' + goodPoints.join('</li><li>') + '</li></ul></div>' +
-      '<div class="feedback-card fb-weak"><div class="fb-title">✗ 待加强</div><ul class="fb-list"><li>' + weakPoints.join('</li><li>') + '</li></ul></div>' +
-      '<div class="feedback-card fb-study"><div class="fb-title">📖 句子</div><ul class="fb-list"><li>' + studyPoints.join('</li><li>') + '</li></ul></div>' +
-    '</div>' +
-    '<div class="answer-block">' +
-      '<span class="answer-label">📖 解答</span>' +
-      '<div class="answer-en"><strong>' + q.answer + '</strong></div>' +
-      (q.answer_cn ? '<div class="answer-cn">' + q.answer_cn + '</div>' : '') +
-    '</div>';
+    if (q.type === 'cloze') {
+      var input = document.querySelector('#cloze-quiz .cloze-input[data-qi="' + i + '"]');
+      if (!input) return;
+      var userVal = input.value.trim();
+      input.disabled = true;
 
-  if (!correct) {
-    var vocabItem = VOCAB.find(function(v){ return v.term.toLowerCase() === q.answer.toLowerCase(); });
-    mbAdd({
-      part: 'cloze', term: q.answer, category: vocabItem ? vocabItem.cat : 'structure',
-      cn: vocabItem ? vocabItem.cn : '',
-      prompt: 'Cloze: ' + q.before + ' ___ ' + q.after,
-      userAnswer: userVal, correctAnswer: q.answer,
-      reason_en: 'Cloze fill-in wrong. Correct: "' + q.answer + '".',
-      reason_cn: '填空错误，正确答案是 ' + q.answer + '。',
-      key_en: vocabItem ? vocabItem.def_en : q.answer, key_cn: vocabItem ? vocabItem.cn : ''
-    });
-  }
-  updateClozeScore();
-}
+      if (!userVal) {
+        // skipped — reveal answer in red
+        if (fb) fb.innerHTML = '<span class="fb-score score-low">Skipped</span>' +
+          '<div class="answer-block"><span class="answer-label">📖 Answer</span>' +
+          '<div class="answer-en"><strong>' + q.answer + '</strong></div></div>';
+        var blankEl = document.getElementById('cloze-blank-' + i);
+        if (blankEl) { blankEl.textContent = q.answer; blankEl.className = 'cloze-blank wrong'; }
+        // add to notebook
+        var vocabItem0 = VOCAB.find(function(v){ return v.term.toLowerCase() === q.answer.toLowerCase(); });
+        mbAdd({
+          part: 'cloze', term: q.answer, category: vocabItem0 ? vocabItem0.cat : 'structure',
+          cn: vocabItem0 ? vocabItem0.cn : '',
+          prompt: 'Cloze: ' + q.before + ' ___ ' + q.after,
+          userAnswer: '(skipped)', correctAnswer: q.answer,
+          reason_en: 'Cloze skipped. Correct: "' + q.answer + '".',
+          reason_cn: '填空未答，正确答案是 ' + q.answer + '。',
+          key_en: vocabItem0 ? vocabItem0.def_en : q.answer, key_cn: vocabItem0 ? vocabItem0.cn : ''
+        });
+        return;
+      }
 
-function submitShort(i) {
-  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
-  var ta = document.querySelector('#cloze-quiz .cloze-textarea[data-qi="' + i + '"]');
-  if (!ta) { console.warn('submitShort: no textarea for qi=' + i); return; }
-  var userVal = ta.value.trim();
-  if (!userVal) { alert('Type an answer first!'); return; }
-  var userLower = userVal.toLowerCase();
-  var essentialHit = 0, essentialTotal = q.keywords.length;
-  var missing = [], hit = [];
-  q.keywords.forEach(function(k){
-    if (userLower.indexOf(k.toLowerCase()) !== -1) { essentialHit++; hit.push(k); }
-    else missing.push(k);
+      totalAnswered++;
+      var userNorm = normalizeAnswer(userVal);
+      var ansNorm = normalizeAnswer(q.answer);
+      var correct = userNorm === ansNorm || (ansNorm.includes(userNorm) && userNorm.length >= 4);
+      var score = correct ? 100 : 0;
+
+      // Update blank display
+      var blankEl2 = document.getElementById('cloze-blank-' + i);
+      if (blankEl2) {
+        blankEl2.textContent = q.answer;
+        blankEl2.className = 'cloze-blank ' + (correct ? 'filled' : 'wrong');
+      }
+
+      if (correct) {
+        totalCorrect++;
+        if (fb) fb.innerHTML = '<span class="fb-score score-high">✓ Correct</span>' +
+          '<div class="answer-block"><span class="answer-label">📖 Answer</span>' +
+          '<div class="answer-en"><strong>' + q.answer + '</strong></div></div>';
+      } else {
+        if (fb) fb.innerHTML = '<span class="fb-score score-low">✗ Wrong</span>' +
+          '<div class="feedback-panel"><div class="feedback-card fb-weak"><div class="fb-title">Correction</div>' +
+          '<ul class="fb-list"><li>You wrote: "' + userVal + '"</li><li>Correct: <strong>' + q.answer + '</strong></li></ul></div></div>' +
+          '<div class="answer-block"><span class="answer-label">📖 Answer</span>' +
+          '<div class="answer-en"><strong>' + q.answer + '</strong></div>' +
+          (q.answer_cn ? '<div class="answer-cn">' + q.answer_cn + '</div>' : '') + '</div>';
+        // Add to notebook
+        var vocabItem = VOCAB.find(function(v){ return v.term.toLowerCase() === q.answer.toLowerCase(); });
+        mbAdd({
+          part: 'cloze', term: q.answer, category: vocabItem ? vocabItem.cat : 'structure',
+          cn: vocabItem ? vocabItem.cn : '',
+          prompt: 'Cloze: ' + q.before + ' ___ ' + q.after,
+          userAnswer: userVal, correctAnswer: q.answer,
+          reason_en: 'Cloze fill-in wrong. Correct: "' + q.answer + '".',
+          reason_cn: '填空错误，正确答案是 ' + q.answer + '。',
+          key_en: vocabItem ? vocabItem.def_en : q.answer, key_cn: vocabItem ? vocabItem.cn : ''
+        });
+      }
+    } else {
+      // Short answer
+      var ta = document.querySelector('#cloze-quiz .cloze-textarea[data-qi="' + i + '"]');
+      if (!ta) return;
+      var userVal2 = ta.value.trim();
+      ta.disabled = true;
+
+      if (!userVal2) {
+        if (fb) fb.innerHTML = '<span class="fb-score score-low">Skipped</span>' +
+          '<div class="answer-block"><span class="answer-label">📖 Model Answer</span>' +
+          '<div class="answer-en">' + q.model_en + '</div></div>';
+        mbAdd({
+          part: 'short', term: q.keywords[0] || q.q_en.split(/\s+/).slice(0,3).join(' '),
+          category: 'structure', cn: '',
+          prompt: 'Short Q: ' + q.q_en,
+          userAnswer: '(skipped)', correctAnswer: q.model_en,
+          reason_en: 'Short answer skipped.',
+          reason_cn: '主观题未答。',
+          key_en: q.model_en, key_cn: q.model_cn
+        });
+        return;
+      }
+
+      totalAnswered++;
+      var userLower = userVal2.toLowerCase();
+      var essentialHit = 0, essentialTotal = q.keywords.length;
+      var missing = [], hit = [];
+      q.keywords.forEach(function(k){
+        if (userLower.indexOf(k.toLowerCase()) !== -1) { essentialHit++; hit.push(k); }
+        else missing.push(k);
+      });
+      var ratio = essentialTotal > 0 ? essentialHit / essentialTotal : 0;
+      var score2 = Math.round(ratio * 100);
+      if (score2 === 0 && ratio > 0.3) score2 = 30;
+      var scoreClass = score2 >= 80 ? 'score-high' : (score2 >= 50 ? 'score-mid' : 'score-low');
+      if (score2 >= 80) totalCorrect++;
+
+      if (fb) fb.innerHTML =
+        '<span class="fb-score ' + scoreClass + '">Score: ' + score2 + '%</span>' +
+        '<div class="feedback-panel">' +
+          '<div class="feedback-card fb-good"><div class="fb-title">✓ Good</div><ul class="fb-list"><li>' + (hit.length ? 'Key terms: <strong>' + hit.join(', ') + '</strong>' : '—') + '</li></ul></div>' +
+          '<div class="feedback-card fb-weak"><div class="fb-title">✗ Missing</div><ul class="fb-list"><li>' + (missing.length ? '<strong>' + missing.join(', ') + '</strong>' : 'All keywords present ✓') + '</li></ul></div>' +
+        '</div>' +
+        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">' +
+          '<button class="sel-popup-btn primary" onclick="aiGradeShort(' + i + ',\'' + escapeJs(userVal2.slice(0,500)) + '\')">🤖 AI Grade</button>' +
+          '<button class="sel-popup-btn" onclick="jumpToCornellShort(' + i + ')">📖 Jump to Text</button>' +
+        '</div>' +
+        '<div id="ai-grade-' + i + '" class="sel-popup-explain"></div>' +
+        '<div class="answer-block">' +
+          '<span class="answer-label">📖 Model Answer</span>' +
+          '<div class="answer-en">' + q.model_en + '</div>' +
+          '<div class="answer-cn">' + q.model_cn + '</div>' +
+        '</div>' +
+        (q.lang_notes ? '<div class="lang-analysis"><span class="lang-label">📝 Language Notes</span>' + q.lang_notes + '</div>' : '');
+
+      if (score2 < 80) {
+        var termGuess = q.keywords[0] || q.q_en.split(/\s+/).slice(0,3).join(' ');
+        var vocabItem2 = VOCAB.find(function(v){ return v.term.toLowerCase() === termGuess.toLowerCase(); });
+        mbAdd({
+          part: 'short', term: termGuess, category: vocabItem2 ? vocabItem2.cat : 'structure',
+          cn: vocabItem2 ? vocabItem2.cn : '',
+          prompt: 'Short Q: ' + q.q_en,
+          userAnswer: userVal2.slice(0, 100), correctAnswer: q.model_en,
+          reason_en: 'Missing keywords: ' + missing.join(', '),
+          reason_cn: '缺失关键词：' + missing.join('、'),
+          key_en: q.model_en, key_cn: q.model_cn
+        });
+      }
+    }
   });
-  var ratio = essentialTotal > 0 ? essentialHit / essentialTotal : 0;
-  var score = Math.round(ratio * 100);
-  if (score === 0 && ratio > 0.3) score = 30;
-  var fb = document.querySelector('#cloze-quiz .quiz-q[data-qi="' + i + '"] .cloze-feedback');
-  ta.disabled = true;
-  var scoreClass = score >= 80 ? 'score-high' : (score >= 50 ? 'score-mid' : 'score-low');
 
-  fb.innerHTML =
-    '<span class="fb-score ' + scoreClass + '">Score: ' + score + '%</span>' +
-    '<div class="feedback-panel">' +
-      '<div class="feedback-card fb-good"><div class="fb-title">✓ 做得好</div><ul class="fb-list"><li>' + (hit.length ? 'Used key terms: <strong>' + hit.join(', ') + '</strong>' : '—') + '</li></ul></div>' +
-      '<div class="feedback-card fb-weak"><div class="fb-title">✗ 缺失关键词</div><ul class="fb-list"><li>' + (missing.length ? '<strong>' + missing.join(', ') + '</strong>' : 'All keywords present ✓') + '</li></ul></div>' +
-      '<div class="feedback-card fb-study"><div class="fb-title">📖 范答</div><ul class="fb-list"><li>See model answer below</li></ul></div>' +
-    '</div>' +
-    '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">' +
-      '<button class="sel-popup-btn primary" onclick="aiGradeShort(' + i + ',\'' + escapeJs(userVal.slice(0,500)) + '\')">🤖 AI 深度评分</button>' +
-      '<button class="sel-popup-btn" onclick="jumpToCornellShort(' + i + ')">📖 跳转课文</button>' +
-    '</div>' +
-    '<div id="ai-grade-' + i + '" class="sel-popup-explain"></div>' +
-    '<div class="answer-block">' +
-      '<span class="answer-label">📖 范答 Model Answer</span>' +
-      '<div class="answer-en">' + q.model_en + '</div>' +
-      '<div class="answer-cn"><strong>中文翻译:</strong> ' + q.model_cn + '</div>' +
-    '</div>' +
-    (q.lang_notes ? '<div class="lang-analysis">' +
-      '<span class="lang-label">📝 Language Notes · 语言解析</span>' +
-      q.lang_notes +
-    '</div>' : '');
-
-  if (score < 80) {
-    var termGuess = q.keywords[0] || q.q_en.split(/\s+/).slice(0,3).join(' ');
-    var vocabItem = VOCAB.find(function(v){ return v.term.toLowerCase() === termGuess.toLowerCase(); });
-    mbAdd({
-      part: 'short', term: termGuess, category: vocabItem ? vocabItem.cat : 'structure',
-      cn: vocabItem ? vocabItem.cn : '',
-      prompt: 'Short Q: ' + q.q_en,
-      userAnswer: userVal.slice(0, 100), correctAnswer: q.model_en,
-      reason_en: 'Missing keywords: ' + missing.join(', '),
-      reason_cn: '缺失关键词：' + missing.join('、'),
-      key_en: q.model_en, key_cn: q.model_cn
-    });
-  }
-  updateClozeScore();
+  // Update score and disable grade button
+  var scoreEl = document.getElementById('cloze-score');
+  if (scoreEl) scoreEl.textContent = totalCorrect + ' / ' + allQ.length;
+  var gradeBtn = document.getElementById('grade-all-btn');
+  if (gradeBtn) { gradeBtn.disabled = true; gradeBtn.textContent = '✓ Graded'; }
 }
 
 // R3: AI grading for short answer questions
@@ -3132,7 +3168,7 @@ async function aiGradeShort(i, userAnswer) {
   var gradeEl = document.getElementById('ai-grade-' + i);
   if (!gradeEl) return;
   gradeEl.className = 'sel-popup-explain visible';
-  gradeEl.innerHTML = '<div class="sel-popup-loading"><span class="spinner"></span>🤖 AI 正在批改…</div>';
+  gradeEl.innerHTML = '<div class="sel-popup-loading"><span class="spinner"></span>🤖 AI is grading...</div>';
 
   try {
     var resp = await fetch(API_BASE + '/api/grade', {
@@ -3199,44 +3235,8 @@ function jumpToCornellShort(i) {
   }, 300);
 }
 
-function resetCloze(i) {
-  var q = document.querySelector('#cloze-quiz .quiz-q[data-qi="' + i + '"]');
-  if (!q) return;
-  var input = q.querySelector('.cloze-input, .cloze-textarea');
-  if (input) { input.disabled = false; input.value = ''; }
-  var fb = q.querySelector('.cloze-feedback'); if (fb) fb.innerHTML = '';
-  updateClozeScore();
-}
-function resetShort(i) { return resetCloze(i); }
-
-function peekCloze(i) {
-  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
-  var fb = document.querySelector('#cloze-quiz .quiz-q[data-qi="' + i + '"] .cloze-feedback');
-  var inp = document.querySelector('#cloze-quiz .cloze-input[data-qi="' + i + '"]');
-  if (inp) inp.disabled = true;
-  if (fb) fb.innerHTML = '<div class="answer-block"><span class="answer-label">👁️ 直接查看答案</span><div class="answer-en"><strong>' + q.answer + '</strong></div></div>';
-}
-function peekShort(i) {
-  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
-  var fb = document.querySelector('#cloze-quiz .quiz-q[data-qi="' + i + '"] .cloze-feedback');
-  var ta = document.querySelector('#cloze-quiz .cloze-textarea[data-qi="' + i + '"]');
-  if (ta) ta.disabled = true;
-  if (fb) fb.innerHTML = '<div class="answer-block"><span class="answer-label">👁️ 范答</span><div class="answer-en">' + q.model_en + '</div><div class="answer-cn"><strong>中文:</strong> ' + q.model_cn + '</div></div>';
-}
-
 function updateClozeScore() {
-  var answered = 0, correct = 0;
-  document.querySelectorAll('#cloze-quiz .quiz-q').forEach(function(q) {
-    var fb = q.querySelector('.cloze-feedback');
-    if (fb.innerHTML.trim()) {
-      answered++;
-      var sc = fb.querySelector('.fb-score');
-      if (sc && sc.classList.contains('score-high')) correct++;
-    }
-  });
-  var total = CLOZE_POOL.length + SHORT_POOL.length;
-  var el = document.getElementById('cloze-score');
-  if (el) el.textContent = correct + ' / ' + total;
+  // Deprecated — score now updated by gradeAllCloze
 }
 
 /* ═════════════════════════════════════════════════════════════

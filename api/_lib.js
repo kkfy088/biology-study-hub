@@ -1,10 +1,10 @@
 // ============================================================
 // AI Gateway — Central model routing for Biology Study Hub
 // ============================================================
-// Model assignments (updated 2026-07-10):
-//   Text tasks  → deepseek-chat   (primary, via DeepSeek API)
-//   Vision      → glm-4.6v-flash   (free tier, via GLM standard API)
-//   Embedding   → embedding-3      (1024-dim, pgvector HNSW max 2000)
+// Model assignments (updated 2026-07-11):
+//   Text tasks  → deepseek-v4-pro   (Think Max, via DeepSeek API)
+//   Vision      → glm-4.6v-flash    (free tier, via GLM standard API)
+//   Embedding   → embedding-3       (1024-dim, pgvector HNSW max 2000)
 // ============================================================
 
 const ZHIPU_CHAT_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
@@ -13,7 +13,7 @@ const DEEPSEEK_CHAT_URL = 'https://api.deepseek.com/chat/completions';
 
 // Model registry
 export const MODELS = {
-  TEXT: 'deepseek-chat',
+  TEXT: 'deepseek-v4-pro',
   VISION: 'glm-4.6v-flash',
   VISION_PRO: 'glm-5v-turbo',
   EMBEDDING: 'embedding-3',
@@ -89,7 +89,7 @@ export async function callGLM(messages, options = {}) {
 }
 
 /**
- * Call DeepSeek — primary text reasoning
+ * Call DeepSeek — primary text reasoning (V4-Pro, Think Max)
  */
 export async function callDeepSeek(messages, options = {}) {
   const apiKey = process.env.DEEPSEEK_API_KEY;
@@ -100,6 +100,8 @@ export async function callDeepSeek(messages, options = {}) {
     messages,
     max_tokens: options.max_tokens || 2000,
     temperature: options.temperature ?? 0.3,
+    thinking: { type: 'enabled' },
+    reasoning_effort: options.reasoning_effort || 'max',
   };
 
   if (options.response_format) {

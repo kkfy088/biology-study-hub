@@ -1,7 +1,7 @@
 # MEMORY · 项目持久化上下文
 
 > **用途**: 新对话开头读此文件，快速恢复项目全貌。每次重要变更后更新。
-> **最后更新**: 2026-07-10
+> **最后更新**: 2026-07-11
 
 ---
 
@@ -12,9 +12,8 @@
 | 名称 | Biology Study Hub (michelle-learn-biology) |
 | 用户 | Michelle，初二，中文母语，学 IGCSE 0610 Biology |
 | 仓库 | github.com/kkfy088/biology-study-hub |
-| 分支 | MLIGB1 (= main，已同步) |
+| 分支 | MLIGB2 (= main，已同步) |
 | 部署 | Vercel (https://biology-study-hub.vercel.app) |
-| 最新 commit | `22040db` |
 
 ---
 
@@ -30,11 +29,11 @@
 
 | 端点 | 功能 | 调用的模型 |
 |------|------|-----------|
-| /api/lookup | 划词查词 | DeepSeek (deepseek-chat) |
-| /api/explain | 长句解释 | DeepSeek (deepseek-chat) |
-| /api/grade | 主观题评分 | DeepSeek (deepseek-chat) |
+| /api/lookup | 划词查词 | DeepSeek (deepseek-v4-pro, Think Max) |
+| /api/explain | 长句解释 | DeepSeek (deepseek-v4-pro, Think Max) |
+| /api/grade | 主观题评分 | DeepSeek (deepseek-v4-pro, Think Max) |
 | /api/vision | 图片理解 | GLM glm-4.6v-flash (免费) |
-| /api/rag/query | RAG 问答 | Supabase 检索 + DeepSeek 生成 |
+| /api/rag/query | RAG 问答 | Supabase 检索 + DeepSeek V4-Pro 生成 |
 | /api/rag/upload | 知识库导入 | GLM embedding-3 (1024维) |
 | /api/rag/parse | PDF/图片解析 | GLM glm-4.6v-flash 视觉 |
 
