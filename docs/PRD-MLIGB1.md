@@ -154,13 +154,12 @@
   - `/api/rag/query` — RAG 问答（Supabase 向量检索 + DeepSeek 生成）
   - `/api/rag/upload` — 上传补充资料（浏览器端 pdf.js 解析 + 智谱 embedding）
   - `/api/vision` — 图片理解（GLM-4V）
-- **大模型分工**:
+- **大模型分工**（2026-07-11 更新）:
   | 任务类型 | 模型 | 原因 |
   |---------|------|------|
-  | 文本理解/生成 | **DeepSeek-V3** | ¥1/百万 token，便宜 |
-  | 深度推理评分 | **DeepSeek-R1** | ¥4/百万 token |
-  | 视觉/看图 | **GLM-4.6V-Flash** | 免费（Coding Plan） |
-  | Embedding | **智谱 embedding-3** | DeepSeek 无嵌入模型 |
+  | 文本理解/生成/评分 | **DeepSeek-V4-Pro** (Think Max) | 旗舰模型，最大推理强度。旧 `deepseek-chat` 2026-07-24 停用 |
+  | 视觉/看图 | **GLM-4.6V-Flash** | 智谱标准 API 免费 |
+  | Embedding | **智谱 embedding-3** (1024维) | DeepSeek 无嵌入模型 |
 - **API Key 管理**: 全部存 Vercel 环境变量，前端不接触 Key
 - **RAG 架构**（v3 — Supabase pgvector）:
   ```
@@ -374,14 +373,15 @@ vision-mcp 配置（GLM 方案）：
 │  │ (R7)     │ │ (R6)     │ │ (R3)             │ │
 │  └──────────┘ └──────────┘ └──────────────────┘ │
 └────────────────────┬────────────────────────────┘
-                     │ fetch / WebSocket
+                     │ fetch
 ┌────────────────────┴────────────────────────────┐
-│              Backend API (FastAPI)                │
+│         Backend API (Vercel Serverless)           │
 │                                                   │
-│  /api/lookup    → DeepSeek API (查词/翻译)        │
-│  /api/explain   → DeepSeek API (句子解释)         │
-│  /api/grade     → DeepSeek API (主观题评分)       │
-│  /api/rag/*     → ChromaDB + DeepSeek             │
+│  /api/lookup    → DeepSeek V4-Pro (查词/翻译)     │
+│  /api/explain   → DeepSeek V4-Pro (句子解释)      │
+│  /api/grade     → DeepSeek V4-Pro (主观题评分)    │
+│  /api/vision    → GLM-4.6V-Flash (图片理解)       │
+│  /api/rag/*     → Supabase pgvector + DeepSeek    │
 └───────────────────────────────────────────────────┘
 ```
 
