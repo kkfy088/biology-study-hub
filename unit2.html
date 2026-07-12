@@ -232,6 +232,12 @@
     display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px;
     padding:12px 16px; background:white; border-radius:var(--radius-sm); border:1px solid var(--border);
   }
+  .quiz-section-header {
+    font-size:18px; font-weight:800; color:var(--primary-dark);
+    margin:20px 0 10px; padding:10px 16px;
+    background:linear-gradient(135deg,#eef2ff,#f0fdf4);
+    border-radius:var(--radius-sm); border-left:4px solid var(--primary);
+  }
   .quiz-btn {
     padding:8px 18px; border:none; border-radius:var(--radius-xs);
     font-size:13px; font-weight:700; cursor:pointer; transition:all .2s;
@@ -748,7 +754,7 @@
 
   /* ── R1/R2: Selection Popup (划词查词 + 长句解释) ── */
   .sel-popup {
-    position:fixed; z-index:1200; background:white; border-radius:12px;
+    position:absolute; z-index:1200; background:white; border-radius:12px;
     box-shadow:0 8px 32px rgba(0,0,0,.18); border:1px solid #e2e8f0;
     max-width:380px; min-width:200px; padding:0; overflow:hidden;
     opacity:0; transform:translateY(6px) scale(.96); transition:all .15s ease;
@@ -2118,24 +2124,24 @@ function handleSelection(e) {
   var text = sel.toString().trim();
   if (!text || text.length < 1) { hideSelPopup(); return; }
 
-  // Position popup near the selection (getBoundingClientRect = viewport coords)
+  // Position popup near the selection — absolute positioning needs scrollY offset
   var rect = sel.getRangeAt(0).getBoundingClientRect();
   var x = rect.left + rect.width / 2;
-  var y = rect.bottom + 8; // viewport coords, works with position:fixed
+  var y = rect.bottom + window.scrollY + 8;
 
   showSelPopup(text, x, y);
 }
 
 function showSelPopup(text, x, y) {
-  // Position (fixed positioning — use viewport coords directly)
+  // Position (absolute positioning — coords are page-relative)
   var popupW = 380;
-  var popupH = 200; // estimated, will auto-adjust
-  var left = Math.max(10, Math.min(x - popupW / 2, window.innerWidth - popupW - 10));
-  var top = y; // y already includes scrollY offset for fixed positioning
-  // If popup would go below viewport, show above selection
-  if (top + popupH > window.innerHeight) {
+  var popupH = 200; // estimated
+  var left = Math.max(10, Math.min(x - popupW / 2, document.documentElement.scrollWidth - popupW - 10));
+  var top = y; // page-absolute coord
+  // If popup would go below current viewport, show above selection
+  if (top + popupH > window.scrollY + window.innerHeight) {
     top = y - popupH - 30; // flip above
-    if (top < 10) top = 10;
+    if (top < window.scrollY + 10) top = window.scrollY + 10;
   }
   selPopup.style.left = left + 'px';
   selPopup.style.top = top + 'px';
@@ -2981,201 +2987,209 @@ function addHighlight(si) {
 /* ═════════════════════════════════════════════════════════════
    PART 5 RENDERER (Cloze + Short answer)
    ═════════════════════════════════════════════════════════════ */
+// Global store for shuffled questions (fixes shuffle mismatch bug)
+var SHUFFLED_CLOZE = [];
+var SHUFFLED_SHORT = [];
+
+function shuffleArray(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  }
+  return arr;
+}
+
 function renderCloze() {
   var container = document.getElementById('cloze-quiz');
-  var allQ = CLOZE_POOL.concat(SHORT_POOL);
-  // shuffle
-  for (var i = allQ.length-1; i>0; i--) {
-    var j = Math.floor(Math.random()*(i+1));
-    var t = allQ[i]; allQ[i] = allQ[j]; allQ[j] = t;
-  }
-  var html = '<div class="quiz-toolbar">' +
-    '<span style="font-size:13px;color:var(--text-secondary);"><strong>' + allQ.length + ' questions</strong> · ' + CLOZE_POOL.length + ' cloze + ' + SHORT_POOL.length + ' short-answer</span>' +
-    '<span class="quiz-score" id="cloze-score" style="margin-left:auto;">0 / 0</span>' +
+  SHUFFLED_CLOZE = shuffleArray(CLOZE_POOL.slice());
+  SHUFFLED_SHORT = shuffleArray(SHORT_POOL.slice());
+
+  var html = '';
+
+  // ── Group 1: Cloze Fill-in ──
+  html += '<div class="quiz-section-header">✏️ Part A: Fill-in-the-Blank (' + SHUFFLED_CLOZE.length + ' questions)</div>';
+  html += '<div class="quiz-toolbar">' +
+    '<button class="quiz-btn quiz-btn-submit" onclick="gradeClozeOnly()" id="grade-cloze-btn">✓ Submit &amp; Grade Cloze</button>' +
+    '<span class="quiz-score" id="cloze-cloze-score"></span>' +
   '</div>';
-  html += '<div style="margin:10px 0;display:flex;gap:8px;flex-wrap:wrap;">' +
-    '<button class="quiz-btn quiz-btn-submit" onclick="gradeAllCloze()" id="grade-all-btn">✓ Submit All &amp; Grade</button>' +
-    '<button class="quiz-btn quiz-btn-reset" onclick="renderCloze()">🔄 Reshuffle</button>' +
-  '</div>';
-  html += allQ.map(function(q, i) {
-    if (q.type === 'cloze') {
-      return '<div class="quiz-q" data-qi="' + i + '">' +
-        '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">Fill in the blank</span></div>' +
-        '<div style="margin-top:8px;font-size:14px;line-height:1.8;">' + q.before + '<span class="cloze-blank" id="cloze-blank-' + i + '">_____</span>' + q.after + '</div>' +
-        '<div class="cloze-hint hidden" id="cloze-hint-' + i + '">💡 ' + (q.hint||'') + '</div>' +
-        '<div class="cloze-input-area">' +
-          '<input type="text" class="cloze-input" data-qi="' + i + '" placeholder="type the missing word...">' +
-        '</div>' +
-        '<div class="cloze-feedback" id="cloze-feedback-' + i + '"></div>' +
-      '</div>';
-    } else {
-      return '<div class="quiz-q" data-qi="' + i + '">' +
-        '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">' + q.q_en + '</span></div>' +
-        '<div class="cloze-hint hidden" id="cloze-hint-' + i + '">📌 ' + (q.q_cn||'') + '</div>' +
-        '<div class="cloze-input-area">' +
-          '<textarea class="cloze-textarea" data-qi="' + i + '" placeholder="Write your full English answer here..."></textarea>' +
-        '</div>' +
-        '<div class="cloze-feedback" id="cloze-feedback-' + i + '"></div>' +
-      '</div>';
-    }
+  html += SHUFFLED_CLOZE.map(function(q, i) {
+    return '<div class="quiz-q" data-group="cloze" data-qi="' + i + '">' +
+      '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">Fill in the blank</span></div>' +
+      '<div style="margin-top:8px;font-size:14px;line-height:1.8;">' + q.before + '<span class="cloze-blank" id="cloze-blank-' + i + '">_____</span>' + q.after + '</div>' +
+      '<div class="cloze-hint hidden" id="cloze-hint-' + i + '">💡 ' + (q.hint||'') + '</div>' +
+      '<div class="cloze-input-area">' +
+        '<input type="text" class="cloze-input" data-group="cloze" data-qi="' + i + '" placeholder="type the missing word...">' +
+      '</div>' +
+      '<div class="cloze-feedback" id="cloze-feedback-' + i + '"></div>' +
+    '</div>';
   }).join('');
+
+  // ── Group 2: Short Answer ──
+  html += '<div class="quiz-section-header" style="margin-top:28px;">📝 Part B: Short Answer (' + SHUFFLED_SHORT.length + ' questions)</div>';
+  html += '<div class="quiz-toolbar">' +
+    '<button class="quiz-btn quiz-btn-submit" onclick="gradeShortOnly()" id="grade-short-btn">✓ Submit &amp; Grade Short Answer</button>' +
+    '<span class="quiz-score" id="cloze-short-score"></span>' +
+  '</div>';
+  html += SHUFFLED_SHORT.map(function(q, i) {
+    return '<div class="quiz-q" data-group="short" data-qi="' + i + '">' +
+      '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">' + q.q_en + '</span></div>' +
+      '<div class="cloze-hint hidden" id="short-hint-' + i + '">📌 ' + (q.q_cn||'') + '</div>' +
+      '<div class="cloze-input-area">' +
+        '<textarea class="cloze-textarea" data-group="short" data-qi="' + i + '" placeholder="Write your full English answer here..."></textarea>' +
+      '</div>' +
+      '<div class="cloze-feedback" id="short-feedback-' + i + '"></div>' +
+    '</div>';
+  }).join('');
+
   container.innerHTML = html;
 }
 
-function gradeAllCloze() {
-  var allQ = CLOZE_POOL.concat(SHORT_POOL);
+function gradeClozeOnly() {
   var totalCorrect = 0, totalAnswered = 0;
-
-  allQ.forEach(function(q, i) {
+  SHUFFLED_CLOZE.forEach(function(q, i) {
     var hintEl = document.getElementById('cloze-hint-' + i);
     var fb = document.getElementById('cloze-feedback-' + i);
     if (hintEl) hintEl.classList.remove('hidden');
 
-    if (q.type === 'cloze') {
-      var input = document.querySelector('#cloze-quiz .cloze-input[data-qi="' + i + '"]');
-      if (!input) return;
-      var userVal = input.value.trim();
-      input.disabled = true;
+    var input = document.querySelector('.cloze-input[data-group="cloze"][data-qi="' + i + '"]');
+    if (!input) return;
+    var userVal = input.value.trim();
+    input.disabled = true;
 
-      if (!userVal) {
-        // skipped — reveal answer in red
-        if (fb) fb.innerHTML = '<span class="fb-score score-low">Skipped</span>' +
-          '<div class="answer-block"><span class="answer-label">📖 Answer</span>' +
-          '<div class="answer-en"><strong>' + q.answer + '</strong></div></div>';
-        var blankEl = document.getElementById('cloze-blank-' + i);
-        if (blankEl) { blankEl.textContent = q.answer; blankEl.className = 'cloze-blank wrong'; }
-        // add to notebook
-        var vocabItem0 = VOCAB.find(function(v){ return v.term.toLowerCase() === q.answer.toLowerCase(); });
-        mbAdd({
-          part: 'cloze', term: q.answer, category: vocabItem0 ? vocabItem0.cat : 'structure',
-          cn: vocabItem0 ? vocabItem0.cn : '',
-          prompt: 'Cloze: ' + q.before + ' ___ ' + q.after,
-          userAnswer: '(skipped)', correctAnswer: q.answer,
-          reason_en: 'Cloze skipped. Correct: "' + q.answer + '".',
-          reason_cn: '填空未答，正确答案是 ' + q.answer + '。',
-          key_en: vocabItem0 ? vocabItem0.def_en : q.answer, key_cn: vocabItem0 ? vocabItem0.cn : ''
-        });
-        return;
-      }
-
+    if (!userVal) {
       totalAnswered++;
-      var userNorm = normalizeAnswer(userVal);
-      var ansNorm = normalizeAnswer(q.answer);
-      var correct = userNorm === ansNorm || (ansNorm.includes(userNorm) && userNorm.length >= 4);
-      var score = correct ? 100 : 0;
-
-      // Update blank display
-      var blankEl2 = document.getElementById('cloze-blank-' + i);
-      if (blankEl2) {
-        blankEl2.textContent = q.answer;
-        blankEl2.className = 'cloze-blank ' + (correct ? 'filled' : 'wrong');
-      }
-
-      if (correct) {
-        totalCorrect++;
-        if (fb) fb.innerHTML = '<span class="fb-score score-high">✓ Correct</span>' +
-          '<div class="answer-block"><span class="answer-label">📖 Answer</span>' +
-          '<div class="answer-en"><strong>' + q.answer + '</strong></div></div>';
-      } else {
-        if (fb) fb.innerHTML = '<span class="fb-score score-low">✗ Wrong</span>' +
-          '<div class="feedback-panel"><div class="feedback-card fb-weak"><div class="fb-title">Correction</div>' +
-          '<ul class="fb-list"><li>You wrote: "' + userVal + '"</li><li>Correct: <strong>' + q.answer + '</strong></li></ul></div></div>' +
-          '<div class="answer-block"><span class="answer-label">📖 Answer</span>' +
-          '<div class="answer-en"><strong>' + q.answer + '</strong></div>' +
-          (q.answer_cn ? '<div class="answer-cn">' + q.answer_cn + '</div>' : '') + '</div>';
-        // Add to notebook
-        var vocabItem = VOCAB.find(function(v){ return v.term.toLowerCase() === q.answer.toLowerCase(); });
-        mbAdd({
-          part: 'cloze', term: q.answer, category: vocabItem ? vocabItem.cat : 'structure',
-          cn: vocabItem ? vocabItem.cn : '',
-          prompt: 'Cloze: ' + q.before + ' ___ ' + q.after,
-          userAnswer: userVal, correctAnswer: q.answer,
-          reason_en: 'Cloze fill-in wrong. Correct: "' + q.answer + '".',
-          reason_cn: '填空错误，正确答案是 ' + q.answer + '。',
-          key_en: vocabItem ? vocabItem.def_en : q.answer, key_cn: vocabItem ? vocabItem.cn : ''
-        });
-      }
-    } else {
-      // Short answer
-      var ta = document.querySelector('#cloze-quiz .cloze-textarea[data-qi="' + i + '"]');
-      if (!ta) return;
-      var userVal2 = ta.value.trim();
-      ta.disabled = true;
-
-      if (!userVal2) {
-        if (fb) fb.innerHTML = '<span class="fb-score score-low">Skipped</span>' +
-          '<div class="answer-block"><span class="answer-label">📖 Model Answer</span>' +
-          '<div class="answer-en">' + q.model_en + '</div></div>';
-        mbAdd({
-          part: 'short', term: q.keywords[0] || q.q_en.split(/\s+/).slice(0,3).join(' '),
-          category: 'structure', cn: '',
-          prompt: 'Short Q: ' + q.q_en,
-          userAnswer: '(skipped)', correctAnswer: q.model_en,
-          reason_en: 'Short answer skipped.',
-          reason_cn: '主观题未答。',
-          key_en: q.model_en, key_cn: q.model_cn
-        });
-        return;
-      }
-
-      totalAnswered++;
-      var userLower = userVal2.toLowerCase();
-      var essentialHit = 0, essentialTotal = q.keywords.length;
-      var missing = [], hit = [];
-      q.keywords.forEach(function(k){
-        if (userLower.indexOf(k.toLowerCase()) !== -1) { essentialHit++; hit.push(k); }
-        else missing.push(k);
+      if (fb) fb.innerHTML = '<span class="fb-score score-low">Skipped</span>' +
+        '<div class="answer-block"><span class="answer-label">Answer</span>' +
+        '<div class="answer-en"><strong>' + q.answer + '</strong></div></div>';
+      var blankEl = document.getElementById('cloze-blank-' + i);
+      if (blankEl) { blankEl.textContent = q.answer; blankEl.className = 'cloze-blank wrong'; }
+      mbAdd({
+        part: 'cloze', term: q.answer, category: 'structure', cn: '',
+        prompt: 'Cloze: ' + q.before + ' ___ ' + q.after,
+        userAnswer: '(skipped)', correctAnswer: q.answer,
+        reason_en: 'Cloze skipped. Correct: "' + q.answer + '".',
+        reason_cn: 'Skipped. Correct answer: ' + q.answer,
+        key_en: q.answer, key_cn: ''
       });
-      var ratio = essentialTotal > 0 ? essentialHit / essentialTotal : 0;
-      var score2 = Math.round(ratio * 100);
-      if (score2 === 0 && ratio > 0.3) score2 = 30;
-      var scoreClass = score2 >= 80 ? 'score-high' : (score2 >= 50 ? 'score-mid' : 'score-low');
-      if (score2 >= 80) totalCorrect++;
+      return;
+    }
 
-      if (fb) fb.innerHTML =
-        '<span class="fb-score ' + scoreClass + '">Score: ' + score2 + '%</span>' +
-        '<div class="feedback-panel">' +
-          '<div class="feedback-card fb-good"><div class="fb-title">✓ Good</div><ul class="fb-list"><li>' + (hit.length ? 'Key terms: <strong>' + hit.join(', ') + '</strong>' : '—') + '</li></ul></div>' +
-          '<div class="feedback-card fb-weak"><div class="fb-title">✗ Missing</div><ul class="fb-list"><li>' + (missing.length ? '<strong>' + missing.join(', ') + '</strong>' : 'All keywords present ✓') + '</li></ul></div>' +
-        '</div>' +
-        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">' +
-          '<button class="sel-popup-btn primary" onclick="aiGradeShort(' + i + ',\'' + escapeJs(userVal2.slice(0,500)) + '\')">🤖 AI Grade</button>' +
-          '<button class="sel-popup-btn" onclick="jumpToCornellShort(' + i + ')">📖 Jump to Text</button>' +
-        '</div>' +
-        '<div id="ai-grade-' + i + '" class="sel-popup-explain"></div>' +
-        '<div class="answer-block">' +
-          '<span class="answer-label">📖 Model Answer</span>' +
-          '<div class="answer-en">' + q.model_en + '</div>' +
-          '<div class="answer-cn">' + q.model_cn + '</div>' +
-        '</div>' +
-        (q.lang_notes ? '<div class="lang-analysis"><span class="lang-label">📝 Language Notes</span>' + q.lang_notes + '</div>' : '');
+    totalAnswered++;
+    var userNorm = normalizeAnswer(userVal);
+    var ansNorm = normalizeAnswer(q.answer);
+    var correct = userNorm === ansNorm || (ansNorm.includes(userNorm) && userNorm.length >= 4);
 
-      if (score2 < 80) {
-        var termGuess = q.keywords[0] || q.q_en.split(/\s+/).slice(0,3).join(' ');
-        var vocabItem2 = VOCAB.find(function(v){ return v.term.toLowerCase() === termGuess.toLowerCase(); });
-        mbAdd({
-          part: 'short', term: termGuess, category: vocabItem2 ? vocabItem2.cat : 'structure',
-          cn: vocabItem2 ? vocabItem2.cn : '',
-          prompt: 'Short Q: ' + q.q_en,
-          userAnswer: userVal2.slice(0, 100), correctAnswer: q.model_en,
-          reason_en: 'Missing keywords: ' + missing.join(', '),
-          reason_cn: '缺失关键词：' + missing.join('、'),
-          key_en: q.model_en, key_cn: q.model_cn
-        });
-      }
+    var blankEl2 = document.getElementById('cloze-blank-' + i);
+    if (blankEl2) {
+      blankEl2.textContent = q.answer;
+      blankEl2.className = 'cloze-blank ' + (correct ? 'filled' : 'wrong');
+    }
+
+    if (correct) {
+      totalCorrect++;
+      if (fb) fb.innerHTML = '<span class="fb-score score-high">✓ Correct</span>' +
+        '<div class="answer-block"><span class="answer-label">Answer</span>' +
+        '<div class="answer-en"><strong>' + q.answer + '</strong></div></div>';
+    } else {
+      if (fb) fb.innerHTML = '<span class="fb-score score-low">✗ Wrong</span>' +
+        '<div class="feedback-panel"><div class="feedback-card fb-weak"><div class="fb-title">Correction</div>' +
+        '<ul class="fb-list"><li>You wrote: "' + userVal + '"</li><li>Correct: <strong>' + q.answer + '</strong></li></ul></div></div>';
+      mbAdd({
+        part: 'cloze', term: q.answer, category: 'structure', cn: '',
+        prompt: 'Cloze: ' + q.before + ' ___ ' + q.after,
+        userAnswer: userVal, correctAnswer: q.answer,
+        reason_en: 'Cloze wrong. Correct: "' + q.answer + '".',
+        reason_cn: 'Wrong. Correct answer: ' + q.answer,
+        key_en: q.answer, key_cn: ''
+      });
     }
   });
+  var scoreEl = document.getElementById('cloze-cloze-score');
+  if (scoreEl) scoreEl.textContent = totalCorrect + ' / ' + totalAnswered + ' answered';
+  var btn = document.getElementById('grade-cloze-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '✓ Graded'; }
+}
 
-  // Update score and disable grade button
-  var scoreEl = document.getElementById('cloze-score');
-  if (scoreEl) scoreEl.textContent = totalCorrect + ' / ' + allQ.length;
-  var gradeBtn = document.getElementById('grade-all-btn');
-  if (gradeBtn) { gradeBtn.disabled = true; gradeBtn.textContent = '✓ Graded'; }
+function gradeShortOnly() {
+  var totalCorrect = 0;
+  SHUFFLED_SHORT.forEach(function(q, i) {
+    var hintEl = document.getElementById('short-hint-' + i);
+    var fb = document.getElementById('short-feedback-' + i);
+    if (hintEl) hintEl.classList.remove('hidden');
+
+    var ta = document.querySelector('.cloze-textarea[data-group="short"][data-qi="' + i + '"]');
+    if (!ta) return;
+    var userVal = ta.value.trim();
+    ta.disabled = true;
+
+    if (!userVal) {
+      if (fb) fb.innerHTML = '<span class="fb-score score-low">Skipped</span>' +
+        '<div class="answer-block"><span class="answer-label">Model Answer</span>' +
+        '<div class="answer-en">' + q.model_en + '</div>' +
+        '<div class="answer-cn">' + q.model_cn + '</div></div>';
+      mbAdd({
+        part: 'short', term: q.keywords[0] || q.q_en.split(/\s+/).slice(0,3).join(' '),
+        category: 'structure', cn: '',
+        prompt: 'Short Q: ' + q.q_en,
+        userAnswer: '(skipped)', correctAnswer: q.model_en,
+        reason_en: 'Short answer skipped.',
+        reason_cn: 'Short answer skipped.',
+        key_en: q.model_en, key_cn: q.model_cn
+      });
+      return;
+    }
+
+    var userLower = userVal.toLowerCase();
+    var essentialHit = 0;
+    var missing = [], hit = [];
+    q.keywords.forEach(function(k){
+      if (userLower.indexOf(k.toLowerCase()) !== -1) { essentialHit++; hit.push(k); }
+      else missing.push(k);
+    });
+    var ratio = q.keywords.length > 0 ? essentialHit / q.keywords.length : 0;
+    var score = Math.round(ratio * 100);
+    var scoreClass = score >= 80 ? 'score-high' : (score >= 50 ? 'score-mid' : 'score-low');
+    if (score >= 80) totalCorrect++;
+
+    if (fb) fb.innerHTML =
+      '<span class="fb-score ' + scoreClass + '">Score: ' + score + '%</span>' +
+      '<div class="feedback-panel">' +
+        '<div class="feedback-card fb-good"><div class="fb-title">✓ Good</div><ul class="fb-list"><li>' + (hit.length ? 'Key terms: <strong>' + hit.join(', ') + '</strong>' : '—') + '</li></ul></div>' +
+        '<div class="feedback-card fb-weak"><div class="fb-title">✗ Missing</div><ul class="fb-list"><li>' + (missing.length ? '<strong>' + missing.join(', ') + '</strong>' : 'All keywords present ✓') + '</li></ul></div>' +
+      '</div>' +
+      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">' +
+        '<button class="sel-popup-btn primary" onclick="aiGradeShort(' + i + ',\'' + escapeJs(userVal.slice(0,500)) + '\')">🤖 AI Grade</button>' +
+        '<button class="sel-popup-btn" onclick="jumpToCornellShort(' + i + ')">📖 Jump to Text</button>' +
+      '</div>' +
+      '<div id="ai-grade-' + i + '" class="sel-popup-explain"></div>' +
+      '<div class="answer-block">' +
+        '<span class="answer-label">Model Answer</span>' +
+        '<div class="answer-en">' + q.model_en + '</div>' +
+        '<div class="answer-cn">' + q.model_cn + '</div>' +
+      '</div>' +
+      (q.lang_notes ? '<div class="lang-analysis"><span class="lang-label">Language Notes</span>' + q.lang_notes + '</div>' : '');
+
+    if (score < 80) {
+      var termGuess = q.keywords[0] || q.q_en.split(/\s+/).slice(0,3).join(' ');
+      mbAdd({
+        part: 'short', term: termGuess, category: 'structure', cn: '',
+        prompt: 'Short Q: ' + q.q_en,
+        userAnswer: userVal.slice(0, 100), correctAnswer: q.model_en,
+        reason_en: 'Missing keywords: ' + missing.join(', '),
+        reason_cn: 'Missing keywords: ' + missing.join(', '),
+        key_en: q.model_en, key_cn: q.model_cn
+      });
+    }
+  });
+  var scoreEl = document.getElementById('cloze-short-score');
+  if (scoreEl) scoreEl.textContent = totalCorrect + ' / ' + SHUFFLED_SHORT.length + ' scored 80%+';
+  var btn = document.getElementById('grade-short-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '✓ Graded'; }
 }
 
 // R3: AI grading for short answer questions
 async function aiGradeShort(i, userAnswer) {
-  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
+  var q = SHUFFLED_SHORT[i];
   var gradeEl = document.getElementById('ai-grade-' + i);
   if (!gradeEl) return;
   gradeEl.className = 'sel-popup-explain visible';
@@ -3223,7 +3237,7 @@ async function aiGradeShort(i, userAnswer) {
 
 // R3: Jump to relevant Cornell section
 function jumpToCornellShort(i) {
-  var q = CLOZE_POOL.concat(SHORT_POOL)[i];
+  var q = SHUFFLED_SHORT[i];
   var keyword = (q.keywords && q.keywords[0]) || '';
   // Switch to Cornell tab
   var cornellTab = document.querySelector('[data-tab="cornell"]');
@@ -3301,51 +3315,60 @@ function buildTermRegex() {
 // ═════════════════════════════════════════════════════════════
 var KNOWLEDGE_FRAME = [
   {
-    icon: '🔬', title: 'Cell Structure 细胞结构', cn: '细胞各部分的功能',
+    icon: '🔬', title: 'Cell Structure 细胞结构', cn: 'What does each part do?',
     rows: [
-      { before: 'Cell surface membrane →', answer: 'controls', hint: '控制物质进出', after: 'entry/exit of substances' },
-      { before: 'Cytoplasm →', answer: 'ribosomes', hint: '蛋白质合成', after: '+ mitochondria (respiration)' },
-      { before: 'Nucleus →', answer: 'DNA', hint: '遗传物质', after: 'chromosomes (genetic instructions)' },
-      { before: 'Chloroplast →', answer: 'photosynthesis', hint: '光合作用', after: '(plant cells only)' },
-      { before: 'Cell wall →', answer: 'cellulose', hint: '纤维素', after: '(plant: support & shape)' },
-      { before: 'Vacuole →', answer: 'turgor', hint: '膨压', after: 'pressure (large in plant cells)' }
+      { before: '1. Cell surface membrane', answer: 'controls', hint: '控制', after: 'what enters and leaves the cell' },
+      { before: '2. Cytoplasm', answer: 'reactions', hint: '化学反应', after: '— where chemical reactions happen' },
+      { before: '3. Nucleus', answer: 'controls', hint: '控制', after: 'cell activities (contains DNA on chromosomes)' },
+      { before: '4. Mitochondria', answer: 'respiration', hint: '呼吸作用', after: '— releases energy (many = high metabolic rate)' },
+      { before: '5. Chloroplast', answer: 'photosynthesis', hint: '光合作用', after: '— absorbs light (plant cells only)' },
+      { before: '6. Cell wall', answer: 'support', hint: '支持', after: 'and strengthens (made of cellulose)' },
+      { before: '7. Vacuole', answer: 'turgor', hint: '膨压', after: 'pressure — keeps plant cells firm' },
+      { before: '8. Ribosome', answer: 'protein', hint: '蛋白质', after: 'synthesis (makes proteins)' }
     ]
   },
   {
-    icon: '🧬', title: 'Cell Organisation 细胞组织层级', cn: '从微观到宏观',
+    icon: '🧬', title: 'Cell Organisation 组织层级', cn: 'From cell to organism',
     rows: [
-      { before: '', answer: 'cell', hint: '细胞', after: '→ tissue → organ → organ system → organism' },
-      { before: 'Red blood cell →', answer: 'oxygen', hint: '运输氧气', after: 'transport (no nucleus, haemoglobin)' },
-      { before: 'Root hair cell →', answer: 'surface area', hint: '增大表面积', after: '(absorb water + minerals)' },
-      { before: 'Xylem →', answer: 'lignin', hint: '木质素', after: 'strengthened, no end wall (continuous tube)' }
+      { before: '1. Basic unit of life =', answer: 'cell', hint: '细胞', after: '' },
+      { before: '2. Similar cells form a', answer: 'tissue', hint: '组织', after: '' },
+      { before: '3. Different tissues form an', answer: 'organ', hint: '器官', after: '' },
+      { before: '4. Organs working together = organ', answer: 'system', hint: '系统', after: '' },
+      { before: '5. Red blood cell: adapted for', answer: 'oxygen', hint: '氧气', after: 'transport (no nucleus, has haemoglobin)' },
+      { before: '6. Root hair cell: increases', answer: 'surface area', hint: '表面积', after: 'for absorbing water and minerals' },
+      { before: '7. Xylem: dead tube strengthened with', answer: 'lignin', hint: '木质素', after: '(no end wall, transports water)' }
     ]
   },
   {
-    icon: '🌀', title: 'Diffusion 扩散作用', cn: '粒子从高到低',
+    icon: '🌀', title: 'Diffusion 扩散', cn: 'Particles move down a gradient',
     rows: [
-      { before: 'Direction: from', answer: 'high', hint: '高浓度', after: '→ low concentration' },
-      { before: 'It is a', answer: 'passive', hint: '被动', after: 'process (no energy needed)' },
-      { before: 'Examples: gas exchange in', answer: 'lungs', hint: '肺', after: '; absorption in small intestine' },
-      { before: 'Speed up: thin membrane (short', answer: 'distance', hint: '距离', after: '), large surface area, steep gradient' }
+      { before: '1. Net movement: from', answer: 'high', hint: '高', after: 'to low concentration' },
+      { before: '2. It is a', answer: 'passive', hint: '被动', after: 'process (no energy required)' },
+      { before: '3. Particles move down a concentration', answer: 'gradient', hint: '梯度', after: '' },
+      { before: '4. Speed up: short distance, large surface', answer: 'area', hint: '面积', after: ', steep gradient' },
+      { before: '5. Example: gas exchange in the', answer: 'lungs', hint: '肺', after: '(alveoli)' },
+      { before: '6. Example: mineral absorption in small', answer: 'intestine', hint: '小肠', after: '(villi)' }
     ]
   },
   {
-    icon: '💧', title: 'Osmosis 渗透作用', cn: '水的净移动',
+    icon: '💧', title: 'Osmosis 渗透', cn: 'Water moves through a membrane',
     rows: [
-      { before: 'Osmosis = diffusion of', answer: 'water', hint: '水分子', after: 'molecules through partially permeable membrane' },
-      { before: 'Pure water =', answer: 'highest', hint: '最高水势', after: 'water potential' },
-      { before: 'Plant cell in pure water →', answer: 'turgid', hint: '坚挺', after: '(firm, does NOT burst)' },
-      { before: 'Animal cell in pure water →', answer: 'burst', hint: '胀破', after: '(haemolysis — no cell wall!)' },
-      { before: 'Plant cell in concentrated solution →', answer: 'plasmolysed', hint: '质壁分离', after: '(membrane pulls away from wall)' }
+      { before: '1. Osmosis = net movement of', answer: 'water', hint: '水', after: 'molecules' },
+      { before: '2. Through a partially', answer: 'permeable', hint: '渗透性', after: 'membrane' },
+      { before: '3. From region of', answer: 'high', hint: '高', after: 'to low water potential' },
+      { before: '4. Plant cell in pure water becomes', answer: 'turgid', hint: '坚挺', after: '(firm, does NOT burst)' },
+      { before: '5. Animal cell in pure water will', answer: 'burst', hint: '胀破', after: '(haemolysis — no cell wall!)' },
+      { before: '6. Plant cell in concentrated solution →', answer: 'plasmolysed', hint: '质壁分离', after: '(membrane pulls away from wall)' }
     ]
   },
   {
-    icon: '⚡', title: 'Active Transport 主动运输', cn: '逆梯度耗能',
+    icon: '⚡', title: 'Active Transport 主动运输', cn: 'Against the gradient, needs energy',
     rows: [
-      { before: 'Direction:', answer: 'against', hint: '逆', after: 'concentration gradient (low → high)' },
-      { before: 'Needs energy from', answer: 'respiration', hint: '呼吸作用', after: '(ATP)' },
-      { before: 'Uses', answer: 'carrier proteins', hint: '载体蛋白', after: 'in the membrane (specific)' },
-      { before: 'Example: mineral uptake by', answer: 'roots', hint: '根', after: '(even when soil concentration is low)' }
+      { before: '1. Direction:', answer: 'against', hint: '逆', after: 'the concentration gradient' },
+      { before: '2. Moves from', answer: 'low', hint: '低', after: 'to high concentration' },
+      { before: '3. Requires energy from', answer: 'respiration', hint: '呼吸作用', after: '(ATP)' },
+      { before: '4. Uses', answer: 'carrier', hint: '载体', after: 'proteins in the membrane' },
+      { before: '5. Example: mineral ions taken up by', answer: 'roots', hint: '根', after: '(even when soil concentration is low)' }
     ]
   }
 ];
