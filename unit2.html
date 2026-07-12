@@ -279,10 +279,12 @@
   .cloze-blank.wrong { background:#fee2e2; border-bottom-color:var(--danger); color:#991b1b; }
   .cloze-hint { font-size:12px; color:var(--text-secondary); margin-top:4px; }
   .cloze-hint.hidden { display:none; }
+  .kf-hint.hidden { display:none; }
+  .kf-feedback { font-size:12px; margin-left:4px; }
 
   /* ── Cornell Notes (Part 4) — v2 wider, richer typography ── */
   .cornell-block {
-    display:grid; grid-template-columns:190px 1fr; gap:0;
+    display:grid; grid-template-columns:260px 1fr; gap:0;
     background:white; border-radius:var(--radius); overflow:hidden;
     box-shadow:var(--shadow); border:1px solid var(--border); margin:18px 0;
     max-width:none;
@@ -2116,18 +2118,27 @@ function handleSelection(e) {
   var text = sel.toString().trim();
   if (!text || text.length < 1) { hideSelPopup(); return; }
 
-  // Position popup near the selection
+  // Position popup near the selection (getBoundingClientRect = viewport coords)
   var rect = sel.getRangeAt(0).getBoundingClientRect();
   var x = rect.left + rect.width / 2;
-  var y = rect.bottom + window.scrollY + 8;
+  var y = rect.bottom + 8; // viewport coords, works with position:fixed
 
   showSelPopup(text, x, y);
 }
 
 function showSelPopup(text, x, y) {
-  // Position
-  selPopup.style.left = Math.max(10, Math.min(x - 190, window.innerWidth - 400)) + 'px';
-  selPopup.style.top = (y - window.scrollY + 10) + 'px';
+  // Position (fixed positioning — use viewport coords directly)
+  var popupW = 380;
+  var popupH = 200; // estimated, will auto-adjust
+  var left = Math.max(10, Math.min(x - popupW / 2, window.innerWidth - popupW - 10));
+  var top = y; // y already includes scrollY offset for fixed positioning
+  // If popup would go below viewport, show above selection
+  if (top + popupH > window.innerHeight) {
+    top = y - popupH - 30; // flip above
+    if (top < 10) top = 10;
+  }
+  selPopup.style.left = left + 'px';
+  selPopup.style.top = top + 'px';
 
   var isSentence = text.split(/\s+/).length > 6 || text.length > 60;
 
@@ -2825,10 +2836,10 @@ function renderCornell() {
     if (cueKeys.length) {
       cueHTML += '<h5>🔑 Cue · 关键记忆点</h5><dl class="cue-list">';
       cueKeys.forEach(function(k, ci){
-        // Split bilingual key: "English 中文"
-        var parts = k.split(' ');
-        var enTerm = parts[0];
-        var cnTerm = parts.length > 1 ? parts.slice(1).join(' ') : '';
+        // Split bilingual key at first Chinese character
+        var match = k.match(/^([\s\S]*?)\s+([\u4e00-\u9fff\u3000-\u303f].*)$/);
+        var enTerm = match ? match[1] : k;
+        var cnTerm = match ? match[2] : '';
         cueHTML += '<dt class="cue-item" data-cue-idx="' + ci + '">' + 
           '<span class="cue-en">' + enTerm + '</span>' +
           (cnTerm ? '<span class="cue-cn">' + cnTerm + '</span>' : '') +
@@ -3342,7 +3353,8 @@ var KNOWLEDGE_FRAME = [
 function renderKnowledgeFrame() {
   var container = document.getElementById('kf-container');
   if (!container) return;
-  var html = '<div class="kf-intro">💡 填入正确的英文术语来构建你的知识地图。提交后自动判分，错误的词会加入笔记本。</div>';
+  var html = '<div class="kf-intro">💡 Fill in the correct English terms to build your knowledge map. Hints and answers will be revealed after you submit.</div>';
+  html += '<div class="kf-toolbar"><button class="sel-popup-btn primary" onclick="submitKnowledgeFrame()" id="kf-submit-btn">✓ Submit All &amp; Grade</button><button class="sel-popup-btn" onclick="renderKnowledgeFrame()">🔄 Reshuffle</button><div class="kf-score-display" id="kf-score"></div></div>';
   html += '<div class="kf-tree">';
   KNOWLEDGE_FRAME.forEach(function(branch, bi) {
     html += '<div class="kf-branch">';
@@ -3353,7 +3365,8 @@ function renderKnowledgeFrame() {
       if (row.before) html += '<span class="kf-label">' + row.before + '</span> ';
       html += '<input type="text" class="kf-blank" id="' + blankId + '" data-answer="' + row.answer.toLowerCase() + '" placeholder="_____" autocomplete="off">';
       if (row.after) html += '<span class="kf-label">' + row.after + '</span>';
-      html += '<span class="kf-hint">' + row.hint + '</span>';
+      html += '<span class="kf-hint hidden">' + row.hint + '</span>';
+      html += '<span class="kf-feedback" id="kf-fb-' + blankId + '"></span>';
       html += '</div>';
     });
     html += '</div>';
@@ -3361,7 +3374,7 @@ function renderKnowledgeFrame() {
   html += '</div>';
 
   // R14c: Image-based "看图说话" quizzes
-  html += '<div style="margin-top:24px;padding:12px;background:linear-gradient(135deg,#fce7f3,#fbcfe8);border-radius:10px;font-size:15px;font-weight:700;color:#be185d;">🖼️ 看图说话 · Image-Based Recall — 看图填出标注部位的名称</div>';
+  html += '<div style="margin-top:24px;padding:12px;background:linear-gradient(135deg,#fce7f3,#fbcfe8);border-radius:10px;font-size:15px;font-weight:700;color:#be185d;">🖼️ Image-Based Recall — Look at the diagram and fill in the labels</div>';
 
   var IMG_QUIZZES = [
     {
@@ -3414,17 +3427,14 @@ function renderKnowledgeFrame() {
       html += '<span class="label">' + q.label + '</span>';
       html += '<span>' + q.before + '</span>';
       html += '<input type="text" class="kf-blank" id="' + blankId + '" data-answer="' + q.answer.toLowerCase() + '" placeholder="_____" autocomplete="off" style="min-width:80px;">';
-      html += '<span class="kf-hint">' + q.hint + '</span>';
+      html += '<span class="kf-hint hidden">' + q.hint + '</span>';
+      html += '<span class="kf-feedback" id="kf-fb-' + blankId + '"></span>';
       html += '</div>';
     });
     html += '</div></div></div>';
   });
 
-  html += '<div class="kf-actions">';
-  html += '<button class="sel-popup-btn primary" onclick="submitKnowledgeFrame()">✓ 提交判分</button>';
-  html += '<button class="sel-popup-btn" onclick="resetKnowledgeFrame()">🔄 重新填写</button>';
-  html += '<div class="kf-score-display" id="kf-score"></div>';
-  html += '</div>';
+  html += '</div>'; // close kf tree wrapper (no duplicate actions — toolbar at top)
   container.innerHTML = html;
 }
 
@@ -3438,15 +3448,19 @@ function submitKnowledgeFrame() {
     var answer = blank.getAttribute('data-answer');
     // Exact + partial match
     var isCorrect = userVal === answer || (answer.indexOf(userVal) !== -1 && userVal.length >= answer.length * 0.6);
+    var fbEl = document.getElementById('kf-fb-' + blank.id);
+    var hintEl = blank.parentElement.querySelector('.kf-hint');
+    if (hintEl) hintEl.classList.remove('hidden');
     if (isCorrect) {
       blank.classList.add('correct');
       blank.classList.remove('wrong');
       correct++;
+      if (fbEl) fbEl.innerHTML = '<span style="color:#16a34a;font-weight:700;">\u2713 ' + answer + '</span>';
     } else {
       blank.classList.add('wrong');
       blank.classList.remove('correct');
       if (userVal) wrongAnswers.push({ user: userVal, correct: answer });
-      blank.value = userVal + ' → ' + answer;
+      if (fbEl) fbEl.innerHTML = '<span style="color:#dc2626;font-weight:700;">\u2717 ' + answer + '</span>';
     }
     blank.disabled = true;
   });
@@ -3456,15 +3470,19 @@ function submitKnowledgeFrame() {
   scoreEl.className = 'kf-score-display visible ' + cls;
   scoreEl.textContent = 'Score: ' + correct + '/' + total + ' (' + pct + '%)';
 
+  // Disable submit button
+  var submitBtn = document.getElementById('kf-submit-btn');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '\u2713 Graded'; }
+
   // Send wrong answers to notebook
   wrongAnswers.forEach(function(wa) {
     mbAdd({
       part: 'knowledge-frame', term: wa.correct,
       category: 'frame', cn: '',
-      prompt: '知识框架填空: 正确答案是 ' + wa.correct,
+      prompt: 'Knowledge Frame blank: correct answer is ' + wa.correct,
       userAnswer: wa.user, correctAnswer: wa.correct,
       reason_en: 'Frame: wrote "' + wa.user + '", should be "' + wa.correct + '"',
-      reason_cn: '填空错误：写了 "' + wa.user + '"，应为 "' + wa.correct + '"',
+      reason_cn: 'Frame fill-in wrong: wrote "' + wa.user + '", correct: "' + wa.correct + '"',
       key_en: wa.correct, key_cn: '',
       timestamp: Date.now()
     });
