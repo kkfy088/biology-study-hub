@@ -1071,6 +1071,22 @@
   .kf-actions {
     margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;
   }
+  .kf-mc-q { padding:8px 0; border-bottom:1px solid #e2e8f0; }
+  .kf-mc-q:last-child { border-bottom:none; }
+  .kf-mc-text { font-size:14px; font-weight:600; margin-bottom:6px; color:var(--text); line-height:1.6; }
+  .kf-mc-options { display:flex; flex-direction:column; gap:4px; padding-left:8px; }
+  .kf-mc-opt {
+    display:flex; align-items:center; gap:6px; padding:5px 10px;
+    border-radius:6px; cursor:pointer; font-size:13px; transition:all .15s;
+    border:1px solid transparent;
+  }
+  .kf-mc-opt:hover { background:#f1f5f9; }
+  .kf-mc-opt input[type="radio"] { cursor:pointer; }
+  .kf-mc-correct { background:#d1fae5 !important; border-color:#10b981; font-weight:600; }
+  .kf-mc-wrong { background:#fee2e2 !important; border-color:#ef4444; }
+  .kf-toolbar {
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px;
+  }
   .kf-score-display {
     font-size:18px; font-weight:800; padding:8px 16px; border-radius:8px;
     display:none;
@@ -3315,60 +3331,64 @@ function buildTermRegex() {
 // ═════════════════════════════════════════════════════════════
 var KNOWLEDGE_FRAME = [
   {
-    icon: '🔬', title: 'Cell Structure 细胞结构', cn: 'What does each part do?',
+    icon: '🔬', title: 'Cell Structure', cn: 'Function of each part',
     rows: [
-      { before: '1. Cell surface membrane', answer: 'controls', hint: '控制', after: 'what enters and leaves the cell' },
-      { before: '2. Cytoplasm', answer: 'reactions', hint: '化学反应', after: '— where chemical reactions happen' },
-      { before: '3. Nucleus', answer: 'controls', hint: '控制', after: 'cell activities (contains DNA on chromosomes)' },
-      { before: '4. Mitochondria', answer: 'respiration', hint: '呼吸作用', after: '— releases energy (many = high metabolic rate)' },
-      { before: '5. Chloroplast', answer: 'photosynthesis', hint: '光合作用', after: '— absorbs light (plant cells only)' },
-      { before: '6. Cell wall', answer: 'support', hint: '支持', after: 'and strengthens (made of cellulose)' },
-      { before: '7. Vacuole', answer: 'turgor', hint: '膨压', after: 'pressure — keeps plant cells firm' },
-      { before: '8. Ribosome', answer: 'protein', hint: '蛋白质', after: 'synthesis (makes proteins)' }
+      { q: 'What does the cell surface membrane do?', options: ['Controls what enters and leaves the cell', 'Carries out photosynthesis', 'Makes proteins', 'Stores genetic material'], answer: 0, hint: '控制物质进出' },
+      { q: 'What is the main function of the cytoplasm?', options: ['Stores water', 'Where chemical reactions happen', 'Produces energy', 'Controls the nucleus'], answer: 1, hint: '化学反应发生处' },
+      { q: 'What does the nucleus contain?', options: ['Haemoglobin', 'Cellulose', 'DNA on chromosomes', 'Chlorophyll'], answer: 2, hint: '染色体上的遗传物质' },
+      { q: 'What happens in mitochondria?', options: ['Photosynthesis', 'Protein synthesis', 'Aerobic respiration releases energy', 'Water transport'], answer: 2, hint: '呼吸作用释放能量' },
+      { q: 'What is the function of chloroplasts?', options: ['Respiration', 'Photosynthesis (absorbs light)', 'Support the cell', 'Store waste'], answer: 1, hint: '光合作用' },
+      { q: 'Why do plant cells have a cell wall?', options: ['To do photosynthesis', 'To control entry of substances', 'For support and strength (made of cellulose)', 'To store water'], answer: 2, hint: '支持和强化（纤维素构成）' },
+      { q: 'What does the large permanent vacuole provide?', options: ['Energy', 'Turgor pressure — keeps cells firm', 'Protein synthesis', 'Oxygen transport'], answer: 1, hint: '膨压使细胞坚挺' },
+      { q: 'What is made by ribosomes?', options: ['Glucose', 'Proteins', 'Cellulose', 'Oxygen'], answer: 1, hint: '蛋白质' },
+      { q: 'Which structure is found in plant cells but NOT animal cells?', options: ['Nucleus', 'Cell surface membrane', 'Chloroplast', 'Mitochondria'], answer: 2, hint: '叶绿体（植物特有）' },
+      { q: 'Bacterial cells are prokaryotic. What does this mean?', options: ['They have a nucleus', 'They have no true nucleus', 'They can photosynthesise', 'They have chloroplasts'], answer: 1, hint: '无真正的细胞核' }
     ]
   },
   {
-    icon: '🧬', title: 'Cell Organisation 组织层级', cn: 'From cell to organism',
+    icon: '🧬', title: 'Cell Organisation', cn: 'From cell to organism',
     rows: [
-      { before: '1. Basic unit of life =', answer: 'cell', hint: '细胞', after: '' },
-      { before: '2. Similar cells form a', answer: 'tissue', hint: '组织', after: '' },
-      { before: '3. Different tissues form an', answer: 'organ', hint: '器官', after: '' },
-      { before: '4. Organs working together = organ', answer: 'system', hint: '系统', after: '' },
-      { before: '5. Red blood cell: adapted for', answer: 'oxygen', hint: '氧气', after: 'transport (no nucleus, has haemoglobin)' },
-      { before: '6. Root hair cell: increases', answer: 'surface area', hint: '表面积', after: 'for absorbing water and minerals' },
-      { before: '7. Xylem: dead tube strengthened with', answer: 'lignin', hint: '木质素', after: '(no end wall, transports water)' }
+      { q: 'What is the basic unit of life?', options: ['Tissue', 'Cell', 'Organ', 'Atom'], answer: 1, hint: '细胞' },
+      { q: 'A group of SIMILAR cells working together is called a:', options: ['Organ', 'Tissue', 'Organ system', 'Organelle'], answer: 1, hint: '组织' },
+      { q: 'Different tissues combining to perform a function form an:', options: ['Organ', 'Cell', 'Tissue', 'Molecule'], answer: 0, hint: '器官' },
+      { q: 'Which is the correct order from smallest to largest?', options: ['Organ → cell → tissue → organism', 'Cell → tissue → organ → organ system → organism', 'Tissue → cell → organ → system', 'Cell → organ → tissue → organism'], answer: 1, hint: '细胞→组织→器官→系统→生物体' },
+      { q: 'How is a red blood cell adapted for its function?', options: ['Has many chloroplasts', 'Has a large nucleus', 'No nucleus, filled with haemoglobin', 'Has a cell wall'], answer: 2, hint: '无核，充满血红蛋白' },
+      { q: 'What does the root hair cell do?', options: ['Transports oxygen', 'Increases surface area for absorbing water and minerals', 'Carries nerve impulses', 'Does photosynthesis'], answer: 1, hint: '增大表面积吸收水和矿物质' },
+      { q: 'How is a xylem vessel adapted for water transport?', options: ['Living cell with cytoplasm', 'Dead hollow tube strengthened with lignin, no end wall', 'Filled with haemoglobin', 'Has many chloroplasts'], answer: 1, hint: '死细胞，木质素强化，无端壁' },
+      { q: 'A ciliated cell is adapted to:', options: ['Carry oxygen', 'Move mucus and trapped particles (e.g. in airway)', 'Absorb water', 'Contract for movement'], answer: 1, hint: '纤毛移动黏液和颗粒' }
     ]
   },
   {
-    icon: '🌀', title: 'Diffusion 扩散', cn: 'Particles move down a gradient',
+    icon: '🌀', title: 'Diffusion', cn: 'Net movement of particles',
     rows: [
-      { before: '1. Net movement: from', answer: 'high', hint: '高', after: 'to low concentration' },
-      { before: '2. It is a', answer: 'passive', hint: '被动', after: 'process (no energy required)' },
-      { before: '3. Particles move down a concentration', answer: 'gradient', hint: '梯度', after: '' },
-      { before: '4. Speed up: short distance, large surface', answer: 'area', hint: '面积', after: ', steep gradient' },
-      { before: '5. Example: gas exchange in the', answer: 'lungs', hint: '肺', after: '(alveoli)' },
-      { before: '6. Example: mineral absorption in small', answer: 'intestine', hint: '小肠', after: '(villi)' }
+      { q: 'Diffusion is the net movement of particles from:', options: ['Low to high concentration', 'High to low concentration', 'Equal concentration areas', 'Against the gradient'], answer: 1, hint: '高到低浓度' },
+      { q: 'Diffusion is a ____________ process.', options: ['Active (needs energy)', 'Passive (no energy required)', 'Chemical (needs enzymes)', 'Electrical (needs nerve signals)'], answer: 1, hint: '被动，不需能量' },
+      { q: 'Which factor speeds up diffusion?', options: ['Thick membrane', 'Small surface area', 'Large surface area and steep gradient', 'Low temperature'], answer: 2, hint: '大表面积+陡梯度' },
+      { q: 'Where does gas exchange by diffusion happen?', options: ['In the bones', 'In the lungs (alveoli)', 'In the nucleus', 'In the chloroplasts'], answer: 1, hint: '肺泡' },
+      { q: 'A partially permeable membrane:', options: ['Lets all particles through', 'Blocks all particles', 'Lets some particles through, blocks others', 'Only lets water through'], answer: 2, hint: '让部分通过，阻挡其他' },
+      { q: 'Smaller objects have a ____________ surface-area-to-volume ratio.', options: ['Smaller', 'Larger', 'Equal', 'Zero'], answer: 1, hint: '更大' }
     ]
   },
   {
-    icon: '💧', title: 'Osmosis 渗透', cn: 'Water moves through a membrane',
+    icon: '💧', title: 'Osmosis', cn: 'Water moves through membrane',
     rows: [
-      { before: '1. Osmosis = net movement of', answer: 'water', hint: '水', after: 'molecules' },
-      { before: '2. Through a partially', answer: 'permeable', hint: '渗透性', after: 'membrane' },
-      { before: '3. From region of', answer: 'high', hint: '高', after: 'to low water potential' },
-      { before: '4. Plant cell in pure water becomes', answer: 'turgid', hint: '坚挺', after: '(firm, does NOT burst)' },
-      { before: '5. Animal cell in pure water will', answer: 'burst', hint: '胀破', after: '(haemolysis — no cell wall!)' },
-      { before: '6. Plant cell in concentrated solution →', answer: 'plasmolysed', hint: '质壁分离', after: '(membrane pulls away from wall)' }
+      { q: 'Osmosis is the diffusion of:', options: ['Oxygen molecules', 'Water molecules', 'Glucose molecules', 'Carbon dioxide'], answer: 1, hint: '水分子' },
+      { q: 'Osmosis requires a:', options: ['Cell wall', 'Partially permeable membrane', 'Nucleus', 'Chloroplast'], answer: 1, hint: '半透膜' },
+      { q: 'Water moves from ____________ water potential.', options: ['Low to high', 'High to low', 'Equal to equal', 'Zero to high'], answer: 1, hint: '高水势到低水势' },
+      { q: 'A plant cell placed in pure water becomes:', options: ['Plasmolysed', 'Flaccid', 'Turgid (firm)', 'Crenated'], answer: 2, hint: '坚挺' },
+      { q: 'Why does a plant cell NOT burst in pure water?', options: ['It has no membrane', 'The cell wall resists expansion', 'It has no water', 'It is already dead'], answer: 1, hint: '细胞壁阻止膨胀' },
+      { q: 'An animal cell (RBC) placed in pure water will:', options: ['Become turgid', 'Shrink', 'Burst (haemolysis)', 'Stay the same'], answer: 2, hint: '胀破（溶血）' },
+      { q: 'A plant cell in concentrated salt solution becomes:', options: ['Turgid', 'Plasmolysed (membrane pulls away from wall)', 'Burst', 'No change'], answer: 1, hint: '质壁分离' }
     ]
   },
   {
-    icon: '⚡', title: 'Active Transport 主动运输', cn: 'Against the gradient, needs energy',
+    icon: '⚡', title: 'Active Transport', cn: 'Against gradient, needs energy',
     rows: [
-      { before: '1. Direction:', answer: 'against', hint: '逆', after: 'the concentration gradient' },
-      { before: '2. Moves from', answer: 'low', hint: '低', after: 'to high concentration' },
-      { before: '3. Requires energy from', answer: 'respiration', hint: '呼吸作用', after: '(ATP)' },
-      { before: '4. Uses', answer: 'carrier', hint: '载体', after: 'proteins in the membrane' },
-      { before: '5. Example: mineral ions taken up by', answer: 'roots', hint: '根', after: '(even when soil concentration is low)' }
+      { q: 'Active transport moves particles:', options: ['Down the concentration gradient', 'Against the concentration gradient (low → high)', 'Only in plant cells', 'Without any proteins'], answer: 1, hint: '逆浓度梯度' },
+      { q: 'Active transport requires energy from:', options: ['Sunlight', 'Respiration (ATP)', 'Digestion', 'Photosynthesis'], answer: 1, hint: '呼吸作用（ATP）' },
+      { q: 'Which proteins are used in active transport?', options: ['Enzymes', 'Carrier proteins', 'Haemoglobin', 'Antibodies'], answer: 1, hint: '载体蛋白' },
+      { q: 'Example of active transport in plants:', options: ['Oxygen entering leaves', 'Mineral ions taken up by roots (even when soil conc. is low)', 'Water entering root hairs', 'CO₂ diffusing into leaves'], answer: 1, hint: '根吸收矿物质（即使土壤浓度低）' },
+      { q: 'How does active transport differ from diffusion?', options: ['Active transport is passive', 'Active transport needs energy and goes against the gradient', 'Diffusion needs carrier proteins', 'There is no difference'], answer: 1, hint: '主动运输需要能量+逆梯度' }
     ]
   }
 ];
@@ -3376,116 +3396,64 @@ var KNOWLEDGE_FRAME = [
 function renderKnowledgeFrame() {
   var container = document.getElementById('kf-container');
   if (!container) return;
-  var html = '<div class="kf-intro">💡 Fill in the correct English terms to build your knowledge map. Hints and answers will be revealed after you submit.</div>';
-  html += '<div class="kf-toolbar"><button class="sel-popup-btn primary" onclick="submitKnowledgeFrame()" id="kf-submit-btn">✓ Submit All &amp; Grade</button><button class="sel-popup-btn" onclick="renderKnowledgeFrame()">🔄 Reshuffle</button><div class="kf-score-display" id="kf-score"></div></div>';
+  var html = '<div class="kf-intro">💡 Choose the correct answer for each question. Hints and results will be revealed after you submit.</div>';
+  html += '<div class="kf-toolbar"><button class="sel-popup-btn primary" onclick="submitKnowledgeFrame()" id="kf-submit-btn">✓ Submit All &amp; Grade</button><button class="sel-popup-btn" onclick="renderKnowledgeFrame()">🔄 Reset</button><div class="kf-score-display" id="kf-score"></div></div>';
   html += '<div class="kf-tree">';
+  var globalIdx = 0;
   KNOWLEDGE_FRAME.forEach(function(branch, bi) {
     html += '<div class="kf-branch">';
     html += '<div class="kf-branch-title"><span class="icon">' + branch.icon + '</span>' + branch.title + ' <span style="font-size:12px;color:#92400e;font-weight:400;">' + branch.cn + '</span></div>';
     branch.rows.forEach(function(row, ri) {
-      var blankId = 'kf-' + bi + '-' + ri;
-      html += '<div class="kf-row">';
-      if (row.before) html += '<span class="kf-label">' + row.before + '</span> ';
-      html += '<input type="text" class="kf-blank" id="' + blankId + '" data-answer="' + row.answer.toLowerCase() + '" placeholder="_____" autocomplete="off">';
-      if (row.after) html += '<span class="kf-label">' + row.after + '</span>';
-      html += '<span class="kf-hint hidden">' + row.hint + '</span>';
-      html += '<span class="kf-feedback" id="kf-fb-' + blankId + '"></span>';
+      var qid = 'kf-mc-' + bi + '-' + ri;
+      html += '<div class="kf-mc-q" id="' + qid + '" data-branch="' + bi + '" data-row="' + ri + '">';
+      html += '<div class="kf-mc-text">' + (globalIdx+1) + '. ' + row.q + '</div>';
+      html += '<div class="kf-mc-options">';
+      row.options.forEach(function(opt, oi) {
+        html += '<label class="kf-mc-opt"><input type="radio" name="' + qid + '" value="' + oi + '" data-qid="' + qid + '"> ' + opt + '</label>';
+      });
       html += '</div>';
+      html += '<span class="kf-hint hidden">💡 ' + row.hint + '</span>';
+      html += '<span class="kf-feedback" id="kf-fb-' + qid + '"></span>';
+      html += '</div>';
+      globalIdx++;
     });
     html += '</div>';
   });
   html += '</div>';
-
-  // R14c: Image-based "看图说话" quizzes
-  html += '<div style="margin-top:24px;padding:12px;background:linear-gradient(135deg,#fce7f3,#fbcfe8);border-radius:10px;font-size:15px;font-weight:700;color:#be185d;">🖼️ Image-Based Recall — Look at the diagram and fill in the labels</div>';
-
-  var IMG_QUIZZES = [
-    {
-      img: 'diagrams/u2_fig07_plant_cell_osmosis.png',
-      title: 'Plant Cell in Different Solutions 植物细胞在不同溶液中',
-      questions: [
-        { label:'1', before:'细胞吸水后变得', answer:'turgid', hint:'坚挺' },
-        { label:'2', before:'细胞失水后膜壁分离叫', answer:'plasmolysis', hint:'质壁分离' },
-        { label:'3', before:'防止细胞胀破的结构是', answer:'cell wall', hint:'细胞壁' },
-      ]
-    },
-    {
-      img: 'diagrams/u2_fig08_animal_cell_osmosis.png',
-      title: 'Animal Cell (RBC) in Different Solutions 动物细胞在不同溶液中',
-      questions: [
-        { label:'1', before:'低渗溶液中红细胞会', answer:'burst', hint:'胀破' },
-        { label:'2', before:'胀破的专业术语是', answer:'haemolysis', hint:'溶血' },
-        { label:'3', before:'高渗溶液中细胞会', answer:'crenated', hint:'皱缩' },
-      ]
-    },
-    {
-      img: 'diagrams/u2_fig09_active_transport.png',
-      title: 'Active Transport 主动运输',
-      questions: [
-        { label:'1', before:'运输方向是', answer:'against', hint:'逆梯度' },
-        { label:'2', before:'需要的能量来自', answer:'respiration', hint:'呼吸作用' },
-        { label:'3', before:'膜上的运输蛋白叫', answer:'carrier protein', hint:'载体蛋白' },
-      ]
-    },
-    {
-      img: 'diagrams/u2_fig03_organisation_hierarchy.png',
-      title: 'Levels of Organisation 组织层级',
-      questions: [
-        { label:'1', before:'最基本的结构单位是', answer:'cell', hint:'细胞' },
-        { label:'2', before:'相似细胞组合成', answer:'tissue', hint:'组织' },
-        { label:'3', before:'不同组织组合成', answer:'organ', hint:'器官' },
-      ]
-    }
-  ];
-
-  IMG_QUIZZES.forEach(function(quiz, qi) {
-    html += '<div class="kf-img-quiz">';
-    html += '<div class="kf-img-quiz-title"><span class="icon">📷</span>' + quiz.title + '</div>';
-    html += '<div class="kf-img-quiz-layout">';
-    html += '<div class="kf-img-container"><img src="' + quiz.img + '" alt="' + quiz.title + '" onclick="openLightbox(\'' + quiz.img + '\', \'' + quiz.title.replace(/'/g,"\\'") + '\', \'点击放大查看\')"></div>';
-    html += '<div class="kf-img-questions">';
-    quiz.questions.forEach(function(q, qi2) {
-      var blankId = 'kf-img-' + qi + '-' + qi2;
-      html += '<div class="kf-img-q">';
-      html += '<span class="label">' + q.label + '</span>';
-      html += '<span>' + q.before + '</span>';
-      html += '<input type="text" class="kf-blank" id="' + blankId + '" data-answer="' + q.answer.toLowerCase() + '" placeholder="_____" autocomplete="off" style="min-width:80px;">';
-      html += '<span class="kf-hint hidden">' + q.hint + '</span>';
-      html += '<span class="kf-feedback" id="kf-fb-' + blankId + '"></span>';
-      html += '</div>';
-    });
-    html += '</div></div></div>';
-  });
-
-  html += '</div>'; // close kf tree wrapper (no duplicate actions — toolbar at top)
   container.innerHTML = html;
 }
 
 function submitKnowledgeFrame() {
-  var blanks = document.querySelectorAll('.kf-blank');
   var total = 0, correct = 0;
   var wrongAnswers = [];
-  blanks.forEach(function(blank) {
-    total++;
-    var userVal = blank.value.trim().toLowerCase();
-    var answer = blank.getAttribute('data-answer');
-    // Exact + partial match
-    var isCorrect = userVal === answer || (answer.indexOf(userVal) !== -1 && userVal.length >= answer.length * 0.6);
-    var fbEl = document.getElementById('kf-fb-' + blank.id);
-    var hintEl = blank.parentElement.querySelector('.kf-hint');
-    if (hintEl) hintEl.classList.remove('hidden');
-    if (isCorrect) {
-      blank.classList.add('correct');
-      blank.classList.remove('wrong');
-      correct++;
-      if (fbEl) fbEl.innerHTML = '<span style="color:#16a34a;font-weight:700;">\u2713 ' + answer + '</span>';
-    } else {
-      blank.classList.add('wrong');
-      blank.classList.remove('correct');
-      if (userVal) wrongAnswers.push({ user: userVal, correct: answer });
-      if (fbEl) fbEl.innerHTML = '<span style="color:#dc2626;font-weight:700;">\u2717 ' + answer + '</span>';
-    }
-    blank.disabled = true;
+  KNOWLEDGE_FRAME.forEach(function(branch, bi) {
+    branch.rows.forEach(function(row, ri) {
+      total++;
+      var qid = 'kf-mc-' + bi + '-' + ri;
+      var selected = document.querySelector('input[name="' + qid + '"]:checked');
+      var fbEl = document.getElementById('kf-fb-' + qid);
+      var hintEl = document.querySelector('#' + qid + ' .kf-hint');
+      if (hintEl) hintEl.classList.remove('hidden');
+      // Disable all radios
+      document.querySelectorAll('input[name="' + qid + '"]').forEach(function(r){ r.disabled = true; });
+
+      var userAns = selected ? parseInt(selected.value) : -1;
+      var isCorrect = userAns === row.answer;
+      var correctText = row.options[row.answer];
+
+      if (isCorrect) {
+        correct++;
+        if (fbEl) fbEl.innerHTML = '<span style="color:#16a34a;font-weight:700;">\u2713 ' + correctText + '</span>';
+        if (selected) selected.parentElement.classList.add('kf-mc-correct');
+      } else {
+        if (userAns >= 0) wrongAnswers.push({ user: row.options[userAns], correct: correctText, q: row.q });
+        if (selected) selected.parentElement.classList.add('kf-mc-wrong');
+        // Also highlight the correct one
+        var correctRadio = document.querySelector('input[name="' + qid + '"][value="' + row.answer + '"]');
+        if (correctRadio) correctRadio.parentElement.classList.add('kf-mc-correct');
+        if (fbEl) fbEl.innerHTML = '<span style="color:#dc2626;font-weight:700;">\u2717 ' + correctText + '</span>';
+      }
+    });
   });
   var pct = total > 0 ? Math.round(correct / total * 100) : 0;
   var scoreEl = document.getElementById('kf-score');
@@ -3493,27 +3461,21 @@ function submitKnowledgeFrame() {
   scoreEl.className = 'kf-score-display visible ' + cls;
   scoreEl.textContent = 'Score: ' + correct + '/' + total + ' (' + pct + '%)';
 
-  // Disable submit button
   var submitBtn = document.getElementById('kf-submit-btn');
   if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '\u2713 Graded'; }
 
-  // Send wrong answers to notebook
   wrongAnswers.forEach(function(wa) {
     mbAdd({
       part: 'knowledge-frame', term: wa.correct,
       category: 'frame', cn: '',
-      prompt: 'Knowledge Frame blank: correct answer is ' + wa.correct,
-      userAnswer: wa.user, correctAnswer: wa.correct,
-      reason_en: 'Frame: wrote "' + wa.user + '", should be "' + wa.correct + '"',
-      reason_cn: 'Frame fill-in wrong: wrote "' + wa.user + '", correct: "' + wa.correct + '"',
-      key_en: wa.correct, key_cn: '',
+      prompt: 'MCQ: ' + wa.q,
+      userAnswer: wa.user || '(blank)', correctAnswer: wa.correct,
+      reason_en: 'MCQ wrong. Correct: "' + wa.correct + '"',
+      reason_cn: 'MCQ wrong. Correct: ' + wa.correct,
+      key_en: wa.correct, key_cn: wa.hint || '',
       timestamp: Date.now()
     });
   });
-}
-
-function resetKnowledgeFrame() {
-  renderKnowledgeFrame();
 }
 
 // ═════════════════════════════════════════════════════════════
