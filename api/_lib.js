@@ -1,8 +1,9 @@
 // ============================================================
 // AI Gateway — Central model routing for Biology Study Hub
 // ============================================================
-// Model assignments (updated 2026-07-11):
+// Model assignments (updated 2026-07-12):
 //   Text tasks  → deepseek-v4-pro   (Think Max, via DeepSeek API)
+//   Text alt    → glm-5.2           (Coding Plan, via GLM API, 1M context)
 //   Vision      → glm-4.6v-flash    (free tier, via GLM standard API)
 //   Embedding   → embedding-3       (1024-dim, pgvector HNSW max 2000)
 // ============================================================
@@ -14,6 +15,7 @@ const DEEPSEEK_CHAT_URL = 'https://api.deepseek.com/chat/completions';
 // Model registry
 export const MODELS = {
   TEXT: 'deepseek-v4-pro',
+  TEXT_ALT: 'glm-5.2',
   VISION: 'glm-4.6v-flash',
   VISION_PRO: 'glm-5v-turbo',
   EMBEDDING: 'embedding-3',
@@ -82,6 +84,46 @@ export async function callGLM(messages, options = {}) {
   if (!resp.ok) {
     const err = await resp.text();
     throw new Error(`GLM API error ${resp.status}: ${err}`);
+  }
+
+  const data = await resp.json();
+  return data.choices[0].message.content;
+}
+
+/**
+ * Call GLM for text tasks (GLM-5.2 via Coding Plan).
+ * Uses thinking mode for complex reasoning tasks.
+ * Falls back to GLM_VISION_4_6V_FLASH_API_KEY if GLM_CODING_API_KEY is not set.
+ */
+export async function callGLMText(messages, options = {}) {
+  const apiKey = process.env.GLM_CODING_API_KEY || process.env.GLM_VISION_4_6V_FLASH_API_KEY;
+  if (!apiKey) throw new Error('GLM_CODING_API_KEY or GLM_VISION_4_6V_FLASH_API_KEY not configured');
+
+  const body = {
+    model: options.model || MODELS.TEXT_ALT,
+    messages,
+    max_tokens: options.max_tokens || 2000,
+    temperature: options.temperature ?? 0.3,
+    thinking: { type: 'enabled' },
+    reasoning_effort: options.reasoning_effort || 'medium',
+  };
+
+  if (options.response_format) {
+    body.response_format = options.response_format;
+  }
+
+  const resp = await fetch(ZHIPU_CHAT_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`GLM-5.2 API error ${resp.status}: ${err}`);
   }
 
   const data = await resp.json();
