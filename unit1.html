@@ -2669,21 +2669,18 @@
   }
 
   // ═══════════════════════════════════════════════════════
-  // HIGH-QUALITY TTS v2.0 — Edge-TTS (local proxy) primary
-  // Strategy: Edge-TTS → StreamElements Polly → Web Speech fallback
+  // TTS MULTI-PROVIDER v3.0
+  // Strategy: YouDao → StreamElements → Web Speech (smart routing)
   // ═══════════════════════════════════════════════════════
-  var TTS_PROXY = 'http://127.0.0.1:8766/tts';
   var TTS_VOICE = 'jenny';
-  var TTS_PROXY_ONLINE = true;
   var currentAudio = null;
   var ttsLocked = false;
 
-  // Probe local TTS proxy at startup
-  (function probeTTSProxy() {
-    fetch('http://127.0.0.1:8766/health', { method:'GET' })
-      .then(function(r){ TTS_PROXY_ONLINE = r.ok; })
-      .catch(function(){ TTS_PROXY_ONLINE = false; });
-  })();
+  // refreshVoiceCache and cachedVoice are defined in the voice selection section above
+  if ('speechSynthesis' in window) {
+    refreshVoiceCache();
+    window.speechSynthesis.onvoiceschanged = refreshVoiceCache;
+  }
 
   function stopAudio() {
     ttsLocked = false;
@@ -2691,37 +2688,19 @@
       try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e) {}
       currentAudio = null;
     }
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   }
+  function isOnline() { return navigator.onLine !== false; }
 
-  function isOnline() {
-    return navigator.onLine !== false;
-  }
-
-  function speakWord(word) {
-    stopAudio();
-    if (!isOnline()) { speakWebSpeech(word); return; }
-    if (TTS_PROXY_ONLINE !== false) {
-      speakEdgeTTS(word, 2500).then(function(ok) {
-        if (ok) return;
-        return speakStreamElements(word, 1500).then(function(){}, function(){
-          speakWebSpeech(word);
-        });
-      }).catch(function(){ speakWebSpeech(word); });
-      return;
-    }
-    speakStreamElements(word, 1500).then(function(ok){
-      if (!ok) speakWebSpeech(word);
-    }).catch(function(){ speakWebSpeech(word); });
-  }
-
-  // Provider 1: Edge-TTS (local proxy, Microsoft neural voices)
-  function speakEdgeTTS(word, timeoutMs) {
-    timeoutMs = timeoutMs || 2500;
+  /**
+   * YouDao TTS — free, no key, stable. Supports words and sentences.
+   * type=1 British, type=2 American (default)
+   */
+  function speakYouDao(text, timeoutMs) {
+    timeoutMs = timeoutMs || 3000;
+    var ydType = (TTS_VOICE === 'emma') ? 1 : 2;
     return new Promise(function(resolve, reject) {
-      var url = TTS_PROXY + '?text=' + encodeURIComponent(word) + '&voice=' + TTS_VOICE + '&rate=-5%25';
+      var url = 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&type=' + ydType;
       var audio = new Audio(url);
       audio.volume = 1.0;
       var settled = false;
@@ -2730,15 +2709,49 @@
         settled = true; ttsLocked = true; currentAudio = audio;
         audio.play().then(function() { resolve(true); }).catch(function(e) { ttsLocked = false; reject(e); });
       }, { once:true });
-      audio.addEventListener('error', function() {
-        if (settled) return; settled = true; TTS_PROXY_ONLINE = false; resolve(false);
-      }, { once:true });
-      setTimeout(function() {
-        if (!settled) { settled = true; TTS_PROXY_ONLINE = false; resolve(false); }
-      }, timeoutMs);
+      audio.addEventListener('error', function() { if (settled) return; settled = true; resolve(false); }, { once:true });
+      setTimeout(function() { if (!settled) { settled = true; resolve(false); } }, timeoutMs);
       audio.load();
     });
   }
+
+  /**
+   * Smart TTS routing based on text type.
+   *  - 1-2 words (≤30 chars): YouDao → StreamElements → Web Speech
+   *  - Phrase/sentence (≤500 chars): StreamElements → Web Speech (skip YouDao delay)
+   *  - Long text (>500 chars): Web Speech directly (no length limit)
+   */
+  function speakText(text) {
+    text = (text || '').trim();
+    if (!text) return;
+    stopAudio();
+    if (!isOnline()) { speakWebSpeech(text); return; }
+    var wordCount = text.split(/\s+/).length;
+    var charCount = text.length;
+    // Word: YouDao first (best pronunciation quality)
+    if (wordCount <= 2 && charCount <= 30) {
+      speakYouDao(text, 1500).then(function(ok) {
+        if (ok) return;
+        speakStreamElements(text, 2000).then(function(seOk) {
+          if (!seOk) speakWebSpeech(text);
+        }).catch(function() { speakWebSpeech(text); });
+      }).catch(function() { speakWebSpeech(text); });
+      return;
+    }
+    // Long text: Web Speech directly (no length limit, instant start)
+    if (charCount > 500) { speakWebSpeech(text); return; }
+    // Phrase/sentence: StreamElements first (better for sentences)
+    speakStreamElements(text, 2500).then(function(ok) {
+      if (ok) return;
+      // StreamElements failed → YouDao → Web Speech
+      speakYouDao(text, 2000).then(function(ydOk) {
+        if (!ydOk) speakWebSpeech(text);
+      }).catch(function() { speakWebSpeech(text); });
+    }).catch(function() { speakWebSpeech(text); });
+  }
+
+  // Backward-compatible alias: routes through speakText
+  function speakWord(word) { speakText(word); }
 
   // Provider 2: StreamElements TTS (Amazon Polly Joanna)
   function speakStreamElements(word, timeoutMs) {

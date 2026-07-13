@@ -1807,10 +1807,13 @@ function isOnline() { return navigator.onLine !== false; }
 
 /**
  * YouDao TTS — free, no key, stable. Supports words and sentences.
+ * type=1 British, type=2 American (default)
  */
-function speakYouDao(text) {
+function speakYouDao(text, timeoutMs) {
+  timeoutMs = timeoutMs || 3000;
+  var ydType = (TTS_VOICE === 'emma') ? 1 : 2;
   return new Promise(function(resolve, reject) {
-    var url = 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&type=2';
+    var url = 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&type=' + ydType;
     var audio = new Audio(url);
     audio.volume = 1.0;
     var settled = false;
@@ -1820,32 +1823,56 @@ function speakYouDao(text) {
       audio.play().then(function() { resolve(true); }).catch(function(e) { ttsLocked = false; reject(e); });
     }, { once:true });
     audio.addEventListener('error', function() { if (settled) return; settled = true; resolve(false); }, { once:true });
-    setTimeout(function() { if (!settled) { settled = true; resolve(false); } }, 3000);
+    setTimeout(function() { if (!settled) { settled = true; resolve(false); } }, timeoutMs);
     audio.load();
   });
 }
 
-function speakWord(word) {
+/**
+ * Smart TTS routing based on text type.
+ *  - 1-2 words (≤30 chars): YouDao → StreamElements → Web Speech
+ *  - Phrase/sentence (≤500 chars): StreamElements → Web Speech (skip YouDao delay)
+ *  - Long text (>500 chars): Web Speech directly (no length limit)
+ */
+function speakText(text) {
+  text = (text || '').trim();
+  if (!text) return;
   stopAudio();
-  if (!isOnline()) { speakWebSpeech(word); return; }
-  // Priority 1: YouDao TTS (stable, no key)
-  speakYouDao(word).then(function(ok) {
+  if (!isOnline()) { speakWebSpeech(text); return; }
+  var wordCount = text.split(/\s+/).length;
+  var charCount = text.length;
+  // Word: YouDao first (best pronunciation quality)
+  if (wordCount <= 2 && charCount <= 30) {
+    speakYouDao(text, 1500).then(function(ok) {
+      if (ok) return;
+      speakStreamElements(text, 2000).then(function(seOk) {
+        if (!seOk) speakWebSpeech(text);
+      }).catch(function() { speakWebSpeech(text); });
+    }).catch(function() { speakWebSpeech(text); });
+    return;
+  }
+  // Long text: Web Speech directly (no length limit, instant start)
+  if (charCount > 500) { speakWebSpeech(text); return; }
+  // Phrase/sentence: StreamElements first (better for sentences)
+  speakStreamElements(text, 2500).then(function(ok) {
     if (ok) return;
-    // YouDao failed → StreamElements → Web Speech
-    speakStreamElements(word, 1500).then(function(seOk) {
-      if (!seOk) speakWebSpeech(word);
-    }).catch(function() { speakWebSpeech(word); });
-  }).catch(function() {
-    speakStreamElements(word, 1500).then(function(seOk) {
-      if (!seOk) speakWebSpeech(word);
-    }).catch(function() { speakWebSpeech(word); });
-  });
+    // StreamElements failed → YouDao → Web Speech
+    speakYouDao(text, 2000).then(function(ydOk) {
+      if (!ydOk) speakWebSpeech(text);
+    }).catch(function() { speakWebSpeech(text); });
+  }).catch(function() { speakWebSpeech(text); });
 }
+
+// Backward-compatible alias: routes through speakText
+function speakWord(word) { speakText(word); }
 
 function speakStreamElements(word, timeoutMs) {
   timeoutMs = timeoutMs || 2000;
+  // Map TTS_VOICE preference to StreamElements (Amazon Polly) voice
+  var seVoices = { 'jenny':'Joanna', 'aria':'Ivy', 'emma':'Emma', 'ana':'Kendra' };
+  var seVoice = seVoices[TTS_VOICE] || 'Joanna';
   return new Promise(function(resolve, reject) {
-    var url = 'https://api.streamelements.com/kappa/v2/speech?voice=Joanna&text=' + encodeURIComponent(word);
+    var url = 'https://api.streamelements.com/kappa/v2/speech?voice=' + seVoice + '&text=' + encodeURIComponent(word);
     var audio = new Audio(url);
     audio.volume = 1.0;
     var settled = false;
@@ -1908,6 +1935,15 @@ function createInlineSpeakBtn(word) {
   var btn = createSpeakButton(word);
   btn.classList.add('speak-inline');
   return btn;
+}
+
+/**
+ * Returns HTML string for an inline speak button.
+ * Use in template literals / string concatenation for quiz questions and answers.
+ */
+function speakBtnHTML(text, label) {
+  label = label || '🔊';
+  return ' <button class="speak-btn speak-inline" type="button" onclick="speakText(\'' + escapeJs(text) + '\')" title="Hear: ' + escapeHtml(text.slice(0, 60)) + (text.length > 60 ? '…' : '') + '" aria-label="Play audio">' + label + '</button>';
 }
 
 /* ─── Inline term scanning (reused from unit1) ─── */
@@ -2223,7 +2259,7 @@ document.addEventListener('mousedown', function(e) {
 
 // Speak
 function selSpeak(text) {
-  if (typeof speakWord === 'function') { speakWord(text); }
+  if (typeof speakText === 'function') { speakText(text); }
   else if ('speechSynthesis' in window) {
     var u = new SpeechSynthesisUtterance(text);
     u.lang = 'en-US';
@@ -2796,7 +2832,7 @@ function submitCnEn(i) {
     '<span class="fb-score ' + scoreClass + '">Score: ' + score + '%</span>' +
     '<div class="answer-block">' +
       '<span class="answer-label">📖 Reference Answer</span>' +
-      '<div class="answer-en"><strong>' + item.accept.join(' / ') + '</strong> — ' + item.example_en + '</div>' +
+      '<div class="answer-en"><strong>' + item.accept.join(' / ') + '</strong> — ' + item.example_en + speakBtnHTML(item.example_en) + '</div>' +
     '</div>';
 
   if (!correct) {
@@ -2829,7 +2865,7 @@ function peekCnEn(i) {
   if (input) input.disabled = true;
   if (fb) fb.innerHTML = '<div class="answer-block">' +
     '<span class="answer-label">👁️ 直接查看答案</span>' +
-    '<div class="answer-en"><strong>' + item.accept.join(' / ') + '</strong> — ' + item.example_en + '</div>' +
+    '<div class="answer-en"><strong>' + item.accept.join(' / ') + '</strong> — ' + item.example_en + speakBtnHTML(item.example_en) + '</div>' +
   '</div>';
 }
 
@@ -3048,7 +3084,7 @@ function renderCloze() {
   '</div>';
   html += SHUFFLED_SHORT.map(function(q, i) {
     return '<div class="quiz-q" data-group="short" data-qi="' + i + '">' +
-      '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">' + q.q_en + '</span></div>' +
+      '<div><span class="q-num">' + (i+1) + '</span><span class="q-text">' + q.q_en + '</span>' + speakBtnHTML(q.q_en) + '</div>' +
       '<div class="cloze-hint hidden" id="short-hint-' + i + '">📌 ' + (q.q_cn||'') + '</div>' +
       '<div class="cloze-input-area">' +
         '<textarea class="cloze-textarea" data-group="short" data-qi="' + i + '" placeholder="Write your full English answer here..."></textarea>' +
@@ -3076,7 +3112,7 @@ function gradeClozeOnly() {
       totalAnswered++;
       if (fb) fb.innerHTML = '<span class="fb-score score-low">Skipped</span>' +
         '<div class="answer-block"><span class="answer-label">Answer</span>' +
-        '<div class="answer-en"><strong>' + q.answer + '</strong></div></div>';
+        '<div class="answer-en"><strong>' + q.answer + '</strong>' + speakBtnHTML(q.answer) + '</div></div>';
       var blankEl = document.getElementById('cloze-blank-' + i);
       if (blankEl) { blankEl.textContent = q.answer; blankEl.className = 'cloze-blank wrong'; }
       mbAdd({
@@ -3105,7 +3141,7 @@ function gradeClozeOnly() {
       totalCorrect++;
       if (fb) fb.innerHTML = '<span class="fb-score score-high">✓ Correct</span>' +
         '<div class="answer-block"><span class="answer-label">Answer</span>' +
-        '<div class="answer-en"><strong>' + q.answer + '</strong></div></div>';
+        '<div class="answer-en"><strong>' + q.answer + '</strong>' + speakBtnHTML(q.answer) + '</div></div>';
     } else {
       if (fb) fb.innerHTML = '<span class="fb-score score-low">✗ Wrong</span>' +
         '<div class="feedback-panel"><div class="feedback-card fb-weak"><div class="fb-title">Correction</div>' +
@@ -3141,7 +3177,7 @@ function gradeShortOnly() {
     if (!userVal) {
       if (fb) fb.innerHTML = '<span class="fb-score score-low">Skipped</span>' +
         '<div class="answer-block"><span class="answer-label">Model Answer</span>' +
-        '<div class="answer-en">' + q.model_en + '</div>' +
+        '<div class="answer-en">' + q.model_en + speakBtnHTML(q.model_en) + '</div>' +
         '<div class="answer-cn">' + q.model_cn + '</div></div>';
       mbAdd({
         part: 'short', term: q.keywords[0] || q.q_en.split(/\s+/).slice(0,3).join(' '),
@@ -3180,7 +3216,7 @@ function gradeShortOnly() {
       '<div id="ai-grade-' + i + '" class="sel-popup-explain"></div>' +
       '<div class="answer-block">' +
         '<span class="answer-label">Model Answer</span>' +
-        '<div class="answer-en">' + q.model_en + '</div>' +
+        '<div class="answer-en">' + q.model_en + speakBtnHTML(q.model_en) + '</div>' +
         '<div class="answer-cn">' + q.model_cn + '</div>' +
       '</div>' +
       (q.lang_notes ? '<div class="lang-analysis"><span class="lang-label">Language Notes</span>' + q.lang_notes + '</div>' : '');
@@ -3406,7 +3442,7 @@ function renderKnowledgeFrame() {
     branch.rows.forEach(function(row, ri) {
       var qid = 'kf-mc-' + bi + '-' + ri;
       html += '<div class="kf-mc-q" id="' + qid + '" data-branch="' + bi + '" data-row="' + ri + '">';
-      html += '<div class="kf-mc-text">' + (globalIdx+1) + '. ' + row.q + '</div>';
+      html += '<div class="kf-mc-text">' + (globalIdx+1) + '. ' + row.q + speakBtnHTML(row.q) + '</div>';
       html += '<div class="kf-mc-options">';
       row.options.forEach(function(opt, oi) {
         html += '<label class="kf-mc-opt"><input type="radio" name="' + qid + '" value="' + oi + '" data-qid="' + qid + '"> ' + opt + '</label>';
