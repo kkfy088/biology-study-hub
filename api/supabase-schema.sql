@@ -14,9 +14,18 @@ create table if not exists documents (
   content text not null,
   content_cn text,
   source text,
+  content_type text default 'textbook' check (content_type in ('textbook', 'supplementary', 'notes', 'homework', 'exam')),
+  file_name text,
   embedding vector(1024),
   created_at timestamptz default now()
 );
+
+-- Add content_type column if it doesn't exist (for existing tables)
+do $$ begin
+  alter table documents add column if not exists content_type text default 'textbook';
+  alter table documents add column if not exists file_name text;
+exception when others then null;
+end $$;
 
 -- HNSW index for fast similarity search
 create index if not exists documents_embedding_idx

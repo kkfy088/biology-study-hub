@@ -251,6 +251,82 @@
     .stat-num { font-size: 24px; }
     .units-grid { grid-template-columns: 1fr; }
   }
+
+  /* ── R9: Upload Section ── */
+  .upload-section { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 28px; border: 1px solid var(--border); }
+  .upload-type-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .upload-type-btn {
+    padding: 8px 16px; border: 2px solid var(--border); border-radius: 100px; background: white;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .upload-type-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+  .upload-type-btn.selected { border-color: var(--primary); background: var(--primary); color: white; }
+  .upload-type-btn .type-icon { font-size: 16px; }
+  .upload-type-info {
+    font-size: 12px; color: var(--text-light); margin-top: 6px; margin-bottom: 16px;
+    padding: 8px 12px; background: #f8fafc; border-radius: 8px; line-height: 1.5;
+  }
+  .upload-dropzone {
+    border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px 20px;
+    text-align: center; cursor: pointer; transition: all .2s; background: #fafbfc;
+  }
+  .upload-dropzone:hover, .upload-dropzone.dragover {
+    border-color: var(--primary); background: var(--primary-light);
+  }
+  .upload-dropzone-icon { font-size: 42px; margin-bottom: 10px; }
+  .upload-dropzone-text { font-size: 15px; font-weight: 600; color: var(--text); }
+  .upload-dropzone-hint { font-size: 12.5px; color: var(--text-light); margin-top: 6px; }
+  .upload-file-list { margin-top: 16px; }
+  .upload-file-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; background: #f8fafc; border-radius: 8px; margin-bottom: 8px;
+    font-size: 13px; border: 1px solid var(--border);
+  }
+  .upload-file-item .file-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .upload-file-item .file-icon { font-size: 20px; flex-shrink: 0; }
+  .upload-file-item .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .upload-file-item .file-size { color: var(--text-light); font-size: 11px; }
+  .upload-file-item .file-status { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 100px; }
+  .upload-file-item .file-status.pending { background: #f1f5f9; color: var(--text-light); }
+  .upload-file-item .file-status.uploading { background: var(--primary-light); color: var(--primary); }
+  .upload-file-item .file-status.success { background: var(--accent-light); color: var(--accent); }
+  .upload-file-item .file-status.error { background: var(--danger-light); color: var(--danger); }
+  .upload-file-item .file-remove { background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 16px; padding: 4px 8px; border-radius: 6px; }
+  .upload-file-item .file-remove:hover { background: var(--danger-light); color: var(--danger); }
+  .upload-actions { display: flex; gap: 10px; margin-top: 16px; align-items: center; }
+  .upload-btn {
+    padding: 10px 24px; border: none; border-radius: 100px; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all .2s;
+  }
+  .upload-btn.primary { background: var(--primary); color: white; }
+  .upload-btn.primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  .upload-btn.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .upload-btn.secondary { background: #f1f5f9; color: var(--text-secondary); }
+  .upload-btn.secondary:hover { background: var(--border); }
+  .upload-progress { flex: 1; }
+  .upload-progress-bar {
+    height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 6px;
+  }
+  .upload-progress-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width .3s; }
+  .upload-result { margin-top: 12px; padding: 12px 16px; border-radius: 8px; font-size: 13px; display: none; }
+  .upload-result.success { display: block; background: var(--accent-light); color: var(--accent); }
+  .upload-result.error { display: block; background: var(--danger-light); color: var(--danger); }
+  .upload-history { margin-top: 20px; }
+  .upload-history-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--text-secondary); }
+  .upload-history-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--border); font-size: 12.5px;
+  }
+  .upload-history-item:last-child { border-bottom: none; }
+  .upload-history-type {
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;
+  }
+  .upload-history-type.textbook { background: #dbeafe; color: #1e40af; }
+  .upload-history-type.supplementary { background: #fef3c7; color: #92400e; }
+  .upload-history-type.notes { background: #ede9fe; color: #6b21a8; }
+  .upload-history-type.homework { background: #fee2e2; color: #991b1b; }
+  .upload-history-type.exam { background: #fce7f3; color: #9d174d; }
 </style>
 </head>
 <body>
@@ -264,6 +340,7 @@
   <div class="topnav-links">
     <a href="#units" class="topnav-link">Units</a>
     <a href="#features" class="topnav-link">Features</a>
+    <a href="#upload" class="topnav-link">Upload</a>
     <a href="#how-to-use" class="topnav-link">How to Use</a>
     <a href="unit1.html" class="topnav-link active">Unit 1 →</a>
   </div>
@@ -457,6 +534,70 @@
     </div>
   </section>
 
+  <!-- ═════════ R9: UPLOAD SUPPLEMENTARY MATERIALS ═════════ -->
+  <section class="section" id="upload">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--warning-light);color:var(--warning)">📤</div>
+      <div>
+        <div class="section-title">Upload Study Materials <span style="font-size:14px;color:var(--text-light);font-weight:500;">· 补充资料上传</span></div>
+        <div class="section-desc">Upload textbooks, notes, homework, and exam papers. AI will process and integrate them into your study hub.</div>
+      </div>
+    </div>
+
+    <div class="upload-section">
+      <!-- Content Type Selector -->
+      <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">📋 Content Type · 内容类型</div>
+      <div class="upload-type-selector" id="upload-type-selector">
+        <button class="upload-type-btn selected" data-type="textbook">
+          <span class="type-icon">📖</span> Textbook 课文
+        </button>
+        <button class="upload-type-btn" data-type="supplementary">
+          <span class="type-icon">📚</span> Supplementary 辅导材料
+        </button>
+        <button class="upload-type-btn" data-type="notes">
+          <span class="type-icon">📝</span> Notes 笔记
+        </button>
+        <button class="upload-type-btn" data-type="homework">
+          <span class="type-icon">📄</span> Homework 作业
+        </button>
+        <button class="upload-type-btn" data-type="exam">
+          <span class="type-icon">📋</span> Exam 试题
+        </button>
+      </div>
+      <div class="upload-type-info" id="upload-type-info">
+        <strong>📖 Textbook</strong> — 100% extracted, no modification. High priority for study content.
+      </div>
+
+      <!-- Drop Zone -->
+      <div class="upload-dropzone" id="upload-dropzone">
+        <div class="upload-dropzone-icon">📁</div>
+        <div class="upload-dropzone-text">Drag & drop files here, or click to browse</div>
+        <div class="upload-dropzone-hint">Supports: PDF, TXT, DOCX, PNG, JPG · Max 20MB per file</div>
+      </div>
+      <input type="file" id="upload-file-input" multiple accept=".pdf,.txt,.docx,.png,.jpg,.jpeg,.gif" style="display:none;">
+
+      <!-- File List -->
+      <div class="upload-file-list" id="upload-file-list"></div>
+
+      <!-- Actions -->
+      <div class="upload-actions">
+        <button class="upload-btn primary" id="upload-start-btn" disabled onclick="startUpload()">🚀 Upload & Process</button>
+        <button class="upload-btn secondary" onclick="clearUploadFiles()">🗑️ Clear All</button>
+        <div class="upload-progress" id="upload-progress" style="display:none;">
+          <span style="font-size:12px;color:var(--text-secondary);" id="upload-progress-text">Processing...</span>
+          <div class="upload-progress-bar"><div class="upload-progress-fill" id="upload-progress-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="upload-result" id="upload-result"></div>
+
+      <!-- Upload History -->
+      <div class="upload-history" id="upload-history" style="display:none;">
+        <div class="upload-history-title">📜 Recent Uploads</div>
+        <div id="upload-history-list"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ═════════ HOW TO USE ═════════ -->
   <section class="section" id="how-to-use">
     <div class="section-header">
@@ -502,6 +643,305 @@
   <p style="margin-top:8px;font-size:12px;">Designed for first-tier international middle school students · Bilingual EN/中文</p>
   <p style="margin-top:14px;font-size:13px;color:var(--text-secondary);font-weight:600;">⚡ Powered by <strong style="color:var(--primary);">Michelle Yang</strong> · 2026</p>
 </footer>
+
+<!-- ═════════ R9: UPLOAD SCRIPTS ═════════ -->
+<script>
+(function() {
+  'use strict';
+
+  var API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://localhost:3000'
+    : 'https://biology-study-hub.vercel.app';
+
+  var selectedType = 'textbook';
+  var uploadFiles = [];
+  var uploadHistory = JSON.parse(localStorage.getItem('upload_history') || '[]');
+
+  // Content type descriptions
+  var TYPE_INFO = {
+    textbook: '<strong>📖 Textbook 课文</strong> — 100% extracted, no modification. High priority for study content.',
+    supplementary: '<strong>📚 Supplementary 辅导材料</strong> — Merge overlapping content. Duplicate parts can be condensed.',
+    notes: '<strong>📝 Notes 笔记</strong> — 100% extracted, no deletion. Second priority after homework/exam.',
+    homework: '<strong>📄 Homework 作业</strong> — <em>Highest priority!</em> 100% extraction, no modification. Supplement missing content.',
+    exam: '<strong>📋 Exam 试题</strong> — <em>Highest priority!</em> 100% extraction, no modification. Supplement missing content.'
+  };
+
+  // Type selector
+  document.getElementById('upload-type-selector').addEventListener('click', function(e) {
+    var btn = e.target.closest('.upload-type-btn');
+    if (!btn) return;
+    document.querySelectorAll('.upload-type-btn').forEach(function(b) { b.classList.remove('selected'); });
+    btn.classList.add('selected');
+    selectedType = btn.dataset.type;
+    document.getElementById('upload-type-info').innerHTML = TYPE_INFO[selectedType];
+  });
+
+  // Drop zone
+  var dropzone = document.getElementById('upload-dropzone');
+  var fileInput = document.getElementById('upload-file-input');
+
+  dropzone.addEventListener('click', function() { fileInput.click(); });
+  dropzone.addEventListener('dragover', function(e) { e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', function() { dropzone.classList.remove('dragover'); });
+  dropzone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    addFiles(Array.from(e.dataTransfer.files));
+  });
+  fileInput.addEventListener('change', function() {
+    addFiles(Array.from(fileInput.files));
+    fileInput.value = '';
+  });
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function fileIcon(name) {
+    var ext = name.split('.').pop().toLowerCase();
+    var icons = { pdf: '📕', txt: '📄', docx: '📘', png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️' };
+    return icons[ext] || '📎';
+  }
+
+  function addFiles(files) {
+    files.forEach(function(f) {
+      if (f.size > 20 * 1024 * 1024) { alert('File too large: ' + f.name + ' (' + formatSize(f.size) + ')'); return; }
+      // Avoid duplicates
+      if (uploadFiles.some(function(x) { return x.name === f.name && x.size === f.size; })) return;
+      uploadFiles.push(f);
+    });
+    renderFileList();
+  }
+
+  function renderFileList() {
+    var list = document.getElementById('upload-file-list');
+    var startBtn = document.getElementById('upload-start-btn');
+    list.innerHTML = uploadFiles.map(function(f, i) {
+      return '<div class="upload-file-item">' +
+        '<div class="file-info">' +
+          '<span class="file-icon">' + fileIcon(f.name) + '</span>' +
+          '<span class="file-name">' + f.name + '</span>' +
+          '<span class="file-size">' + formatSize(f.size) + '</span>' +
+        '</div>' +
+        '<span class="file-status pending">' + selectedType + '</span>' +
+        '<button class="file-remove" onclick="removeUploadFile(' + i + ')">✕</button>' +
+      '</div>';
+    }).join('');
+    startBtn.disabled = uploadFiles.length === 0;
+  }
+
+  window.removeUploadFile = function(i) {
+    uploadFiles.splice(i, 1);
+    renderFileList();
+  };
+
+  window.clearUploadFiles = function() {
+    uploadFiles = [];
+    renderFileList();
+    document.getElementById('upload-result').className = 'upload-result';
+    document.getElementById('upload-result').innerHTML = '';
+    document.getElementById('upload-progress').style.display = 'none';
+  };
+
+  async function extractText(file) {
+    return new Promise(function(resolve, reject) {
+      var ext = file.name.split('.').pop().toLowerCase();
+      if (ext === 'txt') {
+        var reader = new FileReader();
+        reader.onload = function() { resolve([{ text: reader.result, section: file.name }]); };
+        reader.onerror = reject;
+        reader.readAsText(file);
+      } else if (ext === 'docx') {
+        // For DOCX, we read as text (basic extraction) — full DOCX parsing needs mammoth.js
+        var reader = new FileReader();
+        reader.onload = function() {
+          // Basic: read raw text (will include some binary garbage but also visible text)
+          var raw = reader.result;
+          var text = '';
+          // Try to extract readable text from binary
+          for (var i = 0; i < raw.length; i++) {
+            var c = raw[i];
+            if (c >= ' ' && c <= '~' || c === '\n' || c === '\r' || c === '\t') text += c;
+          }
+          // Clean up
+          text = text.replace(/\n{3,}/g, '\n\n').replace(/[^\S\n]+/g, ' ').trim();
+          if (text.length < 50) { reject(new Error('Could not extract text from DOCX. Please use PDF or TXT.')); return; }
+          resolve([{ text: text, section: file.name }]);
+        };
+        reader.onerror = reject;
+        reader.readAsBinaryString(file);
+      } else if (['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
+        // Images: store file name as reference, actual OCR needs vision API
+        resolve([{ text: '[Image: ' + file.name + '] — needs OCR processing', section: file.name }]);
+      } else if (ext === 'pdf') {
+        // PDF: extract via text reading — basic approach
+        var reader = new FileReader();
+        reader.onload = function() {
+          var raw = reader.result;
+          var text = '';
+          for (var i = 0; i < raw.length; i++) {
+            var c = raw[i];
+            if (c >= ' ' && c <= '~' || c === '\n' || c === '\r' || c === '\t') text += c;
+          }
+          text = text.replace(/\n{3,}/g, '\n\n').replace(/[^\S\n]+/g, ' ').trim();
+          if (text.length < 30) { reject(new Error('Could not extract text from PDF. Please use TXT files.')); return; }
+          resolve([{ text: text, section: file.name }]);
+        };
+        reader.onerror = reject;
+        reader.readAsBinaryString(file);
+      } else {
+        reject(new Error('Unsupported file type: ' + ext));
+      }
+    });
+  }
+
+  // Chunk text into meaningful pieces (paragraphs, max ~500 chars each)
+  function chunkText(text) {
+    var paragraphs = text.split(/\n\s*\n/);
+    var chunks = [];
+    paragraphs.forEach(function(p) {
+      p = p.trim();
+      if (!p) return;
+      if (p.length <= 800) {
+        chunks.push({ text: p });
+      } else {
+        // Split long paragraphs by sentences
+        var sentences = p.split(/(?<=[.!?])\s+/);
+        var buf = '';
+        sentences.forEach(function(s) {
+          if (buf.length + s.length > 800 && buf.length > 0) {
+            chunks.push({ text: buf.trim() });
+            buf = s;
+          } else {
+            buf += (buf ? ' ' : '') + s;
+          }
+        });
+        if (buf.trim()) chunks.push({ text: buf.trim() });
+      }
+    });
+    return chunks;
+  }
+
+  window.startUpload = async function() {
+    if (uploadFiles.length === 0) return;
+
+    var startBtn = document.getElementById('upload-start-btn');
+    var progress = document.getElementById('upload-progress');
+    var progressText = document.getElementById('upload-progress-text');
+    var progressFill = document.getElementById('upload-progress-fill');
+    var result = document.getElementById('upload-result');
+
+    startBtn.disabled = true;
+    progress.style.display = 'block';
+    result.className = 'upload-result';
+    result.innerHTML = '';
+
+    var totalProcessed = 0;
+    var totalIndexed = 0;
+    var errors = [];
+
+    for (var fi = 0; fi < uploadFiles.length; fi++) {
+      var file = uploadFiles[fi];
+      progressText.textContent = 'Processing ' + (fi + 1) + '/' + uploadFiles.length + ': ' + file.name + '...';
+      progressFill.style.width = Math.round(((fi) / uploadFiles.length) * 100) + '%';
+      totalProcessed++;
+
+      try {
+        var extractedChunks = await extractText(file);
+        var allChunks = [];
+        extractedChunks.forEach(function(ec) {
+          var subChunks = chunkText(ec.text);
+          subChunks.forEach(function(sc) { sc.section = ec.section; });
+          allChunks = allChunks.concat(subChunks);
+        });
+
+        if (allChunks.length === 0) {
+          errors.push(file.name + ': no content extracted');
+          continue;
+        }
+
+        // Upload to backend
+        var resp = await fetch(API_BASE + '/api/rag/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chunks: allChunks,
+            source: 'upload',
+            unit: 'supplement',
+            content_type: selectedType,
+            file_name: file.name
+          })
+        });
+
+        var data = await resp.json();
+        if (data.success) {
+          totalIndexed += data.chunks_indexed;
+          if (data.errors && data.errors.length) {
+            errors.push(file.name + ': ' + data.errors.length + ' chunk errors');
+          }
+        } else {
+          errors.push(file.name + ': ' + (data.error || 'upload failed'));
+        }
+      } catch (e) {
+        errors.push(file.name + ': ' + e.message);
+      }
+
+      progressFill.style.width = Math.round(((fi + 1) / uploadFiles.length) * 100) + '%';
+    }
+
+    progressFill.style.width = '100%';
+    progressText.textContent = 'Done!';
+
+    // Add to history
+    var entry = {
+      time: new Date().toISOString(),
+      type: selectedType,
+      files: uploadFiles.length,
+      chunks: totalIndexed,
+      fileNames: uploadFiles.map(function(f) { return f.name; })
+    };
+    uploadHistory.unshift(entry);
+    if (uploadHistory.length > 20) uploadHistory = uploadHistory.slice(0, 20);
+    localStorage.setItem('upload_history', JSON.stringify(uploadHistory));
+
+    if (errors.length > 0) {
+      result.className = 'upload-result error';
+      result.innerHTML = '<strong>⚠️ Partial success</strong><br>' +
+        totalIndexed + ' chunks indexed from ' + uploadFiles.length + ' file(s).<br>' +
+        'Errors: ' + errors.join('; ');
+    } else {
+      result.className = 'upload-result success';
+      result.innerHTML = '<strong>✅ Upload complete!</strong> ' +
+        totalIndexed + ' chunks indexed from ' + totalProcessed + ' file(s).';
+    }
+
+    startBtn.disabled = false;
+    uploadFiles = [];
+    renderFileList();
+    renderUploadHistory();
+  };
+
+  function renderUploadHistory() {
+    var container = document.getElementById('upload-history');
+    var list = document.getElementById('upload-history-list');
+    if (uploadHistory.length === 0) { container.style.display = 'none'; return; }
+    container.style.display = 'block';
+    list.innerHTML = uploadHistory.map(function(h) {
+      var d = new Date(h.time);
+      var timeStr = d.toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+      return '<div class="upload-history-item">' +
+        '<span class="upload-history-type ' + h.type + '">' + h.type + '</span>' +
+        '<span style="flex:1;">' + h.fileNames.slice(0, 3).join(', ') + (h.fileNames.length > 3 ? ' +' + (h.fileNames.length - 3) + ' more' : '') + '</span>' +
+        '<span style="color:var(--text-light);">' + timeStr + ' · ' + h.chunks + ' chunks</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  renderUploadHistory();
+})();
+</script>
 
 </body>
 </html>

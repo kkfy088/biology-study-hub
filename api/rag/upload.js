@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return json(res, { error: 'Method not allowed' }, 405);
 
   try {
-    const { chunks, source, unit } = req.body;
+    const { chunks, source, unit, content_type, file_name } = req.body;
     if (!chunks || !Array.isArray(chunks) || chunks.length === 0) {
       return json(res, { error: 'Missing chunks array' }, 400);
     }
@@ -42,6 +42,8 @@ export default async function handler(req, res) {
             content: chunk.text,
             content_cn: chunk.cn || null,
             source: source || 'upload',
+            content_type: content_type || 'textbook',
+            file_name: file_name || null,
             embedding,
           }),
         });
